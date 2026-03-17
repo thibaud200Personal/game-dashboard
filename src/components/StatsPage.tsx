@@ -129,27 +129,25 @@ export default function StatsPage({
       <div className="flex-1">
         {activeTab === 'players' ? (
           <div className="px-4 space-y-6 pb-32">
-            <div className={cardClass}>
               <PlayerStatsPage
                 players={players}
                 games={games}
                 onNavigation={onNavigation}
                 currentView="player-stats"
                 selectedPlayerId={navigationContext?.source === 'players' ? navigationContext?.id : selectedPlayerId}
+                darkMode={darkMode}
               />
-            </div>
           </div>
         ) : (
           <div className="px-4 space-y-6 pb-32">
-            <div className={cardClass}>
               <GameStatsPage
                 games={games}
                 players={players}
                 onNavigation={onNavigation}
                 currentView="game-stats"
                 selectedCircleId={navigationContext?.source === 'games' ? navigationContext?.id : selectedGameId}
+                darkMode={darkMode}
               />
-            </div>
           </div>
         )}
       </div>

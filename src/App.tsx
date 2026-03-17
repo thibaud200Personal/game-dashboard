@@ -289,6 +289,7 @@ export default function App() {
             onUpdatePlayer={handleUpdatePlayer}
             onDeletePlayer={handleDeletePlayer}
             currentView={currentView}
+            darkMode={darkMode}
           />
         );
       case 'games':

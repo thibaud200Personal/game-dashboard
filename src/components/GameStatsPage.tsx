@@ -38,14 +38,16 @@ interface GameStatsPageProps {
   onNavigation: (view: string) => void
   currentView: string
   selectedCircleId?: number
+  darkMode: boolean
 }
 
-export default function GameStatsPage({ 
-  games, 
-  players, 
-  onNavigation, 
-  currentView: _currentView, 
-  selectedCircleId 
+export default function GameStatsPage({
+  games,
+  players,
+  onNavigation,
+  currentView: _currentView,
+  selectedCircleId,
+  darkMode
 }: GameStatsPageProps) {
   const {
     selectedPeriod,
@@ -66,6 +68,7 @@ export default function GameStatsPage({
       onNavigation={onNavigation}
       selectedGameId={selectedCircleId}
       players={players}
+      darkMode={darkMode}
     />
   );
 }

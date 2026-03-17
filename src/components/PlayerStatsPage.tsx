@@ -32,14 +32,16 @@ interface PlayerStatsPageProps {
   onNavigation: (view: string) => void
   currentView: string
   selectedPlayerId?: number
+  darkMode: boolean
 }
 
-export default function PlayerStatsPage({ 
-  players, 
-  games, 
-  onNavigation, 
-  currentView, 
-  selectedPlayerId 
+export default function PlayerStatsPage({
+  players,
+  games,
+  onNavigation,
+  currentView,
+  selectedPlayerId,
+  darkMode
 }: PlayerStatsPageProps) {
   const {
     stats,
@@ -56,6 +58,7 @@ export default function PlayerStatsPage({
       selectedPlayer={selectedPlayer || null}
       onNavigation={onNavigation}
       currentView={currentView}
+      darkMode={darkMode}
     />
   );
 }

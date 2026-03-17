@@ -50,9 +50,10 @@ interface GameStatsViewProps {
   onNavigation: (view: string) => void
   selectedGameId?: number
   players: Player[]
+  darkMode: boolean
 }
 
-export default function GameStatsView({ 
+export default function GameStatsView({
   selectedPeriod: _selectedPeriod,
   setSelectedPeriod: _setSelectedPeriod,
   selectedGame,
@@ -61,7 +62,8 @@ export default function GameStatsView({
   games,
   onNavigation: _onNavigation,
   selectedGameId: _selectedGameId,
-  players
+  players,
+  darkMode
 }: GameStatsViewProps) {
   if (!gameStats) {
     return (
@@ -73,8 +75,7 @@ export default function GameStatsView({
     );
   }
 
-  // Détection du mode sombre/clair
-  const isDark = typeof window !== 'undefined' && window.document.body.classList.contains('dark');
+  const isDark = darkMode;
   const labelClass = isDark ? "text-white/60 text-sm" : "text-slate-500 text-sm";
   const titleClass = isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900";
   const cardClass = isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl";
@@ -239,7 +240,7 @@ export default function GameStatsView({
       )}
 
       {/* Session Performance Chart */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl">
+      <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl"}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"}>Score Trend</h3>
           <TrendUp className="w-5 h-5 text-primary" />
@@ -262,7 +263,7 @@ export default function GameStatsView({
       </div>
 
       {/* Session Types Distribution */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl">
+      <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl"}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"}>Session Types</h3>
           <ChartBar className="w-5 h-5 text-secondary" />
@@ -295,7 +296,7 @@ export default function GameStatsView({
       </div>
 
       {/* Player Count Distribution */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl">
+      <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl"}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"}>Player Count Distribution</h3>
           <ChartBar className="w-5 h-5 text-accent" />
@@ -324,8 +325,7 @@ export default function GameStatsView({
       </div>
 
       {/* Top Winners */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl">
-        <div className={cardClass}>
+      <div className={cardClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"}>Top Winners</h3>
             <Trophy className="w-5 h-5 text-yellow-400" />
@@ -353,11 +353,9 @@ export default function GameStatsView({
               </div>
             ))}
           </div>
-        </div>
       </div>
       {/* Recent Sessions */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl">
-        <div className={cardClass}>
+      <div className={cardClass}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"}>Recent Sessions</h3>
             <Calendar className="w-5 h-5 text-accent" />
@@ -392,8 +390,7 @@ export default function GameStatsView({
               );
             })}
           </div>
-        </div>
       </div>
-    </div>  
+    </div>
   );
 }

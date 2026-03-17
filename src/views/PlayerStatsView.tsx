@@ -40,18 +40,19 @@ interface PlayerStatsViewProps {
   selectedPlayer: Player | null
   onNavigation: (view: string) => void
   currentView: string
+  darkMode: boolean
 }
 
-export default function PlayerStatsView({ 
+export default function PlayerStatsView({
   stats,
   topPlayers,
   recentActivity,
   selectedPlayer,
   onNavigation: _onNavigation,
-  currentView: _currentView
+  currentView: _currentView,
+  darkMode
 }: PlayerStatsViewProps) {
-  // Détection du mode sombre/clair
-  const isDark = typeof window !== 'undefined' && window.document.body.classList.contains('dark');
+  const isDark = darkMode;
   const labelClass = isDark ? "text-white/60 text-sm" : "text-slate-500 text-sm";
   const titleClass = isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900";
   const cardClass = isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl";
@@ -196,8 +197,8 @@ export default function PlayerStatsView({
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl">
-            <h2 className="text-lg font-semibold mb-4 flex items-center">
+          <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl"}>
+            <h2 className={isDark ? "text-lg font-semibold mb-4 flex items-center text-white" : "text-lg font-semibold mb-4 flex items-center text-slate-900"}>
               <Clock className="w-5 h-5 mr-2 text-blue-400" />
               {selectedPlayer.player_name}'s Recent Games
             </h2>
@@ -226,7 +227,7 @@ export default function PlayerStatsView({
 
         {/* Recent Activity (only for global stats) */}
         {!selectedPlayer && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl">
+          <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl"}>
             <h2 className={isDark ? "text-lg font-semibold mb-4 flex items-center text-white" : "text-lg font-semibold mb-4 flex items-center text-slate-900"}>
               <Clock className="w-5 h-5 mr-2 text-blue-400" />
               Recent Activity
@@ -252,7 +253,7 @@ export default function PlayerStatsView({
         )}
 
         {/* Performance Charts Placeholder */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl">
+        <div className={isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl"}>
           <h2 className={isDark ? "text-lg font-semibold mb-4 flex items-center text-white" : "text-lg font-semibold mb-4 flex items-center text-slate-900"}>
             <ChartBar className="w-5 h-5 mr-2 text-purple-400" />
             {selectedPlayer ? `${selectedPlayer.player_name}'s Performance` : 'Performance Overview'}

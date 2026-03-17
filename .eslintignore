@@ -1,0 +1,19 @@
+# Build outputs
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Backend files (Node.js specific)
+backend/
+
+# Test files
+test-backend.js
+
+# Config files that require console statements
+tailwind.config.js
+vite.config.ts
+
+# Documentation
+*.md

@@ -4,9 +4,9 @@
 
 **Mission Statement**: A modern, intuitive dashboard for tracking board game players, games, and statistics with a beautiful dark theme interface.
 
-**Success Indicators**: 
+**Success Indicators**:
 - Users can easily add and manage players and games
-- Data persists between sessions using local storage
+- Data persists between sessions via SQLite (backend Express + better-sqlite3)
 - Interface feels modern and responsive
 - Navigation between different sections is seamless
 - Support for multiple game modes (competitive, cooperative, campaign, hybrid)
@@ -19,15 +19,9 @@
 
 **Primary User Activity**: Creating and Managing (adding players/games, tracking statistics)
 
-## Recent Updates & Schema Changes
+## Schema — Game Mode Support
 
-**Database Schema Alignment**: Updated to match the latest database structure:
-- **Removed**: `game_type` field from Games table
-- **Added**: `supports_hybrid` boolean field to Games table  
-- **Enhanced**: Game mode detection now supports multiple concurrent modes
-- **Improved**: BGG API integration now properly detects and sets all four game mode flags
-
-**Game Mode Support**: Games can now support multiple modes simultaneously:
+**Game Mode Support**: Games can support multiple modes simultanément :
 - `supports_competitive`: Traditional player-vs-player gameplay
 - `supports_cooperative`: Players work together against the game
 - `supports_campaign`: Story-driven, multi-session gameplay  
@@ -50,9 +44,9 @@
 ## Essential Features
 
 ### Database Structure & Data Management
-- **Functionality**: All data structures align with a relational database schema for future database integration
-- **Purpose**: Ensure smooth transition from local storage to a proper database backend
-- **Success Criteria**: Interface supports all database fields and relationships without breaking changes
+- **Functionality**: Architecture relationnelle SQLite avec 6 tables, 2 vues SQL, validation Zod
+- **Purpose**: Persistance complète via backend Express — players, games, sessions, expansions, characters
+- **Success Criteria**: Interface couvre tous les champs BDD sans breaking changes
 
 ### Dashboard Overview
 - **Functionality**: Central hub showing key statistics and recent activity
@@ -80,9 +74,9 @@
 - **Success Criteria**: Users can easily identify suitable games based on type and player roles available
 
 ### Persistent Data Storage
-- **Functionality**: All data saves automatically and persists between sessions
-- **Purpose**: Users don't lose their data when closing the app
-- **Success Criteria**: Data remains intact after browser refresh or restart
+- **Functionality**: Toutes les données sont sauvegardées en SQLite via le backend (port 3001)
+- **Purpose**: Les données survivent aux redémarrages navigateur et serveur
+- **Success Criteria**: Données intactes après refresh ou redémarrage du backend
 
 ## Design Direction
 
@@ -167,13 +161,13 @@
 - Search functionality for large datasets
 - Helpful empty states guiding users to add content
 
-**Technical Constraints**: 
-- Browser local storage limitations
+**Technical Constraints**:
+- BGG API rate limits (pas de clé API, appels XML publics)
 - Mobile device performance considerations
 
 ## Implementation Considerations
 
-**Scalability Needs**: Local storage can handle hundreds of entries efficiently; BGG API integration provides access to thousands of games
+**Scalability Needs**: SQLite gère efficacement les collections de centaines d'entrées ; l'intégration BGG donne accès à des milliers de jeux
 **Testing Focus**: Cross-browser compatibility, mobile responsiveness, data persistence, BGG API error handling
 **Critical Questions**: How to handle BGG API rate limits and offline functionality when API is unavailable
 
@@ -184,3 +178,28 @@ This approach is uniquely suited to board game enthusiasts who want a digital co
 The glassmorphic dark theme creates a premium feel that matches the quality aesthetic many board game enthusiasts appreciate in their physical games. The persistent data storage ensures users can build their collection over time without losing progress.
 
 The mobile-first approach recognizes that this tool would often be used during social gatherings where mobile devices are more convenient than laptops.
+
+---
+
+## Intentions initiales — trace historique
+
+> Ce qui suit documente les choix envisagés à l'origine qui ont évolué en cours de développement. Conservé comme référence de décision.
+
+### Persistance : localStorage (abandonné → SQLite)
+
+L'intention initiale était une application légère sans backend, avec persistance via `localStorage` du navigateur :
+
+- **Classification envisagée** : Light Application (multiple features with basic state management)
+- **Contrainte envisagée** : Browser local storage limitations
+- **Scalabilité envisagée** : "Local storage can handle hundreds of entries efficiently"
+- **Critère de succès initial** : "Data persists between sessions using local storage"
+
+**Pourquoi ça a évolué** : Le périmètre fonctionnel (sessions, statistiques par vues SQL, relations entre tables) rendait un vrai backend nécessaire. Le projet est passé à Express + SQLite avec better-sqlite3.
+
+### Suppression du champ `game_type` (non réalisé)
+
+Le PRD initial mentionnait :
+- **Removed** : `game_type` field from Games table
+- **Intent** : Remplacer l'enum `game_type` par les 4 flags booléens `supports_*` uniquement
+
+**État réel dans le code** : `game_type TEXT CHECK(game_type IN ('competitive', 'cooperative', 'campaign', 'hybrid'))` est toujours présent dans `schema.sql`, en coexistence avec les 4 flags booléens. La migration vers les flags seuls n'a pas été faite — les deux systèmes cohabitent.

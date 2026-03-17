@@ -128,7 +128,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 ## 🎨 PHASE 3 : FINITIONS UX - PRIORITÉ SECONDAIRE (2-3 semaines)
 
 ### 🔄 Thème Sombre/Clair - 2-3 jours
-- **État** : Interface et couleurs prêtes, manque ThemeProvider et persistance localStorage
+- **État** : ✅ Prop `darkMode` correctement propagée dans toute la chaîne (App → StatsPage → PlayerStatsPage/GameStatsPage → views). Détection DOM fragile remplacée par prop-driven. Pages Players et Stats corrigées (mars 2026).
+- **Reste** : ThemeProvider (React Context), persistance localStorage, toggle SettingsPage survit au reload
 - **Action** : Provider React Context, toggle fonctionnel, persistance utilisateur
 - **Impact** : UX personnalisée et accessibilité améliorée
 
