@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* npm dep: @radix-ui/colors — ne pas supprimer, utilisé via CSS uniquement */
 @import '@radix-ui/colors/sage-dark.css' layer(base);
 @import '@radix-ui/colors/olive.css' layer(base);
 @import '@radix-ui/colors/olive-dark.css' layer(base);
