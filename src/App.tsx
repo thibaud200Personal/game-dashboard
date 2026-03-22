@@ -25,9 +25,7 @@ export default function App() {
     }
   }, [darkMode]);
 
-  const [stats, setStats] = useState({
-    playersCount: 0,
-    gamesCount: 0,
+  const [stats, setStats] = useState<{ loading: boolean; error: any }>({
     loading: true,
     error: null
   });
@@ -45,7 +43,7 @@ export default function App() {
         ]);
         setPlayers(playersData);
         setGames(gamesData);
-        setStats({ playersCount: playersData.length, gamesCount: gamesData.length, loading: false, error: null });
+        setStats({ loading: false, error: null });
       } catch (err) {
         setStats(s => ({ ...s, loading: false, error: err as any }));
       }

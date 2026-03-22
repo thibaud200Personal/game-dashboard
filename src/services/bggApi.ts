@@ -17,6 +17,7 @@ export interface BGGGame {
   publishers: string[]
   categories: string[]
   mechanics: string[]
+  families: string[]
   rating: number
   weight: number
   difficulty: string
