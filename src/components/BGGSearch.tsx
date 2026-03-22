@@ -22,17 +22,42 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
   const handleSearch = async () => {
     if (!query.trim()) return;
 
+    // If query looks like a BGG ID (numeric), load details directly
+    const trimmed = query.trim();
+    const bggId = /^\d+$/.test(trimmed) ? parseInt(trimmed) : null;
+    if (bggId) {
+      await handleLoadById(bggId);
+      return;
+    }
+
     setIsSearching(true);
     setSearchError('');
-    
+
     try {
-      const results = await bggApiService.searchGames(query.trim());
+      const results = await bggApiService.searchGames(trimmed);
       setSearchResults(results);
     } catch {
       setSearchError('Failed to search BoardGameGeek. Please try again.');
-      // Error handling - would use proper logging in production
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleLoadById = async (id: number) => {
+    setIsLoadingDetails(true);
+    setSearchError('');
+    try {
+      const gameDetails = await bggApiService.getGameDetails(id);
+      if (gameDetails) {
+        onGameSelect(gameDetails);
+        onClose();
+      } else {
+        setSearchError('Game not found on BGG. Check the ID and try again.');
+      }
+    } catch {
+      setSearchError('Failed to load game details. Please try again.');
+    } finally {
+      setIsLoadingDetails(false);
     }
   };
 
@@ -72,7 +97,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Search BoardGameGeek..."
+            placeholder="Search by name or enter BGG ID..."
             className={darkMode ? "pl-10 bg-slate-700 border-slate-600 text-white" : "pl-10 bg-white border-slate-300 text-slate-900"}
             disabled={isSearching || isLoadingDetails}
           />
@@ -139,7 +164,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       </div>
 
       <div className={darkMode ? "text-xs text-white/40 text-center" : "text-xs text-slate-400 text-center"}>
-        Data from BoardGameGeek.com
+        Données de BoardGameGeek.com · Entrez un ID BGG pour un chargement direct
       </div>
     </div>
   );

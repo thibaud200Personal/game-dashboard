@@ -1,0 +1,15 @@
+node_modules
+backend/node_modules
+dist
+backend/dist
+.env
+backend/.env
+*.db
+*.db-shm
+*.db-wal
+.git
+.gitignore
+.claude
+CLAUDE.md
+CONTEXT.md
+coverage

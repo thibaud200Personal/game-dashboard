@@ -29,6 +29,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 9. **🔄 Système Migration Automatique** - Versioning schema sécurisé (2-3 jours)
 10. **🧪 Tests Performance** - Benchmarking et optimisation suite de tests (1-2 jours)
 
+### 🐛 Bugs & Polish — Page Jeux
+- **❌ Suppression de jeux non fonctionnelle** — Le bouton de suppression ne semble pas déclencher la suppression en base. À investiguer (route `DELETE /api/games/:id`, handler frontend, invalidation React Query).
+- **🎨 Popup de suppression joueur** — La dialog de confirmation de suppression ne respecte pas la charte graphique de l'application. Harmoniser avec le design system existant (shadcn/ui, couleurs, typographie, style des boutons) — à traiter dans la section games.
+
 ---
 
 ## ✅ PHASE 1 : FOUNDATION - TERMINÉE (95% COMPLETE)

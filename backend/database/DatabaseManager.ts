@@ -11,8 +11,8 @@ import {
 } from '../models/interfaces';
 
 // In Node.js CommonJS, __dirname is available globally
-// Database configuration
-const DB_PATH = path.join(__dirname, 'board_game_score.db');
+// Database configuration — DB_PATH can be overridden via environment variable (e.g. for Docker volume mounts)
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'board_game_score.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 class DatabaseManager {
@@ -187,13 +187,13 @@ class DatabaseManager {
         gameData.weight || null,
         gameData.age_min || null,
         gameData.game_type || 'competitive',
-        gameData.supports_cooperative || false,
-        gameData.supports_competitive || false,
-        gameData.supports_campaign || false,
-        gameData.has_expansion || false,
-        gameData.has_characters || false
+        gameData.supports_cooperative ? 1 : 0,
+        gameData.supports_competitive ? 1 : 0,
+        gameData.supports_campaign ? 1 : 0,
+        gameData.has_expansion ? 1 : 0,
+        gameData.has_characters ? 1 : 0
       );
-      
+
       const gameId = result.lastInsertRowid as number;
       
       // Insert expansions if any
@@ -270,11 +270,11 @@ class DatabaseManager {
         gameData.weight || null,
         gameData.age_min || null,
         gameData.game_type || 'competitive',
-        gameData.supports_cooperative || false,
-        gameData.supports_competitive || false,
-        gameData.supports_campaign || false,
-        gameData.has_expansion || false,
-        gameData.has_characters || false,
+        gameData.supports_cooperative ? 1 : 0,
+        gameData.supports_competitive ? 1 : 0,
+        gameData.supports_campaign ? 1 : 0,
+        gameData.has_expansion ? 1 : 0,
+        gameData.has_characters ? 1 : 0,
         gameId
       );
       

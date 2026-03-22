@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ApiService from '@/services/ApiService';
 import Dashboard from '@/components/Dashboard';
 import PlayersPage from '@/components/PlayersPage';
 import GamesPage from '@/components/GamesPage';
@@ -12,159 +13,6 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Player, Game } from '@/types';
 
-// Mock data (extended with all required fields)
-const mockData = {
-  playersCount: 426,
-  gamesCount: 324,
-  players: [
-    {
-      player_id: 1,
-      player_name: 'Jane',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-      stats: '2,100 pts',
-      games_played: 15,
-      wins: 8,
-      total_score: 2100,
-      average_score: 140,
-      created_at: new Date(),
-      favorite_game: 'Strategy Pro'
-    },
-    {
-      player_id: 2,
-      player_name: 'Nexus',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      stats: '1,850 pts',
-      games_played: 12,
-      wins: 5,
-      total_score: 1850,
-      average_score: 154,
-      created_at: new Date(),
-      favorite_game: 'Battle Arena'
-    },
-    {
-      player_id: 3,
-      player_name: 'Maya',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-      stats: '1,620 pts',
-      games_played: 10,
-      wins: 4,
-      total_score: 1620,
-      average_score: 162,
-      created_at: new Date(),
-      favorite_game: 'Mind Games'
-    }
-  ],
-  games: [
-    {
-      game_id: 1,
-      name: 'Strategy Pro',
-      description: 'A deep strategy game',
-      image: 'https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=150&h=150&fit=crop',
-      min_players: 2,
-      max_players: 4,
-      duration: '90-120 minutes',
-      difficulty: 'Medium',
-      category: 'Strategy',
-      year_published: 2020,
-      publisher: 'Game Co',
-      designer: 'John Doe',
-      bgg_rating: 7.5,
-      weight: 3.2,
-      age_min: 12,
-      supports_cooperative: false,
-      supports_competitive: true,
-      supports_campaign: false,
-      supports_hybrid: false,
-      has_expansion: true,
-      has_characters: false,
-      created_at: new Date(),
-      expansions: [],
-      characters: [],
-      players: '2-4'
-    },
-    {
-      game_id: 2,
-      name: 'Battle Arena',
-      description: 'Epic combat game',
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=150&h=150&fit=crop',
-      min_players: 3,
-      max_players: 6,
-      duration: '60-90 minutes',
-      difficulty: 'Easy',
-      category: 'Combat',
-      year_published: 2019,
-      publisher: 'Arena Games',
-      designer: 'Jane Smith',
-      bgg_rating: 6.8,
-      weight: 2.1,
-      age_min: 10,
-      supports_cooperative: false,
-      supports_competitive: true,
-      supports_campaign: false,
-      supports_hybrid: false,
-      has_expansion: false,
-      has_characters: true,
-      created_at: new Date(),
-      expansions: [],
-      characters: [],
-      players: '3-6'
-    },
-    {
-      game_id: 3,
-      name: 'Mind Games',
-      description: 'Brain teasing puzzles',
-      image: 'https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=150&h=150&fit=crop',
-      min_players: 2,
-      max_players: 8,
-      duration: '30-45 minutes',
-      difficulty: 'Hard',
-      category: 'Puzzle',
-      year_published: 2021,
-      publisher: 'Mind Co',
-      designer: 'Alice Johnson',
-      bgg_rating: 8.2,
-      weight: 4.0,
-      age_min: 14,
-      supports_cooperative: true,
-      supports_competitive: true,
-      supports_campaign: false,
-      supports_hybrid: true,
-      has_expansion: false,
-      has_characters: false,
-      created_at: new Date(),
-      expansions: [],
-      characters: [],
-      players: '2-8'
-    },
-    {
-      game_id: 4,
-      name: 'Pandemic Legacy',
-      description: 'Save the world together in this cooperative game',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=150&fit=crop',
-      min_players: 2,
-      max_players: 4,
-      duration: '60-90 minutes',
-      difficulty: 'Medium',
-      category: 'Cooperative',
-      year_published: 2015,
-      publisher: 'Z-Man Games',
-      designer: 'Matt Leacock',
-      bgg_rating: 8.6,
-      weight: 2.8,
-      age_min: 13,
-      supports_cooperative: true,
-      supports_competitive: false,
-      supports_campaign: true,
-      supports_hybrid: false,
-      has_expansion: true,
-      has_characters: true,
-      created_at: new Date(),
-      expansions: [],
-      characters: [],
-      players: '2-4'
-    }
-  ]
-};
 
 export default function App() {
   // Mode sombre par défaut
@@ -189,17 +37,20 @@ export default function App() {
   const [navigationContext, setNavigationContext] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      setStats({
-        playersCount: mockData.playersCount,
-        gamesCount: mockData.gamesCount,
-        loading: false,
-        error: null
-      });
-      setPlayers(mockData.players);
-      setGames(mockData.games);
-    }, 1000);
+    const loadData = async () => {
+      try {
+        const [playersData, gamesData] = await Promise.all([
+          ApiService.getAllPlayers(),
+          ApiService.getAllGames()
+        ]);
+        setPlayers(playersData);
+        setGames(gamesData);
+        setStats({ playersCount: playersData.length, gamesCount: gamesData.length, loading: false, error: null });
+      } catch (err) {
+        setStats(s => ({ ...s, loading: false, error: err as any }));
+      }
+    };
+    loadData();
   }, []);
 
   const handleNavigation = (view: string, id?: number, source?: string) => {
@@ -221,50 +72,42 @@ export default function App() {
   };
 
   // Handler functions for data management
-  const handleAddPlayer = (playerData: Omit<Player, 'player_id' | 'stats' | 'games_played' | 'wins' | 'total_score' | 'average_score' | 'created_at'>) => {
-    const newPlayer: Player = {
-      ...playerData,
-      player_id: Math.max(...(players?.map(p => p.player_id) || [0]), 0) + 1,
-      stats: '0 pts',
-      games_played: 0,
-      wins: 0,
-      total_score: 0,
-      average_score: 0,
-      created_at: new Date()
-    };
-    setPlayers([...(players || []), newPlayer]);
+  const handleAddPlayer = async (playerData: Omit<Player, 'player_id' | 'stats' | 'games_played' | 'wins' | 'total_score' | 'average_score' | 'created_at'>) => {
+    const created = await ApiService.createPlayer(playerData);
+    setPlayers(prev => [...prev, created]);
+    setStats(s => ({ ...s, playersCount: s.playersCount + 1 }));
   };
 
-  const handleUpdatePlayer = (playerId: number, playerData: Partial<Player>) => {
-    setPlayers((players || []).map(p => p.player_id === playerId ? { ...p, ...playerData } : p));
+  const handleUpdatePlayer = async (playerId: number, playerData: Partial<Player>) => {
+    const updated = await ApiService.updatePlayer(playerId, playerData);
+    setPlayers(prev => prev.map(p => p.player_id === playerId ? updated : p));
   };
 
-  const handleDeletePlayer = (playerId: number) => {
-    setPlayers((players || []).filter(p => p.player_id !== playerId));
+  const handleDeletePlayer = async (playerId: number) => {
+    await ApiService.deletePlayer(playerId);
+    setPlayers(prev => prev.filter(p => p.player_id !== playerId));
+    setStats(s => ({ ...s, playersCount: s.playersCount - 1 }));
   };
 
-  const handleAddGame = (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
-    const newGame: Game = {
-      ...gameData,
-      game_id: Math.max(...(games?.map(g => g.game_id) || [0]), 0) + 1,
-      created_at: new Date(),
-      expansions: [],
-      characters: [],
-      players: `${gameData.min_players}-${gameData.max_players}`
-    };
-    setGames([...(games || []), newGame]);
+  const handleAddGame = async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
+    const created = await ApiService.createGame(gameData);
+    setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
+    setStats(s => ({ ...s, gamesCount: s.gamesCount + 1 }));
   };
 
-  const handleUpdateGame = (gameId: number, gameData: Partial<Game>) => {
-    setGames((games || []).map(g => g.game_id === gameId ? { ...g, ...gameData } : g));
+  const handleUpdateGame = async (gameId: number, gameData: Partial<Game>) => {
+    const updated = await ApiService.updateGame(gameId, gameData);
+    setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, ...updated } : g));
   };
 
-  const handleDeleteGame = (gameId: number) => {
-    setGames((games || []).filter(g => g.game_id !== gameId));
+  const handleDeleteGame = async (gameId: number) => {
+    await ApiService.deleteGame(gameId);
+    setGames(prev => prev.filter(g => g.game_id !== gameId));
+    setStats(s => ({ ...s, gamesCount: s.gamesCount - 1 }));
   };
 
-  const handleCreateSession = async (_sessionData: any) => {
-    // Implementation for creating game sessions
+  const handleCreateSession = async (sessionData: any) => {
+    await ApiService.createSession(sessionData);
   };
 
   const renderCurrentView = () => {
@@ -350,9 +193,9 @@ export default function App() {
               game={expansionGame} 
               onNavigation={handleNavigation} 
               navigationSource={navigationContext?.source}
-              onAddExpansion={async () => ({ expansion_id: 1, name: 'Test', year_published: 2023 })}
-              onUpdateExpansion={async () => {}}
-              onDeleteExpansion={async () => {}}
+              onAddExpansion={(data: any) => ApiService.createExpansion(data)}
+              onUpdateExpansion={(id: number, data: any) => ApiService.updateExpansion(id, data)}
+              onDeleteExpansion={(id: number) => ApiService.deleteExpansion(id)}
             />
           ) : null;
         }
@@ -364,9 +207,9 @@ export default function App() {
               game={characterGame} 
               onNavigation={handleNavigation} 
               navigationSource={navigationContext?.source}
-              onAddCharacter={async () => ({ character_id: 1, character_key: 'test', name: 'Test', description: 'Test', abilities: [] })}
-              onUpdateCharacter={async () => {}}
-              onDeleteCharacter={async () => {}}
+              onAddCharacter={(data: any) => ApiService.createCharacter(data)}
+              onUpdateCharacter={(id: number, data: any) => ApiService.updateCharacter(id, data)}
+              onDeleteCharacter={(id: number) => ApiService.deleteCharacter(id)}
             />
           ) : null;
         }

@@ -90,7 +90,7 @@ export function GamesPageView(props: GamesPageViewProps) {
   const safeGames = games || [];
   
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
+    switch ((difficulty || '').toLowerCase()) {
       case 'beginner': return 'text-green-400';
       case 'intermediate': return 'text-yellow-400';
       case 'expert': return 'text-red-400';

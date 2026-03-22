@@ -37,5 +37,10 @@ pids
 .devcontainer/
 
 .spark-workbench-id
-"node_modules/" 
-"dist/" 
+"node_modules/"
+"dist/"
+
+# Claude Code
+.claude/
+CLAUDE.md
+CONTEXT.md
