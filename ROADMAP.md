@@ -30,10 +30,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 10. **🧪 Tests Performance** - Benchmarking et optimisation suite de tests (1-2 jours)
 
 ### 🐛 Bugs & Polish — Page Jeux
-- **❌ Suppression de jeux non fonctionnelle** — Le bouton de suppression ne semble pas déclencher la suppression en base. À investiguer (route `DELETE /api/games/:id`, handler frontend, invalidation React Query).
-- **🎨 Popup de suppression joueur** — La dialog de confirmation de suppression ne respecte pas la charte graphique de l'application. Harmoniser avec le design system existant (shadcn/ui, couleurs, typographie, style des boutons) — à traiter dans la section games.
-- **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais (ex. `"Search by name or enter BGG ID..."` vs `"Données de BoardGameGeek.com"`). Harmoniser dans une seule langue (EN ou FR selon convention retenue).
-- **🧹 `NewGamePage.tsx` — interfaces locales dupliquées** — Le fichier définit ses propres interfaces `Player` et `Game` (lignes 6–50) au lieu d'importer depuis `@/types`. À nettoyer pour rester cohérent avec la règle "0 interfaces locales dupliquées".
+- **✅ CORRIGÉ Suppression de jeux non fonctionnelle** — PR #43 mars 2026 : handler frontend + SQL `DELETE /api/games/:id` opérationnel.
+- **✅ CORRIGÉ `supports_hybrid` non persisté** — PR #43 mars 2026 : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts` + interfaces backend mises à jour.
+- **✅ CORRIGÉ Popup de suppression joueur** — PR #43 mars 2026 : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop, aligné avec `DeleteGameDialog`.
+- **✅ CORRIGÉ `NewGamePage.tsx` — interfaces locales dupliquées** — PR #43 mars 2026 : imports depuis `@/types`, 0 interface locale.
+- **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais. Harmoniser dans une seule langue.
 
 ### 🔮 BGG API — Évolutions futures
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
@@ -457,8 +458,39 @@ Les éléments suivants sont des améliorations pertinentes identifiées dans le
 
 ---
 
+---
+
+## 🔧 Historique Infrastructure Technique
+
+### PR #43 — Fix popups delete + bugs (mars 2026)
+- ✅ Suppression de jeux corrigée (handler + SQL)
+- ✅ `supports_hybrid` persisté en base (INSERT + UPDATE)
+- ✅ `DeletePlayerDialog` refactorisé — `AlertDialog` + pattern `trigger` prop
+- ✅ `NewGamePage.tsx` — imports depuis `@/types`, 0 interface locale
+
+### PR #44 — Mise à jour stack (mars 2026)
+- ✅ Node.js 20 → **24 LTS** (Dockerfile mis à jour en `node:24-alpine`)
+- ✅ Vite 6 → **7.3** + @vitejs/plugin-react-swc 3 → 4
+- ✅ Vitest 3 → **4** (+ `jsdom` ajouté explicitement)
+- ✅ TypeScript 5.7 → **5.9** (fix `response.json()` typé `unknown`)
+- ✅ @github/spark 0.39 → 0.45 (puis supprimé en #45)
+- ✅ Jest + ts-jest supprimés (mort — Vitest est le runner)
+- ✅ @vitejs/plugin-react (Babel) supprimé (SWC utilisé)
+- ✅ `sqlite3` supprimé (inutilisé + vulnérabilités)
+- ✅ `GameCharacterController.ts` + `GameCharacterService.ts` supprimés (orphelins)
+- ✅ `better-sqlite3` recompilé pour Node 24
+
+### PR #45 — Suppression @github/spark + nettoyage dépendances (mars 2026)
+- ✅ `@github/spark` supprimé (SDK plateforme inutilisé)
+- ✅ 15 packages morts supprimés : `d3`, `framer-motion`, `three`, `uuid`, `@tanstack/react-query`, `@heroicons/react`, `next-themes`, `rollup`, `winston`, `loglevel`, `date-fns`, `octokit`, `react-resizable-panels`, `@hookform/resolvers`, `zod`
+- ✅ `resizable.tsx` supprimé (composant orphelin)
+- ✅ Commentaires CSS ajoutés sur `tw-animate-css` et `@radix-ui/colors` (imports CSS uniquement)
+
+### Prochaines mises à jour planifiées
+- ⏳ Vite 8 — dès que les dépendances le supportent
+- ⏳ recharts 3 — migration API graphiques dans StatsPage
+
 *Dernière mise à jour : Mars 2026*
-*Prochaine révision : post-PR #43 (fix popups delete + supports_hybrid)*
 
 #### ❌ **Non Pertinent pour Spark-Template**
 - **Multi-utilisateurs** : Application locale par design

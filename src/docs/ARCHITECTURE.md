@@ -212,12 +212,42 @@ src/
 
 Pour les conventions de nommage de fichiers et l'organisation des imports, veuillez vous référer au **`DEVELOPMENT_GUIDE.md`**.
 
+## Stack Technique (mars 2026)
+
+| Outil | Version | Notes |
+|---|---|---|
+| Node.js | 24 LTS | Migré de 20 → 24 (PR #44) |
+| Vite | 7.3 | Migré de 6 → 7 (PR #44) — Vite 8 bloqué |
+| React | 19 | — |
+| TypeScript | 5.9 | — |
+| Vitest | 4 | jsdom requis explicitement |
+| @vitejs/plugin-react-swc | 4 | SWC (pas Babel) |
+| tailwindcss | 4 | — |
+| better-sqlite3 | 12.8 | Recompilé Node 24 |
+
+### Packages CSS (imports via `@import`, invisibles au grep TS)
+- `tw-animate-css` — importé dans `src/index.css`
+- `@radix-ui/colors` — importé dans `src/styles/theme.css`
+
+> ⚠️ Ne pas supprimer ces packages sur la seule base d'un grep TypeScript — vérifier aussi les fichiers `.css`.
+
+### Patterns Dialogs de suppression
+Les dialogs de suppression utilisent le pattern `trigger` prop :
+```tsx
+<DeleteGameDialog
+  gameName={game.name}
+  onDelete={() => handleDelete(game.game_id)}
+  trigger={<button>...</button>}  // DOM element, pas un composite Radix
+/>
+```
+`AlertDialogTrigger asChild` clone le child direct — passer un `<button>` (ou `DropdownMenuItem` avec `onSelect={e => e.preventDefault()}`), jamais un composant Radix composite (ex: `<Tooltip>`).
+
 ## Évolutions Futures
 
 ### Améliorations Prévues
-- Migration vers React Query pour la gestion d'état serveur
+- Vite 8 dès support dépendances
+- recharts 3 (migration API graphiques StatsPage)
 - Implémentation de PWA (Progressive Web App)
-- Ajout de tests automatisés complets
 - Optimisations de performance avancées
 
 ### Extensibilité

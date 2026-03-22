@@ -113,6 +113,37 @@ export function AddPlayerDialog({ open, onOpenChange, onAddPlayer }: AddPlayerDi
 }
 ```
 
+### 3.1.1. Dialogs de Suppression — Pattern `trigger` prop
+
+Les dialogs de suppression (`DeleteGameDialog`, `DeletePlayerDialog`) utilisent un pattern `trigger` prop plutôt qu'un trigger interne :
+
+```tsx
+// ✅ Correct — passer un DOM element ou DropdownMenuItem
+<DeletePlayerDialog
+  playerName={player.player_name}
+  onDelete={() => handleDelete(player.player_id)}
+  trigger={
+    <button className="p-2 hover:bg-red-500/20 rounded-lg text-red-400">
+      <Trash className="w-4 h-4" />
+    </button>
+  }
+/>
+
+// ✅ Correct dans un DropdownMenu
+<DeletePlayerDialog
+  trigger={
+    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+      Supprimer
+    </DropdownMenuItem>
+  }
+/>
+
+// ❌ Incorrect — ne jamais passer un composant Radix composite comme <Tooltip>
+// AlertDialogTrigger asChild clone le child direct — un composite Radix casse le click
+```
+
+> `onSelect={(e) => e.preventDefault()}` est requis sur `DropdownMenuItem` pour empêcher la fermeture du menu avant l'ouverture de l'AlertDialog.
+
 ### 3.2. Validation des Formulaires
 
 La validation est effectuée en temps réel côté client pour une meilleure expérience utilisateur.
