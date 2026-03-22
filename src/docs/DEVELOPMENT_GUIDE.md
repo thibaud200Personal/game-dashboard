@@ -158,6 +158,48 @@ const handleNavigation = (view: string, id?: number, source?: string) => {
 
 ## 5. Conventions de Code
 
+### 5.0. TypeScript Strict — Zéro `any`
+
+Le codebase interdit tout usage de `any`. Voici les patterns à utiliser :
+
+**Payloads de création** — exclure les champs auto-générés par la BDD :
+```typescript
+// ✅ Correct
+async createExpansion(data: Omit<GameExpansion, 'expansion_id'>): Promise<GameExpansion>
+
+// ❌ Interdit
+async createExpansion(data: any): Promise<any>
+```
+
+**Payloads de mise à jour** — tous les champs optionnels, immuables exclus :
+```typescript
+// ✅ Correct
+async updateExpansion(id: number, data: Omit<GameExpansion, 'expansion_id' | 'game_id'>): Promise<GameExpansion>
+```
+
+**Handlers de formulaire** :
+```typescript
+// ✅ Correct
+const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); ... }
+
+// ❌ Interdit
+const handleSubmit = (e: any) => { ... }
+```
+
+**Champs à valeur mixte** :
+```typescript
+// ✅ Correct
+const handleInputChange = (field: keyof FormData, value: string | number | boolean) => { ... }
+```
+
+**Types inférés depuis les hooks** (éviter la duplication) :
+```typescript
+// ✅ Correct — pas de duplication d'interface locale
+type GameStats = ReturnType<typeof useGameStatsPage>['gameStats'];
+```
+
+**Ne jamais définir une interface locale** si elle existe déjà dans `src/types/index.ts`. Importer depuis `@/types`.
+
 ### 5.1. Nommage (Naming)
 
 -   **Composants** : `PascalCase` (ex: `GameCard.tsx`)

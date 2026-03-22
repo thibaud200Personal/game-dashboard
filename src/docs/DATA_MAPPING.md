@@ -19,16 +19,15 @@ Ce document présente les correspondances entre les interfaces frontend et la ba
 interface Player {
   player_id: number
   player_name: string
-  avatar?: string
+  avatar?: string        // optionnel (aligné BDD)
+  stats?: string         // champ virtuel frontend uniquement
   games_played: number
   wins: number
   total_score: number
   average_score: number
-  favorite_game?: string
+  favorite_game: string
   created_at: Date
   updated_at?: Date
-  // Calculated field for display
-  stats?: string
 }
 ```
 
@@ -157,9 +156,9 @@ interface GameCharacter {
   game_id?: number
   character_key: string
   name: string
-  description?: string
+  description?: string  // optionnel (aligné BDD)
   avatar?: string
-  abilities?: string[] // Will be stored as JSON in database
+  abilities: string[]   // requis, stocké en JSON en BDD
 }
 ```
 
@@ -182,14 +181,14 @@ interface GameCharacter {
 ### Interface Frontend
 ```typescript
 interface GameSession {
-  session_id: number
+  session_id?: number
   game_id: number
+  session_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
   session_date: Date
   duration_minutes?: number
-  winner_player_id?: number
-  session_type: 'competitive' | 'cooperative' | 'campaign'
   notes?: string
   created_at: Date
+  updated_at?: Date
 }
 ```
 
@@ -202,7 +201,7 @@ interface GameSession {
 | `session_date` | `session_date` | TIMESTAMP | ✅ Correspondance exacte | |
 | `duration_minutes` | `duration_minutes` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
 | `winner_player_id` | `winner_player_id` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `session_type` | `session_type` | VARCHAR(20) | ✅ Correspondance exacte | Enum identique |
+| `session_type` | `session_type` | VARCHAR(20) | ✅ Correspondance exacte | `competitive\|cooperative\|campaign\|hybrid` |
 | `notes` | `notes` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
 | `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
 
@@ -239,17 +238,48 @@ interface SessionPlayer {
 
 ---
 
+## 7. INTERFACE CREATESESSIONPAYLOAD
+
+Type dédié à la **création** d'une session. Distinct de `GameSession` car il inclut les joueurs et les champs spécifiques aux modes coopératif/campagne. N'est jamais retourné par le backend.
+
+### Interface Frontend
+```typescript
+interface CreateSessionPayload {
+  game_id: number
+  session_date?: Date
+  duration_minutes?: number | null
+  winner_player_id?: number | null
+  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  notes?: string | null
+  players: Array<{
+    player_id: number
+    score: number
+    is_winner: boolean
+  }>
+  // Champs coopératif/campagne
+  team_score?: number
+  team_success?: boolean
+  difficulty_level?: string
+  objectives?: Array<{ description: string; completed: boolean; points: number }>
+}
+```
+
+Ce type est utilisé exclusivement dans `ApiService.createSession()` et les hooks de création de session. Il ne correspond pas à une table BDD unique — le backend le décompose en `game_sessions` + `session_players`.
+
+---
+
 ## RÉSUMÉ DES CORRESPONDANCES
 
 ### 🟢 Statut Global
-✅ **Table Players** : 100% mappée  
-✅ **Table Games** : 100% mappée  
-✅ **Table Game_Expansions** : 100% mappée  
-✅ **Table Game_Characters** : 100% mappée  
-✅ **Table Game_Sessions** : 100% mappée  
-✅ **Table Session_Players** : 100% mappée  
+✅ **Table Players** : 100% mappée
+✅ **Table Games** : 100% mappée
+✅ **Table Game_Expansions** : 100% mappée
+✅ **Table Game_Characters** : 100% mappée
+✅ **Table Game_Sessions** : 100% mappée
+✅ **Table Session_Players** : 100% mappée
+✅ **CreateSessionPayload** : Type de création documenté (non persisté directement)
 
-**Score Global** : 100% de correspondance - Toutes les tables sont parfaitement mappées
+**Score Global** : 100% de correspondance — Toutes les tables sont mappées, 0 `any` dans les interfaces
 
 ### 🔄 Champs Calculés (Frontend uniquement)
 - **`stats`** (Players) : Calculé = `${total_score} pts`
@@ -273,4 +303,4 @@ interface SessionPlayer {
     -   `Game.characters`: Chargées depuis la table `game_characters` si `Game.has_characters` est `true`.
 
 ### Statut Final
-🎯 **Alignement Complet**: Toutes les interfaces du frontend sont désormais alignées avec le schéma de la base de données. La structure est cohérente et prête pour la persistance des données via l'API backend.
+🎯 **Alignement Complet** : Toutes les interfaces frontend sont alignées avec le schéma BDD. Zéro `any` dans le codebase. La structure est strictement typée de bout en bout (DB schema → `src/types/index.ts` → backend → frontend).

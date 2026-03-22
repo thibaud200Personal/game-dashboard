@@ -479,19 +479,12 @@ export function GamesPageView(props: GamesPageViewProps) {
                             game={game}
                             onDeleteGame={onDeleteGame}
                             trigger={
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button 
-                                    className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400 hover:text-red-300"
-                                    aria-label="Delete game"
-                                  >
-                                    <Trash className="w-4 h-4" />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Delete Game</p>
-                                </TooltipContent>
-                              </Tooltip>
+                              <button
+                                className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400 hover:text-red-300"
+                                aria-label="Delete game"
+                              >
+                                <Trash className="w-4 h-4" />
+                              </button>
                             }
                           />
                         </div>

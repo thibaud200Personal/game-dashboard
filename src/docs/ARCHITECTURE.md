@@ -83,13 +83,28 @@ Service pour l'intégration avec BoardGameGeek API :
 
 ### 5. Types TypeScript
 
+`src/types/index.ts` est la **source de vérité unique** pour tous les types. Le flux est unidirectionnel :
+
+```
+DB schema (schema.sql) → backend models → src/types/index.ts → composants frontend
+```
+
+**Règles strictes :**
+- Aucun `any` autorisé — 0 `any` dans tout le codebase (frontend + backend)
+- Les payloads de création utilisent `Omit<T, 'generated_id'>` pour exclure les champs auto-générés
+- Les payloads de mise à jour utilisent `Partial<T>` avec les champs immuables exclus via `Omit`
+- Les submit handlers utilisent `React.FormEvent` (pas `any`)
+
 Interfaces principales définies dans `types/index.ts` :
-- `Player` : Représentation d'un joueur
-- `Game` : Représentation d'un jeu
-- `GameExpansion` : Extension de jeu
-- `GameCharacter` : Personnage de jeu
-- `GameSession` : Session de jeu
+- `Player` : Représentation d'un joueur (`avatar?`, `stats?` optionnels)
+- `Game` : Représentation d'un jeu (inclut champs BGG étendus)
+- `GameExpansion` : Extension de jeu (`year_published?` optionnel)
+- `GameCharacter` : Personnage de jeu (`description?` optionnel)
+- `GameSession` : Session de jeu (types: `competitive | cooperative | campaign | hybrid`)
 - `SessionPlayer` : Joueur dans une session
+- `CreateSessionPayload` : Payload de création de session avec champs spécifiques coopératif/campagne
+- `BGGGame`, `BGGExpansion`, `BGGCharacter` : Types pour l'intégration BoardGameGeek
+- `GameFormData`, `PlayerFormData` : Types pour les formulaires (sans champs auto-générés)
 
 ## Flux de Données
 

@@ -1,47 +1,42 @@
 import React from 'react';
-import { Trash } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 
 interface DeletePlayerDialogProps {
   playerName: string;
   onDelete: () => void;
+  trigger: React.ReactNode;
 }
 
-export function DeletePlayerDialog({ playerName, onDelete }: DeletePlayerDialogProps) {
+export function DeletePlayerDialog({ playerName, onDelete, trigger }: DeletePlayerDialogProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="hover:bg-white/10 text-red-400 hover:text-red-300"
-        >
-          <Trash className="w-4 h-4" />
-        </Button>
+        {trigger}
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-slate-800 border-white/20">
+      <AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-white">Delete Player</AlertDialogTitle>
-          <AlertDialogDescription className="text-white/80">
-            Are you sure you want to delete {playerName}? This action cannot be undone.
+          <AlertDialogTitle>Delete Player</AlertDialogTitle>
+          <AlertDialogDescription className="text-white/70">
+            Are you sure you want to delete "{playerName}"? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={onDelete}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
             Delete
           </AlertDialogAction>

@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AddPlayerDialog, EditPlayerDialog } from '@/components/dialogs';
+import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from '@/components/dialogs';
 import { Player, PlayerFormData } from '@/types';
 
 interface PlayersPageViewProps {
@@ -168,19 +168,18 @@ export function PlayersPageView(props: PlayersPageViewProps) {
                 >
                   <PencilSimple className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm(`Are you sure you want to delete ${player.player_name}? This action cannot be undone.`)) {
-                      props.handleDeletePlayer(player.player_id);
-                    }
-                  }}
-                  className={darkMode ? "text-red-400 hover:text-red-300 hover:bg-red-500/20" : "text-red-600 hover:text-red-700 hover:bg-red-100"}
-                  aria-label="Delete player"
-                >
-                  <Trash className="w-4 h-4" />
-                </Button>
+                <DeletePlayerDialog
+                  playerName={player.player_name}
+                  onDelete={() => props.handleDeletePlayer(player.player_id)}
+                  trigger={
+                    <button
+                      className={darkMode ? "p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400 hover:text-red-300" : "p-2 hover:bg-red-100 rounded-lg transition-colors text-red-600 hover:text-red-700"}
+                      aria-label="Delete player"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  }
+                />
               </div>
               {/* Actions - Mobile */}
               <div className="sm:hidden">
@@ -199,17 +198,19 @@ export function PlayersPageView(props: PlayersPageViewProps) {
                       <PencilSimple className="w-4 h-4 mr-2" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        if (window.confirm(`Are you sure you want to delete ${player.player_name}? This action cannot be undone.`)) {
-                          props.handleDeletePlayer(player.player_id);
-                        }
-                      }}
-                      className={darkMode ? "hover:bg-red-500/20 text-red-400" : "hover:bg-red-100 text-red-600"}
-                    >
-                      <Trash className="w-4 h-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
+                    <DeletePlayerDialog
+                      playerName={player.player_name}
+                      onDelete={() => props.handleDeletePlayer(player.player_id)}
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className={darkMode ? "hover:bg-red-500/20 text-red-400" : "hover:bg-red-100 text-red-600"}
+                        >
+                          <Trash className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      }
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
