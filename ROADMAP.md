@@ -33,6 +33,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **❌ Suppression de jeux non fonctionnelle** — Le bouton de suppression ne semble pas déclencher la suppression en base. À investiguer (route `DELETE /api/games/:id`, handler frontend, invalidation React Query).
 - **🎨 Popup de suppression joueur** — La dialog de confirmation de suppression ne respecte pas la charte graphique de l'application. Harmoniser avec le design system existant (shadcn/ui, couleurs, typographie, style des boutons) — à traiter dans la section games.
 - **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais (ex. `"Search by name or enter BGG ID..."` vs `"Données de BoardGameGeek.com"`). Harmoniser dans une seule langue (EN ou FR selon convention retenue).
+- **🧹 `NewGamePage.tsx` — interfaces locales dupliquées** — Le fichier définit ses propres interfaces `Player` et `Game` (lignes 6–50) au lieu d'importer depuis `@/types`. À nettoyer pour rester cohérent avec la règle "0 interfaces locales dupliquées".
 
 ### 🔮 BGG API — Évolutions futures
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
@@ -457,7 +458,7 @@ Les éléments suivants sont des améliorations pertinentes identifiées dans le
 ---
 
 *Dernière mise à jour : Mars 2026*
-*Prochaine révision : post-PR #42 (BGG API + strict TypeScript)*
+*Prochaine révision : post-PR #43 (fix popups delete + supports_hybrid)*
 
 #### ❌ **Non Pertinent pour Spark-Template**
 - **Multi-utilisateurs** : Application locale par design
