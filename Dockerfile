@@ -1,5 +1,5 @@
 # Stage 1: Build frontend
-FROM node:22-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -11,7 +11,7 @@ COPY index.html tsconfig.json vite.config.ts tailwind.config.js postcss.config.j
 RUN npm run build
 
 # Stage 2: Build backend + compile native modules
-FROM node:22-alpine AS backend-builder
+FROM node:24-alpine AS backend-builder
 WORKDIR /app/backend
 
 # Build tools required for better-sqlite3 native module
@@ -27,7 +27,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # Stage 3: Production image
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 WORKDIR /app
 
 # Copy production node_modules (with compiled native modules)

@@ -166,8 +166,8 @@ class BGGService {
 
     if (!response.ok) throw new Error(`BGG geekdo API error: ${response.status}`)
 
-    const data = await response.json()
-    const item: GeekdoItem = data?.item
+    const data = await response.json() as { item?: GeekdoItem }
+    const item = data?.item
     if (!item) return null
 
     const details = this.parseGeekdoItem(item)
