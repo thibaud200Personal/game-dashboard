@@ -7,7 +7,6 @@ RUN npm ci
 
 # Copy only frontend source (exclude backend/, .git, etc.)
 COPY src ./src
-COPY public ./public
 COPY index.html tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
 RUN npm run build
 

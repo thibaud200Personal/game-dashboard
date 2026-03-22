@@ -1,6 +1,5 @@
 /**
  * BGG Service — intègre l'API BoardGameGeek côté backend
- * - Recherche : XML API v2 avec auth Bearer (SessionID depuis login BGG)
  * - Détails : API JSON interne geekdo.com (pas d'auth nécessaire)
  * - Cache 24h + rate limiting
  */
