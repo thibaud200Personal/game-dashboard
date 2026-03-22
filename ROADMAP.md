@@ -32,6 +32,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 ### 🐛 Bugs & Polish — Page Jeux
 - **❌ Suppression de jeux non fonctionnelle** — Le bouton de suppression ne semble pas déclencher la suppression en base. À investiguer (route `DELETE /api/games/:id`, handler frontend, invalidation React Query).
 - **🎨 Popup de suppression joueur** — La dialog de confirmation de suppression ne respecte pas la charte graphique de l'application. Harmoniser avec le design system existant (shadcn/ui, couleurs, typographie, style des boutons) — à traiter dans la section games.
+- **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais (ex. `"Search by name or enter BGG ID..."` vs `"Données de BoardGameGeek.com"`). Harmoniser dans une seule langue (EN ou FR selon convention retenue).
 
 ---
 

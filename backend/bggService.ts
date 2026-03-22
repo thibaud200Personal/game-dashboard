@@ -116,11 +116,12 @@ class BGGService {
   private lastRequestTime = 0
 
   private async rateLimit(): Promise<void> {
-    const elapsed = Date.now() - this.lastRequestTime
+    const now = Date.now()
+    const elapsed = now - this.lastRequestTime
+    this.lastRequestTime = now
     if (elapsed < this.RATE_LIMIT_DELAY) {
       await new Promise(resolve => setTimeout(resolve, this.RATE_LIMIT_DELAY - elapsed))
     }
-    this.lastRequestTime = Date.now()
   }
 
   /**

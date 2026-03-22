@@ -75,7 +75,6 @@ export default function App() {
   const handleAddPlayer = async (playerData: Omit<Player, 'player_id' | 'stats' | 'games_played' | 'wins' | 'total_score' | 'average_score' | 'created_at'>) => {
     const created = await ApiService.createPlayer(playerData);
     setPlayers(prev => [...prev, created]);
-    setStats(s => ({ ...s, playersCount: s.playersCount + 1 }));
   };
 
   const handleUpdatePlayer = async (playerId: number, playerData: Partial<Player>) => {
@@ -86,13 +85,11 @@ export default function App() {
   const handleDeletePlayer = async (playerId: number) => {
     await ApiService.deletePlayer(playerId);
     setPlayers(prev => prev.filter(p => p.player_id !== playerId));
-    setStats(s => ({ ...s, playersCount: s.playersCount - 1 }));
   };
 
   const handleAddGame = async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
     const created = await ApiService.createGame(gameData);
     setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
-    setStats(s => ({ ...s, gamesCount: s.gamesCount + 1 }));
   };
 
   const handleUpdateGame = async (gameId: number, gameData: Partial<Game>) => {
@@ -103,7 +100,6 @@ export default function App() {
   const handleDeleteGame = async (gameId: number) => {
     await ApiService.deleteGame(gameId);
     setGames(prev => prev.filter(g => g.game_id !== gameId));
-    setStats(s => ({ ...s, gamesCount: s.gamesCount - 1 }));
   };
 
   const handleCreateSession = async (sessionData: any) => {
@@ -115,7 +111,7 @@ export default function App() {
       case 'dashboard':
         return (
           <Dashboard
-            stats={stats}
+            stats={{ ...stats, playersCount: players.length, gamesCount: games.length }}
             recentPlayers={players?.slice(0, 3) || []}
             recentGames={games?.slice(0, 3) || []}
             currentView={currentView}

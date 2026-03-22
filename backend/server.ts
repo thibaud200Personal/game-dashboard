@@ -36,7 +36,7 @@ app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: expres
 
 app.get('/api/bgg/game/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
   const bggId = parseInt(req.params.id);
-  if (!bggId) return res.status(400).json({ error: 'Invalid BGG game ID' });
+  if (isNaN(bggId) || bggId <= 0) return res.status(400).json({ error: 'Invalid BGG game ID' });
   const game = await bggService.getGameDetails(bggId);
   if (!game) return res.status(404).json({ error: 'Game not found on BGG' });
   return res.json(game);
