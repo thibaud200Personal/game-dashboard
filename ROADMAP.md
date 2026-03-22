@@ -88,11 +88,12 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
     - Types multiples (competitive/cooperative/campaign/hybrid)
     - Sauvegarde complète avec durée, notes, métadonnées
 -   ✅ **Extensions/Personnages** : CRUD complet avec interfaces dédiées, modales modernes, intégration contextuelle
--   ✅ **Intégration BGG Avancée** : 
+-   ✅ **Intégration BGG Avancée** :
     - API Service complet : thumbnail, playing_time, min/max_playtime, min_age, categories, mechanics
     - Import automatique avec métadonnées étendues (designers, publishers, rating, weight)
     - Détection intelligente modes de jeu basée sur mechanics/categories
-    - Génération personnages mockés selon thème jeu
+    - Persistance BDD complète via bggService.ts + DatabaseManager typé
+    - `characters: []` — BGG ne fournit pas de personnages, placeholder correct en place
 -   ⚠️ **BGG Base de Données** : Stockage partiel des métadonnées étendues
     - ✅ Champs basiques : bgg_rating, weight, age_min, supports_modes
     - ❌ Métadonnées manquantes : thumbnail, playing_time, categories/mechanics (JSON), families
@@ -109,7 +110,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ### 🎨 Interface & UX Avancée TERMINÉE
 -   ✅ **Design System Moderne** : React 19 + Radix UI + Tailwind CSS
--   ✅ **Architecture TypeScript** : 0 erreur de compilation, types stricts  
+-   ✅ **Architecture TypeScript** : 0 `any`, 0 erreur de compilation — types stricts de bout en bout (PR #42, mars 2026)
+-   ✅ **Flux de types** : DB schema → `src/types/index.ts` → backend → frontend, source de vérité unique
+-   ✅ **`CreateSessionPayload`** : Nouveau type dédié à la création de session (modes compétitif/coopératif/campagne/hybride)
+-   ✅ **Champs optionnels alignés** : `Player.avatar?`, `Player.stats?`, `GameExpansion.year_published?`, `GameCharacter.description?` alignés avec le schéma BDD
 -   ✅ **Responsive Design** : Adaptation mobile/desktop optimisée
 -   ✅ **Validation Robuste** : Champs obligatoires, feedback immédiat
 -   ✅ **Icônes Cohérentes** : @phosphor-icons/react dans toute l'application
@@ -452,8 +456,8 @@ Les éléments suivants sont des améliorations pertinentes identifiées dans le
 
 ---
 
-*Dernière mise à jour : Septembre 2025*  
-*Prochaine révision : Octobre 2025 (post-implémentation priorités immédiates)*
+*Dernière mise à jour : Mars 2026*
+*Prochaine révision : post-PR #42 (BGG API + strict TypeScript)*
 
 #### ❌ **Non Pertinent pour Spark-Template**
 - **Multi-utilisateurs** : Application locale par design

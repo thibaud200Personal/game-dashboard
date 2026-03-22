@@ -296,11 +296,12 @@ class DatabaseManager {
           bgg_id = ?, name = ?, description = ?, image = ?, min_players = ?, max_players = ?,
           duration = ?, difficulty = ?, category = ?, year_published = ?, publisher = ?, designer = ?,
           bgg_rating = ?, weight = ?, age_min = ?, game_type = ?, supports_cooperative = ?,
-          supports_competitive = ?, supports_campaign = ?, has_expansion = ?, has_characters = ?,
+          supports_competitive = ?, supports_campaign = ?, supports_hybrid = ?,
+          has_expansion = ?, has_characters = ?,
           updated_at = CURRENT_TIMESTAMP
         WHERE game_id = ?
       `);
-      
+
       gameStmt.run(
         gameData.bgg_id || null,
         gameData.name,
@@ -321,6 +322,7 @@ class DatabaseManager {
         gameData.supports_cooperative ? 1 : 0,
         gameData.supports_competitive ? 1 : 0,
         gameData.supports_campaign ? 1 : 0,
+        gameData.supports_hybrid ? 1 : 0,
         gameData.has_expansion ? 1 : 0,
         gameData.has_characters ? 1 : 0,
         gameId

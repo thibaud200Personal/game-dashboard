@@ -126,6 +126,7 @@ export interface CreateGameRequest {
   supports_cooperative?: boolean;
   supports_competitive?: boolean;
   supports_campaign?: boolean;
+  supports_hybrid?: boolean;
   has_expansion?: boolean;
   has_characters?: boolean;
   expansions?: GameExpansion[];
@@ -152,6 +153,7 @@ export interface UpdateGameRequest {
   supports_cooperative?: boolean;
   supports_competitive?: boolean;
   supports_campaign?: boolean;
+  supports_hybrid?: boolean;
   has_expansion?: boolean;
   has_characters?: boolean;
   expansions?: GameExpansion[];
