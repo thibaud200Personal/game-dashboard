@@ -1,14 +1,20 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import express = require('express');
 import cors = require('cors');
+import path = require('path');
 import DatabaseManager from './database/DatabaseManager';
+import { bggService } from './bggService';
 
 const app = express();
 const db = new DatabaseManager();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Middleware
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5000,http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173').split(',');
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  origin: corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -19,6 +25,22 @@ app.use(express.json());
 const asyncHandler = (fn: Function) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
+
+// BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
+app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
+  const query = req.query.q as string;
+  if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
+  const results = await bggService.searchGames(query);
+  return res.json(results);
+}));
+
+app.get('/api/bgg/game/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
+  const bggId = parseInt(req.params.id);
+  if (isNaN(bggId) || bggId <= 0) return res.status(400).json({ error: 'Invalid BGG game ID' });
+  const game = await bggService.getGameDetails(bggId);
+  if (!game) return res.status(404).json({ error: 'Game not found on BGG' });
+  return res.json(game);
+}));
 
 // Player routes
 app.get('/api/players', asyncHandler(async (req: express.Request, res: express.Response) => {
@@ -216,8 +238,8 @@ app.get('/api/health', (req: express.Request, res: express.Response) => {
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  // Error logging would be handled by proper logging system
-  
+  console.error('[ERROR]', req.method, req.path, error);
+
   if (error.code === 'SQLITE_CONSTRAINT') {
     return res.status(400).json({ 
       error: 'Database constraint violation',
@@ -231,10 +253,21 @@ app.use((error: any, req: express.Request, res: express.Response, _next: express
   });
 });
 
-// 404 handler
-app.use((req: express.Request, res: express.Response) => {
-  return res.status(404).json({ error: 'Endpoint not found' });
-});
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const staticPath = path.join(__dirname, '../public');
+  app.use(express.static(staticPath));
+  // SPA fallback — serve index.html for all non-API routes
+  app.get('*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(staticPath, 'index.html'));
+  });
+} else {
+  // 404 handler (dev only — in production the SPA fallback handles unknown routes)
+  app.use((req: express.Request, res: express.Response) => {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  });
+}
 
 // Graceful shutdown
 process.on('SIGINT', () => {
@@ -249,7 +282,7 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 API health check: http://localhost:${PORT}/api/health`);
 });

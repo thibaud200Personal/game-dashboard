@@ -37,5 +37,14 @@ pids
 .devcontainer/
 
 .spark-workbench-id
-"node_modules/" 
-"dist/" 
+"node_modules/"
+"dist/"
+
+# SQLite WAL files
+*.db-shm
+*.db-wal
+
+# Claude Code
+.claude/
+CLAUDE.md
+CONTEXT.md

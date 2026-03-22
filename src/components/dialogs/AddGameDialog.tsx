@@ -106,9 +106,9 @@ export default function AddGameDialog({
 
     // Image URL validation (if provided)
     if (formData.image && formData.image.trim()) {
-      const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+      const urlPattern = /^https?:\/\/.+/i;
       if (!urlPattern.test(formData.image.trim())) {
-        newErrors.image = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
+        newErrors.image = 'Please enter a valid image URL (https://...)';
       }
     }
 

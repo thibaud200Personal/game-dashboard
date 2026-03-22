@@ -29,6 +29,17 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 9. **🔄 Système Migration Automatique** - Versioning schema sécurisé (2-3 jours)
 10. **🧪 Tests Performance** - Benchmarking et optimisation suite de tests (1-2 jours)
 
+### 🐛 Bugs & Polish — Page Jeux
+- **❌ Suppression de jeux non fonctionnelle** — Le bouton de suppression ne semble pas déclencher la suppression en base. À investiguer (route `DELETE /api/games/:id`, handler frontend, invalidation React Query).
+- **🎨 Popup de suppression joueur** — La dialog de confirmation de suppression ne respecte pas la charte graphique de l'application. Harmoniser avec le design system existant (shadcn/ui, couleurs, typographie, style des boutons) — à traiter dans la section games.
+- **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais (ex. `"Search by name or enter BGG ID..."` vs `"Données de BoardGameGeek.com"`). Harmoniser dans une seule langue (EN ou FR selon convention retenue).
+
+### 🔮 BGG API — Évolutions futures
+- **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
+- **🔄 `has_expansion`/`has_characters` non recalculés à l'import BGG** — Dans `handleAddGame` (`App.tsx`), le jeu ajouté via BGG reçoit `expansions: []` / `characters: []` en dur côté client. Les flags `has_expansion` et `has_characters` ne sont donc pas recalculés après création. À corriger lors de l'implémentation de l'import complet : recalculer ces flags à partir des données retournées par l'API après création.
+- **🔀 `BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — `src/services/bggApi.ts` et `backend/bggService.ts` définissent chacun leur propre interface pour la même structure. À unifier dans `src/types/index.ts` (source de vérité partagée) pour éviter une désynchronisation silencieuse à l'avenir.
+- **🧪 Tests BGG backend non couverts** — `backend/bggService.ts` (cache, rate limiting, parsing geekdo) et les routes `/api/bgg/*` dans `server.ts` n'ont aucun test. Les tests existants dans `src/__tests__/services/bggApi.test.ts` échouent car fetch n'est pas mocké avec MSW. À corriger : mocker les appels geekdo.com avec MSW et ajouter des cas de test pour la recherche, les détails, le cache et les erreurs réseau.
+
 ---
 
 ## ✅ PHASE 1 : FOUNDATION - TERMINÉE (95% COMPLETE)
