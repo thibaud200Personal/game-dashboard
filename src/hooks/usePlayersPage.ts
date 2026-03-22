@@ -107,7 +107,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
     setEditingPlayer(player);
     setFormData({
       player_name: player.player_name,
-      avatar: player.avatar,
+      avatar: player.avatar || '',
       favorite_game: player.favorite_game,
       total_score: player.total_score,
       games_played: player.games_played,

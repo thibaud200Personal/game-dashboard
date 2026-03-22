@@ -9,43 +9,15 @@ import {
   Trophy,
   Target
 } from '@phosphor-icons/react';
-
-interface Game {
-  game_id: number
-  name: string
-  description?: string
-  image?: string
-  min_players: number
-  max_players: number
-  duration?: string
-  difficulty?: string
-  category?: string
-  year_published?: number
-  bgg_rating?: number
-  weight?: number
-  age_min?: number
-  supports_cooperative: boolean
-  supports_competitive: boolean
-  supports_campaign: boolean
-  supports_hybrid: boolean
-  has_expansion: boolean
-  has_characters: boolean
-  created_at: Date
-  players?: string
-}
-
-interface Player {
-  player_id: number
-  player_name: string
-  avatar?: string
-}
+import { Game, Player } from '@/types';
+import { useGameStatsPage } from '@/hooks/useGameStatsPage';
 
 interface GameStatsViewProps {
   selectedPeriod: 'week' | 'month' | 'year' | 'all'
   setSelectedPeriod: (period: 'week' | 'month' | 'year' | 'all') => void
   selectedGame: Game | null
   setSelectedGame: (game: Game | null) => void
-  gameStats: any
+  gameStats: ReturnType<typeof useGameStatsPage>['gameStats']
   games: Game[]
   onNavigation: (view: string) => void
   selectedGameId?: number
@@ -331,7 +303,7 @@ export default function GameStatsView({
             <Trophy className="w-5 h-5 text-yellow-400" />
           </div>
           <div className="space-y-3">
-            {gameStats.topWinners.map((winner: any, index: number) => (
+            {gameStats.topWinners.map((winner, index: number) => (
               <div key={winner.player?.player_id} className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   index === 0 ? 'bg-yellow-400 text-yellow-900' :
@@ -361,7 +333,7 @@ export default function GameStatsView({
             <Calendar className="w-5 h-5 text-accent" />
           </div>
           <div className="space-y-3">
-            {gameStats.recentSessions.map((session: any, index: number) => {
+            {gameStats.recentSessions.map((session, index: number) => {
               const winner = players.find(p => p.player_id === session.winner_player_id);
               return (
                 <div key={index} className={isDark ? "flex items-center space-x-3 p-3 bg-white/5 rounded-xl" : "flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"}>

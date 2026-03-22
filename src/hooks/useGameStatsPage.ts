@@ -1,34 +1,5 @@
 import { useState, useMemo } from 'react';
-
-interface Game {
-  game_id: number
-  name: string
-  description?: string
-  image?: string
-  min_players: number
-  max_players: number
-  duration?: string
-  difficulty?: string
-  category?: string
-  year_published?: number
-  bgg_rating?: number
-  weight?: number
-  age_min?: number
-  supports_cooperative: boolean
-  supports_competitive: boolean
-  supports_campaign: boolean
-  supports_hybrid: boolean
-  has_expansion: boolean
-  has_characters: boolean
-  created_at: Date
-  players?: string
-}
-
-interface Player {
-  player_id: number
-  player_name: string
-  avatar?: string
-}
+import { Game, Player } from '@/types';
 
 interface GameSession {
   session_id: number

@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Game } from '@/types';
+import { Game, GameExpansion, GameCharacter } from '@/types';
 
 export interface UseGameDetailProps {
   game: Game;
   onNavigation: (view: string, gameId?: number, source?: string) => void;
   navigationSource?: string;
-  onAddExpansion?: (gameId: number, expansionData: any) => Promise<any>;
-  onUpdateExpansion?: (expansionId: number, expansionData: any) => Promise<any>;
+  onAddExpansion?: (gameId: number, expansionData: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => Promise<GameExpansion>;
+  onUpdateExpansion?: (expansionId: number, expansionData: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => Promise<void>;
   onDeleteExpansion?: (expansionId: number) => Promise<void>;
-  onAddCharacter?: (gameId: number, characterData: any) => Promise<any>;
-  onUpdateCharacter?: (characterId: number, characterData: any) => Promise<any>;
+  onAddCharacter?: (gameId: number, characterData: Omit<GameCharacter, 'character_id' | 'game_id'>) => Promise<GameCharacter>;
+  onUpdateCharacter?: (characterId: number, characterData: Omit<GameCharacter, 'character_id' | 'game_id'>) => Promise<void>;
   onDeleteCharacter?: (characterId: number) => Promise<void>;
 }
 

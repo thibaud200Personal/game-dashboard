@@ -18,8 +18,8 @@ async function initializeDatabase() {
     logger.info('Database initialized successfully!');
 
     // Verify initialization by getting counts
-    const playerStats = db.getPlayerStats();
-    const gameStats = db.getGameStats();
+    const playerStats = db.getPlayerStats() as { total_players: number };
+    const gameStats = db.getGameStats() as { total_games: number };
 
     logger.info('Database contents:');
     logger.info(`- Players: ${playerStats.total_players}`);
@@ -35,6 +35,6 @@ async function initializeDatabase() {
 }
 
 // Check if script is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   initializeDatabase();
 }

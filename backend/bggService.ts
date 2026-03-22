@@ -228,6 +228,7 @@ class BGGService {
       weight,
       difficulty: this.mapWeightToDifficulty(weight),
       expansions,
+      characters: [],
       supports_cooperative: gameModes.cooperative,
       supports_competitive: gameModes.competitive,
       supports_campaign: gameModes.campaign,

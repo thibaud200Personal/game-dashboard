@@ -17,30 +17,23 @@ const logger = winston.createLogger({
  * @returns Middleware Express
  */
 export const validateBody = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const validatedData = schema.parse(req.body);
       req.body = validatedData;
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessages = error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
-        
         logger.warn('Validation error in request body:', errorMessages);
-        
-        return res.status(400).json({
-          error: 'Données de requête invalides',
-          details: errorMessages
-        });
+        res.status(400).json({ error: 'Données de requête invalides', details: errorMessages });
+        return;
       }
-      
       logger.error('Unexpected validation error:', error);
-      return res.status(500).json({
-        error: 'Erreur de validation inattendue'
-      });
+      res.status(500).json({ error: 'Erreur de validation inattendue' });
     }
   };
 };
@@ -51,30 +44,23 @@ export const validateBody = (schema: ZodSchema) => {
  * @returns Middleware Express
  */
 export const validateParams = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const validatedParams = schema.parse(req.params);
       req.params = validatedParams;
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessages = error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
-        
         logger.warn('Validation error in request params:', errorMessages);
-        
-        return res.status(400).json({
-          error: 'Paramètres de requête invalides',
-          details: errorMessages
-        });
+        res.status(400).json({ error: 'Paramètres de requête invalides', details: errorMessages });
+        return;
       }
-      
       logger.error('Unexpected validation error:', error);
-      return res.status(500).json({
-        error: 'Erreur de validation inattendue'
-      });
+      res.status(500).json({ error: 'Erreur de validation inattendue' });
     }
   };
 };
@@ -85,30 +71,23 @@ export const validateParams = (schema: ZodSchema) => {
  * @returns Middleware Express
  */
 export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const validatedQuery = schema.parse(req.query);
       req.query = validatedQuery;
-      next();
+      return next();
     } catch (error) {
       if (error instanceof ZodError) {
         const errorMessages = error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
-        
         logger.warn('Validation error in query parameters:', errorMessages);
-        
-        return res.status(400).json({
-          error: 'Paramètres de requête invalides',
-          details: errorMessages
-        });
+        res.status(400).json({ error: 'Paramètres de requête invalides', details: errorMessages });
+        return;
       }
-      
       logger.error('Unexpected validation error:', error);
-      return res.status(500).json({
-        error: 'Erreur de validation inattendue'
-      });
+      res.status(500).json({ error: 'Erreur de validation inattendue' });
     }
   };
 };

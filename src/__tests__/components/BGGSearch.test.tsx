@@ -21,7 +21,7 @@ describe('BGGSearch', () => {
     
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/search.*boardgamegeek/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search by name or enter bgg id/i)).toBeInTheDocument();
   });
 
   it('should handle search input changes', async () => {

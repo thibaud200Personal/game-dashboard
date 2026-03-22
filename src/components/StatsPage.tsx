@@ -73,9 +73,6 @@ export default function StatsPage({
   const mainClass = darkMode
     ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
     : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900";
-  const cardClass = darkMode
-    ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl"
-    : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl";
   const tabActiveClass = darkMode
     ? "bg-teal-600 text-white"
     : "bg-teal-300 text-slate-900";

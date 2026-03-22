@@ -3,8 +3,8 @@
 export interface Player {
   player_id: number;
   player_name: string;
-  avatar: string;
-  stats: string;
+  avatar?: string;
+  stats?: string;
   games_played: number;
   wins: number;
   total_score: number;
@@ -56,7 +56,7 @@ export interface GameExpansion {
   game_id?: number;
   bgg_expansion_id?: number;
   name: string;
-  year_published: number;
+  year_published?: number;
   description?: string;
 }
 
@@ -65,7 +65,7 @@ export interface GameCharacter {
   game_id?: number;
   character_key: string;
   name: string;
-  description: string;
+  description?: string;
   avatar?: string;
   abilities: string[];
 }
@@ -204,6 +204,25 @@ export interface BGGCharacter {
   avatar?: string;
 }
 
+// Session creation payload (includes cooperative-specific fields)
+export interface CreateSessionPayload {
+  game_id: number;
+  session_date?: Date;
+  duration_minutes?: number | null;
+  winner_player_id?: number | null;
+  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid';
+  notes?: string | null;
+  players: Array<{
+    player_id: number;
+    score: number;
+    is_winner: boolean;
+  }>;
+  team_score?: number;
+  team_success?: boolean;
+  difficulty_level?: string;
+  objectives?: Array<{ description: string; completed: boolean; points: number }>;
+}
+
 // API response types
 export interface ApiResponse<T> {
   success: boolean;
@@ -250,7 +269,7 @@ export interface UseMobileReturn {
 export interface AppError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 // Loading states

@@ -11,7 +11,7 @@ import GameExpansionsPage from '@/components/GameExpansionsPage';
 import GameCharactersPage from '@/components/GameCharactersPage';
 import BottomNavigation from '@/components/BottomNavigation';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Player, Game } from '@/types';
+import { Player, Game, CreateSessionPayload } from '@/types';
 
 
 export default function App() {
@@ -25,14 +25,14 @@ export default function App() {
     }
   }, [darkMode]);
 
-  const [stats, setStats] = useState<{ loading: boolean; error: any }>({
+  const [stats, setStats] = useState<{ loading: boolean; error: string | null }>({
     loading: true,
     error: null
   });
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [currentView, setCurrentView] = useState('dashboard');
-  const [navigationContext, setNavigationContext] = useState<any>(null);
+  const [navigationContext, setNavigationContext] = useState<{ id?: number; source?: string; initialTab?: 'players' | 'games' } | undefined>(undefined);
 
   useEffect(() => {
     const loadData = async () => {
@@ -45,7 +45,7 @@ export default function App() {
         setGames(gamesData);
         setStats({ loading: false, error: null });
       } catch (err) {
-        setStats(s => ({ ...s, loading: false, error: err as any }));
+        setStats(s => ({ ...s, loading: false, error: err instanceof Error ? err.message : String(err) }));
       }
     };
     loadData();
@@ -70,7 +70,7 @@ export default function App() {
   };
 
   // Handler functions for data management
-  const handleAddPlayer = async (playerData: Omit<Player, 'player_id' | 'stats' | 'games_played' | 'wins' | 'total_score' | 'average_score' | 'created_at'>) => {
+  const handleAddPlayer = async (playerData: { player_name: string; avatar?: string; favorite_game?: string }) => {
     const created = await ApiService.createPlayer(playerData);
     setPlayers(prev => [...prev, created]);
   };
@@ -100,7 +100,7 @@ export default function App() {
     setGames(prev => prev.filter(g => g.game_id !== gameId));
   };
 
-  const handleCreateSession = async (sessionData: any) => {
+  const handleCreateSession = async (sessionData: CreateSessionPayload) => {
     await ApiService.createSession(sessionData);
   };
 
@@ -187,9 +187,9 @@ export default function App() {
               game={expansionGame} 
               onNavigation={handleNavigation} 
               navigationSource={navigationContext?.source}
-              onAddExpansion={(data: any) => ApiService.createExpansion(data)}
-              onUpdateExpansion={(id: number, data: any) => ApiService.updateExpansion(id, data)}
-              onDeleteExpansion={(id: number) => ApiService.deleteExpansion(id)}
+              onAddExpansion={(gameId, data) => ApiService.createExpansion({ ...data, game_id: gameId })}
+              onUpdateExpansion={(id, data) => ApiService.updateExpansion(id, data).then(() => undefined)}
+              onDeleteExpansion={(id) => ApiService.deleteExpansion(id)}
             />
           ) : null;
         }
@@ -201,16 +201,16 @@ export default function App() {
               game={characterGame} 
               onNavigation={handleNavigation} 
               navigationSource={navigationContext?.source}
-              onAddCharacter={(data: any) => ApiService.createCharacter(data)}
-              onUpdateCharacter={(id: number, data: any) => ApiService.updateCharacter(id, data)}
-              onDeleteCharacter={(id: number) => ApiService.deleteCharacter(id)}
+              onAddCharacter={(gameId, data) => ApiService.createCharacter({ ...data, game_id: gameId })}
+              onUpdateCharacter={(id, data) => ApiService.updateCharacter(id, data).then(() => undefined)}
+              onDeleteCharacter={(id) => ApiService.deleteCharacter(id)}
             />
           ) : null;
         }
       default:
         return (
           <Dashboard
-            stats={stats}
+            stats={{ ...stats, playersCount: players.length, gamesCount: games.length }}
             recentPlayers={players?.slice(0, 3) || []}
             recentGames={games?.slice(0, 3) || []}
             currentView={currentView}

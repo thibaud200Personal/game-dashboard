@@ -26,46 +26,32 @@ describe('BGG API Service', () => {
 
     it('should return empty array for invalid query', async () => {
       const results = await bggApiService.searchGames('zzznononexistentgame123zzz');
-      
+
       expect(results).toBeDefined();
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBe(0);
     });
 
-    it('should handle empty query', async () => {
-      const results = await bggApiService.searchGames('');
-      
-      expect(results).toBeDefined();
-      expect(Array.isArray(results)).toBe(true);
-      expect(results.length).toBe(0);
+    it('should throw for empty query', async () => {
+      await expect(bggApiService.searchGames('')).rejects.toThrow();
     });
   });
 
   describe('getGameDetails', () => {
     it('should return detailed game information', async () => {
-      // Accept null in test environment due to MSW mocking limitations
       const gameDetails = await bggApiService.getGameDetails(266192);
-      
-      // In test environment, service might return null due to mocking
-      if (gameDetails !== null) {
-        expect(gameDetails).toHaveProperty('id', 266192);
-        expect(gameDetails).toHaveProperty('name', 'Wingspan');
-        expect(gameDetails).toHaveProperty('thumbnail');
-        expect(gameDetails).toHaveProperty('description');
-        expect(gameDetails).toHaveProperty('min_players');
-        expect(gameDetails).toHaveProperty('max_players');
-        expect(gameDetails).toHaveProperty('year_published');
-      } else {
-        // MSW not intercepting correctly - acceptable in test env
-        expect(gameDetails).toBeNull();
-      }
+
+      expect(gameDetails).toHaveProperty('id', 266192);
+      expect(gameDetails).toHaveProperty('name', 'Wingspan');
+      expect(gameDetails).toHaveProperty('thumbnail');
+      expect(gameDetails).toHaveProperty('description');
+      expect(gameDetails).toHaveProperty('min_players');
+      expect(gameDetails).toHaveProperty('max_players');
+      expect(gameDetails).toHaveProperty('year_published');
     });
 
-    it('should handle invalid game ID', async () => {
-      const gameDetails = await bggApiService.getGameDetails(999999999);
-      
-      // Service returns null for invalid IDs, doesn't throw
-      expect(gameDetails).toBeNull();
+    it('should throw for unknown game ID', async () => {
+      await expect(bggApiService.getGameDetails(999999999)).rejects.toThrow();
     });
   });
 });

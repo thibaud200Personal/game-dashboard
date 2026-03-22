@@ -15,6 +15,7 @@ import { ArrowLeft, Users, Clock, Star, Barbell, Calendar, Buildings, User, Dots
 import GameExpansionsPage from '@/components/GameExpansionsPage';
 import GameCharactersPage from '@/components/GameCharactersPage';
 import { UseGameDetailProps } from '@/hooks/games/useGameDetail';
+import { Game, GameExpansion, GameCharacter } from '@/types';
 
 interface GameDetailViewProps extends UseGameDetailProps {
   activeTab: string;
@@ -272,7 +273,7 @@ export default function GameDetailView({
 }
 
 interface GameOverviewProps {
-  game: any;
+  game: Game;
   gameTypes: string[];
   onNavigation: (view: string, gameId?: number, source?: string) => void;
   darkMode: boolean;
@@ -407,7 +408,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
           <CardContent>
             {game.expansions && game.expansions.length > 0 ? (
               <div className="space-y-3">
-                {game.expansions.slice(0, 3).map((expansion: any) => (
+                {game.expansions.slice(0, 3).map((expansion: GameExpansion) => (
                   <div key={expansion.expansion_id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
                     <div>
                       <h4 className="text-white font-medium">{expansion.name}</h4>
@@ -450,7 +451,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
           <CardContent>
             {game.characters && game.characters.length > 0 ? (
               <div className="space-y-3">
-                {game.characters.slice(0, 3).map((character: any) => (
+                {game.characters.slice(0, 3).map((character: GameCharacter) => (
                   <div key={character.character_id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
                     {character.avatar ? (
                       <img 

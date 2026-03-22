@@ -7,30 +7,7 @@ import {
   Star,
   ChartBar
 } from '@phosphor-icons/react';
-
-interface Player {
-  player_id: number
-  player_name: string
-  avatar?: string
-  games_played: number
-  wins: number
-  total_score: number
-  average_score: number
-  favorite_game?: string
-  created_at: Date
-  updated_at?: Date
-  stats?: string
-}
-
-interface Game {
-  game_id: number
-  name: string
-  min_players: number
-  max_players: number
-  difficulty?: string
-  year_published?: number
-  players?: string
-}
+import { Game, Player } from '@/types';
 
 interface PlayerStatsContentProps {
   players: Player[]

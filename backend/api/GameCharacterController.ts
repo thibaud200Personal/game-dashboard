@@ -29,18 +29,14 @@ export class GameCharacterController {
   }
 
   // GET /api/games/:gameId/characters
-  async getCharactersByGameId(req: Request, res: Response) {
+  async getCharactersByGameId(req: Request, res: Response): Promise<void> {
     try {
-      // Validation simple du paramètre gameId
       const gameIdStr = req.params.gameId;
       const gameId = parseInt(gameIdStr);
-      
       if (isNaN(gameId) || gameId <= 0) {
-        return res.status(400).json({ 
-          error: 'ID de jeu invalide'
-        });
+        res.status(400).json({ error: 'ID de jeu invalide' });
+        return;
       }
-
       const characters = await this.characterService.getCharactersByGameId(gameId);
       res.json(characters);
     } catch (error) {
@@ -50,14 +46,13 @@ export class GameCharacterController {
   }
 
   // GET /api/characters/:characterId
-  async getCharacterById(req: Request, res: Response) {
+  async getCharacterById(req: Request, res: Response): Promise<void> {
     try {
       const characterId = parseInt(req.params.characterId);
-      
       if (isNaN(characterId)) {
-        return res.status(400).json({ error: 'Invalid character ID' });
+        res.status(400).json({ error: 'Invalid character ID' });
+        return;
       }
-
       const character = await this.characterService.getCharacterById(characterId);
       res.json(character);
     } catch (error) {
@@ -71,36 +66,23 @@ export class GameCharacterController {
   }
 
   // POST /api/games/:gameId/characters
-  async createCharacter(req: Request, res: Response) {
+  async createCharacter(req: Request, res: Response): Promise<void> {
     try {
-      // Validation simple du paramètre gameId
       const gameIdStr = req.params.gameId;
       const gameId = parseInt(gameIdStr);
-      
       if (isNaN(gameId) || gameId <= 0) {
-        return res.status(400).json({ 
-          error: 'ID de jeu invalide'
-        });
+        res.status(400).json({ error: 'ID de jeu invalide' });
+        return;
       }
-
-      // Validation du corps de la requête avec Zod
-      const validation = safeValidateData(CreateCharacterSchema, {
-        ...req.body,
-        game_id: gameId
-      });
-      
+      const validation = safeValidateData(CreateCharacterSchema, { ...req.body, game_id: gameId });
       if (!validation.success) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Données de personnage invalides',
-          details: validation.error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: validation.error.errors.map(err => ({ field: err.path.join('.'), message: err.message }))
         });
+        return;
       }
-
-      const characterData = validation.data;
-      const newCharacter = await this.characterService.createCharacter(characterData);
+      const newCharacter = await this.characterService.createCharacter(validation.data);
       res.status(201).json(newCharacter);
     } catch (error) {
       logger.error('Error creating character:', error);
@@ -109,39 +91,28 @@ export class GameCharacterController {
   }
 
   // PUT /api/characters/:characterId
-  async updateCharacter(req: Request, res: Response) {
+  async updateCharacter(req: Request, res: Response): Promise<void> {
     try {
-      // Validation simple du paramètre characterId
-      const characterIdStr = req.params.characterId;
-      const characterId = parseInt(characterIdStr);
-      
+      const characterId = parseInt(req.params.characterId);
       if (isNaN(characterId) || characterId <= 0) {
-        return res.status(400).json({ 
-          error: 'ID de personnage invalide'
-        });
+        res.status(400).json({ error: 'ID de personnage invalide' });
+        return;
       }
-
-      // Validation du corps de la requête avec Zod
       const validation = safeValidateData(UpdateCharacterSchema, req.body);
-      
       if (!validation.success) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Données de mise à jour invalides',
-          details: validation.error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: validation.error.errors.map(err => ({ field: err.path.join('.'), message: err.message }))
         });
+        return;
       }
-
-      const updates = validation.data;
-      const updatedCharacter = await this.characterService.updateCharacter(characterId, updates);
+      const updatedCharacter = await this.characterService.updateCharacter(characterId, validation.data);
       res.json(updatedCharacter);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error updating character:', error);
-      if (error.message === 'Character not found') {
+      if (error instanceof Error && error.message === 'Character not found') {
         res.status(404).json({ error: 'Character not found' });
-      } else if (error.message === 'No fields to update') {
+      } else if (error instanceof Error && error.message === 'No fields to update') {
         res.status(400).json({ error: 'No fields to update' });
       } else {
         res.status(500).json({ error: 'Failed to update character' });
@@ -150,14 +121,13 @@ export class GameCharacterController {
   }
 
   // DELETE /api/characters/:characterId
-  async deleteCharacter(req: Request, res: Response) {
+  async deleteCharacter(req: Request, res: Response): Promise<void> {
     try {
       const characterId = parseInt(req.params.characterId);
-      
       if (isNaN(characterId)) {
-        return res.status(400).json({ error: 'Invalid character ID' });
+        res.status(400).json({ error: 'Invalid character ID' });
+        return;
       }
-
       await this.characterService.deleteCharacter(characterId);
       res.status(204).send();
     } catch (error) {
@@ -167,34 +137,22 @@ export class GameCharacterController {
   }
 
   // POST /api/characters/bulk
-  async createMultipleCharacters(req: Request, res: Response) {
+  async createMultipleCharacters(req: Request, res: Response): Promise<void> {
     try {
-      // Validation du corps de la requête avec Zod
       const validation = safeValidateData(BulkCreateCharactersSchema, req.body);
-      
       if (!validation.success) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Données de création en lot invalides',
-          details: validation.error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: validation.error.errors.map(err => ({ field: err.path.join('.'), message: err.message }))
         });
+        return;
       }
-
       const { gameId, characters } = validation.data;
       const createdCharacters = [];
-
       for (const characterData of characters) {
-        const character = {
-          ...characterData,
-          game_id: gameId
-        };
-
-        const newCharacter = await this.characterService.createCharacter(character);
+        const newCharacter = await this.characterService.createCharacter({ ...characterData, game_id: gameId });
         createdCharacters.push(newCharacter);
       }
-
       res.status(201).json(createdCharacters);
     } catch (error) {
       logger.error('Error creating multiple characters:', error);

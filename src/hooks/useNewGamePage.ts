@@ -1,53 +1,10 @@
 import { useState } from 'react';
-
-interface Player {
-  player_id: number
-  player_name: string
-  avatar?: string
-  games_played: number
-  wins: number
-  total_score: number
-  average_score: number
-  favorite_game?: string
-  created_at: Date
-  updated_at?: Date
-  stats?: string
-}
-
-interface Game {
-  game_id: number
-  bgg_id?: number
-  name: string
-  description?: string
-  image?: string
-  min_players: number
-  max_players: number
-  duration?: string
-  difficulty?: string
-  category?: string
-  year_published?: number
-  publisher?: string
-  designer?: string
-  bgg_rating?: number
-  weight?: number
-  age_min?: number
-  supports_cooperative: boolean
-  supports_competitive: boolean
-  supports_campaign: boolean
-  supports_hybrid: boolean
-  has_expansion: boolean
-  has_characters: boolean
-  created_at: Date
-  updated_at?: Date
-  expansions: any[]
-  characters: any[]
-  players?: string
-}
+import { Game, Player, CreateSessionPayload } from '@/types';
 
 export const useNewGamePage = (
   games: Game[],
   players: Player[],
-  onCreateSession: (sessionData: any) => Promise<void>
+  onCreateSession: (sessionData: CreateSessionPayload) => Promise<void>
 ) => {
   const [selectedGameId, setSelectedGameId] = useState<string>('');
   const [sessionType, setSessionType] = useState<'competitive' | 'cooperative' | 'campaign' | 'hybrid'>('competitive');
@@ -104,7 +61,7 @@ export const useNewGamePage = (
     setObjectives([...objectives, ...commonObjectives]);
   };
 
-  const updateObjective = (id: string, field: string, value: any) => {
+  const updateObjective = (id: string, field: string, value: string | number | boolean) => {
     setObjectives(prev => prev.map(obj => 
       obj.id === id ? { ...obj, [field]: value } : obj
     ));
