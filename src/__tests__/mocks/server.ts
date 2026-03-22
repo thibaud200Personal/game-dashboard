@@ -1,60 +1,53 @@
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 
-// Mock handlers pour BGG API
+const mockWingspan = {
+  id: 266192,
+  name: 'Wingspan',
+  description: 'Wingspan is a competitive, medium-weight, card-driven, engine-building board game.',
+  image: 'https://cf.geekdo-images.com/test-large.jpg',
+  thumbnail: 'https://cf.geekdo-images.com/test.jpg',
+  min_players: 1,
+  max_players: 5,
+  playing_time: 70,
+  min_playtime: 40,
+  max_playtime: 70,
+  min_age: 10,
+  year_published: 2019,
+  designers: ['Elizabeth Hargrave'],
+  publishers: ['Stonemaier Games'],
+  categories: ['Animals'],
+  mechanics: ['Action Retrieval'],
+  families: [],
+  rating: 8.1,
+  weight: 2.44,
+  difficulty: 'Intermediate',
+  expansions: [],
+  characters: [],
+  supports_cooperative: false,
+  supports_competitive: true,
+  supports_campaign: false,
+  supports_hybrid: false,
+  is_expansion: false,
+};
+
 export const handlers = [
-  // Mock BGG API via allorigins - intercepter TOUS les appels à cette URL
-  http.get('https://api.allorigins.win/raw', ({ request }) => {
+  // BGG search proxy — backend route
+  http.get('http://localhost:3001/api/bgg/search', ({ request }) => {
     const url = new URL(request.url);
-    const targetUrl = url.searchParams.get('url');
-    
-    // Toujours retourner Wingspan pour les tests
-    if (targetUrl && targetUrl.includes('xmlapi2/search')) {
-      return HttpResponse.text(`
-        <?xml version="1.0" encoding="utf-8"?>
-        <items total="1" termsofuse="https://boardgamegeek.com/xmlapi/termsofuse">
-          <item type="boardgame" id="266192">
-            <name type="primary" value="Wingspan"/>
-          </item>
-        </items>
-      `);
-    }
-    
-    if (targetUrl && targetUrl.includes('xmlapi2/thing')) {
-      return HttpResponse.text(`
-        <?xml version="1.0" encoding="utf-8"?>
-        <items termsofuse="https://boardgamegeek.com/xmlapi/termsofuse">
-          <item type="boardgame" id="266192">
-            <thumbnail>https://cf.geekdo-images.com/test.jpg</thumbnail>
-            <image>https://cf.geekdo-images.com/test-large.jpg</image>
-            <name type="primary" value="Wingspan"/>
-            <description>Wingspan is a competitive, medium-weight, card-driven, engine-building board game.</description>
-            <yearpublished value="2019"/>
-            <minplayers value="1"/>
-            <maxplayers value="5"/>
-            <playingtime value="70"/>
-            <minplaytime value="40"/>
-            <maxplaytime value="70"/>
-            <minage value="10"/>
-            <link type="boardgamecategory" id="1089" value="Animals"/>
-            <link type="boardgamemechanic" id="2001" value="Action Retrieval"/>
-            <statistics>
-              <ratings>
-                <average value="8.1"/>
-                <averageweight value="2.44"/>
-              </ratings>
-            </statistics>
-          </item>
-        </items>
-      `);
-    }
-    
-    // Default fallback
-    return HttpResponse.text(`
-      <?xml version="1.0" encoding="utf-8"?>
-      <items total="0" termsofuse="https://boardgamegeek.com/xmlapi/termsofuse">
-      </items>
-    `);
+    const q = url.searchParams.get('q');
+    if (!q) return HttpResponse.json({ error: 'Query parameter q is required' }, { status: 400 });
+    if (q.includes('zzz') || q.includes('nonexistent')) return HttpResponse.json([]);
+    return HttpResponse.json([
+      { id: 266192, name: 'Wingspan', year_published: 2019, type: 'boardgame' }
+    ]);
+  }),
+
+  // BGG game details proxy — backend route
+  http.get('http://localhost:3001/api/bgg/game/:id', ({ params }) => {
+    const id = parseInt(params.id as string);
+    if (id === 266192) return HttpResponse.json(mockWingspan);
+    return HttpResponse.json({ error: 'Game not found on BGG' }, { status: 404 });
   }),
 
   // Mock API locale pour les tests
@@ -69,7 +62,7 @@ export const handlers = [
     return HttpResponse.json([
       { id: 1, name: 'Wingspan', bgg_id: 266192, min_players: 1, max_players: 5 }
     ]);
-  })
+  }),
 ];
 
 // Setup server avec les handlers

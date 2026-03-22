@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Game, NavigationHandler, GameFormData } from '@/types';
+import { Game, NavigationHandler, GameFormData, GameExpansion, GameCharacter, BGGGame } from '@/types';
 
 export interface GamesPageData {
   games: Game[];
@@ -7,11 +7,11 @@ export interface GamesPageData {
   onAddGame: (game: Partial<Game>) => void;
   onUpdateGame: (gameId: number, game: Partial<Game>) => void;
   onDeleteGame: (gameId: number) => void;
-  onAddExpansion: (gameId: number, expansion: any) => void;
-  onUpdateExpansion: (expansionId: number, expansion: any) => void;
+  onAddExpansion: (gameId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
+  onUpdateExpansion: (expansionId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
   onDeleteExpansion: (expansionId: number) => void;
-  onAddCharacter: (gameId: number, character: any) => void;
-  onUpdateCharacter: (characterId: number, character: any) => void;
+  onAddCharacter: (gameId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
+  onUpdateCharacter: (characterId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
   onDeleteCharacter: (characterId: number) => void;
   currentView?: string;
 }
@@ -43,7 +43,7 @@ export const useGamesPage = (data: GamesPageData) => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   
-  const [formData, setFormData] = useState<GameFormData & { expansions: any[], characters: any[] }>({
+  const [formData, setFormData] = useState<GameFormData & { expansions: GameExpansion[], characters: GameCharacter[] }>({
     name: '',
     description: '',
     image: '',
@@ -269,7 +269,7 @@ export const useGamesPage = (data: GamesPageData) => {
   };
 
   // BGG Search
-  const handleBGGSearch = (bggGame: any) => {
+  const handleBGGSearch = (bggGame: BGGGame) => {
     setFormData(prev => ({
       ...prev,
       name: bggGame.name,
@@ -288,9 +288,9 @@ export const useGamesPage = (data: GamesPageData) => {
       bgg_id: bggGame.id,
       category: bggGame.categories?.[0] || '',
       has_expansion: (bggGame.expansions?.length || 0) > 0,
-      has_characters: (bggGame.characters?.length || 0) > 0, // Auto-detect from BGG data
+      has_characters: false, // BGG does not provide character data
       expansions: bggGame.expansions || [],
-      characters: bggGame.characters || [], // Use BGG generated characters
+      characters: [], // BGG does not provide character data
       // Set game modes based on BGG data
       supports_competitive: bggGame.supports_competitive ?? true,
       supports_cooperative: bggGame.supports_cooperative ?? false,

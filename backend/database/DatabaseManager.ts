@@ -7,8 +7,56 @@ import {
   GameExpansion,
   GameCharacter,
   GameSession,
-  SessionPlayer
+  SessionPlayer,
+  CreatePlayerRequest,
+  UpdatePlayerRequest,
+  CreateGameRequest,
+  UpdateGameRequest,
+  CreateSessionRequest,
 } from '../models/interfaces';
+
+// Local types for aggregated stat query results (internal to DatabaseManager)
+interface PlayerAggregateStats {
+  total_players: number;
+  total_games_played: number;
+  overall_average_score: number;
+  overall_win_percentage: number;
+  most_games_played: number;
+  least_games_played: number;
+}
+
+interface TopPlayer {
+  player_name: string;
+  games_played: number;
+  wins: number;
+  win_percentage: number;
+  average_score: number;
+}
+
+interface GameAggregateStats {
+  total_games: number;
+  games_played: number;
+  total_sessions: number;
+  overall_average_score: number;
+  average_bgg_rating: number;
+  most_played_count: number;
+  average_session_duration: number;
+}
+
+interface PopularGame {
+  name: string;
+  times_played: number;
+  unique_players: number;
+  average_score: number;
+  bgg_rating: number;
+}
+
+interface TopRatedGame {
+  name: string;
+  bgg_rating: number;
+  times_played: number;
+  average_score: number;
+}
 
 // In Node.js CommonJS, __dirname is available globally
 // Database configuration — DB_PATH can be overridden via environment variable (e.g. for Docker volume mounts)
@@ -51,7 +99,7 @@ class DatabaseManager {
     return this.db.prepare('SELECT * FROM players WHERE player_id = ?').get(playerId);
   }
 
-  createPlayer(playerData: any) {
+  createPlayer(playerData: CreatePlayerRequest) {
     const stmt = this.db.prepare(`
       INSERT INTO players (player_name, avatar, favorite_game)
       VALUES (?, ?, ?)
@@ -64,7 +112,7 @@ class DatabaseManager {
     return { player_id: result.lastInsertRowid, ...playerData };
   }
 
-  updatePlayer(playerId: number, playerData: any) {
+  updatePlayer(playerId: number, playerData: UpdatePlayerRequest) {
     const stmt = this.db.prepare(`
       UPDATE players 
       SET player_name = ?, avatar = ?, favorite_game = ?, 
@@ -158,7 +206,7 @@ class DatabaseManager {
     };
   }
 
-  createGame(gameData: any) {
+  createGame(gameData: CreateGameRequest) {
     const transaction = this.db.transaction(() => {
       // Insert main game record
       const gameStmt = this.db.prepare(`
@@ -203,7 +251,7 @@ class DatabaseManager {
           VALUES (?, ?, ?, ?, ?)
         `);
         
-        gameData.expansions.forEach((expansion: any) => {
+        gameData.expansions.forEach((expansion: GameExpansion) => {
           expansionStmt.run(
             gameId,
             expansion.bgg_expansion_id || null,
@@ -213,15 +261,15 @@ class DatabaseManager {
           );
         });
       }
-      
+
       // Insert characters if any
       if (gameData.characters && gameData.characters.length > 0) {
         const characterStmt = this.db.prepare(`
           INSERT INTO game_characters (game_id, character_key, name, description, avatar, abilities)
           VALUES (?, ?, ?, ?, ?, ?)
         `);
-        
-        gameData.characters.forEach((character: any) => {
+
+        gameData.characters.forEach((character: GameCharacter) => {
           characterStmt.run(
             gameId,
             character.character_key,
@@ -232,15 +280,15 @@ class DatabaseManager {
           );
         });
       }
-      
+
       return gameId;
     });
-    
+
     const gameId = transaction();
     return this.getGameById(gameId);
   }
 
-  updateGame(gameId: number, gameData: any) {
+  updateGame(gameId: number, gameData: UpdateGameRequest) {
     const transaction = this.db.transaction(() => {
       // Update main game record
       const gameStmt = this.db.prepare(`
@@ -289,7 +337,7 @@ class DatabaseManager {
           VALUES (?, ?, ?, ?, ?)
         `);
         
-        gameData.expansions.forEach((expansion: any) => {
+        gameData.expansions.forEach((expansion: GameExpansion) => {
           expansionStmt.run(
             gameId,
             expansion.bgg_expansion_id || null,
@@ -299,15 +347,15 @@ class DatabaseManager {
           );
         });
       }
-      
+
       // Insert new characters
       if (gameData.characters && gameData.characters.length > 0) {
         const characterStmt = this.db.prepare(`
           INSERT INTO game_characters (game_id, character_key, name, description, avatar, abilities)
           VALUES (?, ?, ?, ?, ?, ?)
         `);
-        
-        gameData.characters.forEach((character: any) => {
+
+        gameData.characters.forEach((character: GameCharacter) => {
           characterStmt.run(
             gameId,
             character.character_key,
@@ -397,15 +445,15 @@ class DatabaseManager {
   }
 
   private getGameCharacters(gameId: number): GameCharacter[] {
-    const characters = this.db.prepare('SELECT * FROM game_characters WHERE game_id = ?').all(gameId) as any[];
-    return characters.map((character: any) => ({
+    const characters = this.db.prepare('SELECT * FROM game_characters WHERE game_id = ?').all(gameId) as (GameCharacter & { abilities: string })[];
+    return characters.map((character) => ({
       ...character,
       abilities: character.abilities ? JSON.parse(character.abilities) : []
     }));
   }
 
   // Session operations
-  createGameSession(sessionData: any) {
+  createGameSession(sessionData: CreateSessionRequest) {
     const stmt = this.db.prepare(`
       INSERT INTO game_sessions (game_id, session_date, duration_minutes, winner_player_id, session_type, notes)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -421,7 +469,7 @@ class DatabaseManager {
     return { session_id: result.lastInsertRowid, ...sessionData };
   }
 
-  addSessionPlayer(sessionPlayerData: any) {
+  addSessionPlayer(sessionPlayerData: Omit<SessionPlayer, 'session_player_id'>) {
     const stmt = this.db.prepare(`
       INSERT INTO session_players (session_id, player_id, character_id, score, placement, is_winner, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -442,11 +490,11 @@ class DatabaseManager {
       ? 'SELECT * FROM game_sessions WHERE game_id = ? ORDER BY session_date DESC'
       : 'SELECT * FROM game_sessions ORDER BY session_date DESC';
     
-    const sessions = gameId 
-      ? this.db.prepare(query).all(gameId) as any[]
-      : this.db.prepare(query).all() as any[];
-    
-    return sessions.map((session: any) => ({
+    const sessions = gameId
+      ? this.db.prepare(query).all(gameId) as GameSession[]
+      : this.db.prepare(query).all() as GameSession[];
+
+    return sessions.map((session) => ({
       ...session,
       players: this.getSessionPlayers(session.session_id)
     }));
@@ -621,7 +669,7 @@ class DatabaseManager {
    */
   getPlayerStatsOptimized() {
     const totalStats = this.db.prepare(`
-      SELECT 
+      SELECT
         COUNT(*) as total_players,
         SUM(games_played) as total_games_played,
         AVG(average_score) as overall_average_score,
@@ -629,20 +677,20 @@ class DatabaseManager {
         MAX(games_played) as most_games_played,
         MIN(games_played) as least_games_played
       FROM player_statistics
-    `).get() as any;
+    `).get() as PlayerAggregateStats;
 
     const topPlayers = this.db.prepare(`
-      SELECT 
+      SELECT
         player_name,
         games_played,
         wins,
         win_percentage,
         average_score
-      FROM player_statistics 
+      FROM player_statistics
       WHERE games_played > 0
       ORDER BY win_percentage DESC, games_played DESC
       LIMIT 5
-    `).all() as any[];
+    `).all() as TopPlayer[];
 
     return {
       ...totalStats,
@@ -656,7 +704,7 @@ class DatabaseManager {
    */
   getGameStatsOptimized() {
     const totalStats = this.db.prepare(`
-      SELECT 
+      SELECT
         COUNT(*) as total_games,
         COUNT(CASE WHEN times_played > 0 THEN 1 END) as games_played,
         SUM(times_played) as total_sessions,
@@ -665,32 +713,32 @@ class DatabaseManager {
         MAX(times_played) as most_played_count,
         AVG(average_duration) as average_session_duration
       FROM game_statistics
-    `).get() as any;
+    `).get() as GameAggregateStats;
 
     const popularGames = this.db.prepare(`
-      SELECT 
+      SELECT
         name,
         times_played,
         unique_players,
         average_score,
         bgg_rating
-      FROM game_statistics 
+      FROM game_statistics
       WHERE times_played > 0
       ORDER BY times_played DESC, unique_players DESC
       LIMIT 5
-    `).all() as any[];
+    `).all() as PopularGame[];
 
     const topRatedGames = this.db.prepare(`
-      SELECT 
+      SELECT
         name,
         bgg_rating,
         times_played,
         average_score
-      FROM game_statistics 
+      FROM game_statistics
       WHERE bgg_rating IS NOT NULL
       ORDER BY bgg_rating DESC
       LIMIT 5
-    `).all() as any[];
+    `).all() as TopRatedGame[];
 
     return {
       ...totalStats,

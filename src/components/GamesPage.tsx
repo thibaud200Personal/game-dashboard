@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Game, BGGGame } from '@/types';
+import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 import { useGamesPage, GamesPageData } from '@/hooks/useGamesPage';
 import { GamesPageView } from '@/views/GamesPageView';
 
@@ -9,11 +9,11 @@ interface GamesPageProps {
   onAddGame: (game: Omit<Game, 'game_id' | 'players'>) => void;
   onUpdateGame: (gameId: number, game: Partial<Game>) => void;
   onDeleteGame: (gameId: number) => void;
-  onAddExpansion?: (gameId: number, expansion: any) => void;
-  onUpdateExpansion?: (expansionId: number, expansion: any) => void;
+  onAddExpansion?: (gameId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
+  onUpdateExpansion?: (expansionId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
   onDeleteExpansion?: (expansionId: number) => void;
-  onAddCharacter?: (gameId: number, character: any) => void;
-  onUpdateCharacter?: (characterId: number, character: any) => void;
+  onAddCharacter?: (gameId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
+  onUpdateCharacter?: (characterId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
   onDeleteCharacter?: (characterId: number) => void;
   currentView?: string;
   darkMode: boolean;
@@ -80,7 +80,7 @@ export default function GamesPage({
     setFormData
   } = useGamesPage(hookData);
 
-  const handleFormDataChange = (newData: any) => {
+  const handleFormDataChange = (newData: Partial<GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }>) => {
     setFormData(prev => ({ ...prev, ...newData }));
   };
 

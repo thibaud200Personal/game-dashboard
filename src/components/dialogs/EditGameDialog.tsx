@@ -485,7 +485,7 @@ export default function EditGameDialog({
                   value={(formData.expansions || [])
                       .map(
                       (exp) =>
-                          `${exp.name} (${exp.year_published > 0 ? exp.year_published : "N/A"})`
+                          `${exp.name} (${exp.year_published && exp.year_published > 0 ? exp.year_published : "N/A"})`
                       )
                       .join(", ")}
                   onChange={(e) => {

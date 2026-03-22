@@ -154,7 +154,7 @@ export default function AddGameDialog({
     }
   };
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
     onFormDataChange({ [field]: value });
     // Clear error for this field when user starts typing
     if (errors[field as keyof ValidationErrors]) {

@@ -30,7 +30,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Game } from '@/types';
+import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 import { AddGameDialog, EditGameDialog, DeleteGameDialog } from '@/components/dialogs';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -39,7 +39,7 @@ interface GamesPageViewProps {
   currentView: string;
   totalGames: number;
   averageRating: number;
-  formData: any;
+  formData: GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] };
   editingGame: Game | null;
   isAddDialogOpen: boolean;
   isEditDialogOpen: boolean;
@@ -49,8 +49,8 @@ interface GamesPageViewProps {
   onNavigation: (view: string, gameId?: number, source?: string) => void;
   onSearchChange: (query: string) => void;
   onAddDialogToggle: () => void;
-  onFormDataChange: (data: any) => void;
-  onBGGGameSelect: (bggGame: any) => void;
+  onFormDataChange: (data: Partial<GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }>) => void;
+  onBGGGameSelect: (bggGame: BGGGame) => void;
   onAddGame: () => void;
   onResetForm: () => void;
   onEditGame: (game: Game) => void;
@@ -357,7 +357,7 @@ export function GamesPageView(props: GamesPageViewProps) {
                                 <h4 className="text-sm font-medium text-purple-300 mb-1">Expansions</h4>
                                 <Textarea
                                   value={(game.expansions || []).map(exp => 
-                                    `${exp.name}${exp.year_published > 0 ? ` (${exp.year_published})` : ''}`
+                                    `${exp.name}${exp.year_published && exp.year_published > 0 ? ` (${exp.year_published})` : ''}`
                                   ).join(', ')}
                                   onChange={(e) => {
                                     const expansionTexts = e.target.value.split(',').map(text => text.trim()).filter(text => text);

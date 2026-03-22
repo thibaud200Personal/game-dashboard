@@ -1,4 +1,13 @@
 // API service to connect frontend with backend database
+import {
+  Player,
+  Game,
+  GameExpansion,
+  GameCharacter,
+  GameSession,
+  GameFormData,
+  CreateSessionPayload
+} from '@/types';
 
 export class ApiService {
   private readonly baseUrl: string;
@@ -35,22 +44,22 @@ export class ApiService {
 
   // Player operations
   async getAllPlayers() {
-    return this.request<any[]>('/players');
+    return this.request<Player[]>('/players');
   }
 
   async getPlayerById(playerId: number) {
-    return this.request<any>(`/players/${playerId}`);
+    return this.request<Player>(`/players/${playerId}`);
   }
 
-  async createPlayer(playerData: any) {
-    return this.request<any>('/players', {
+  async createPlayer(playerData: { player_name: string; avatar?: string; favorite_game?: string }) {
+    return this.request<Player>('/players', {
       method: 'POST',
       body: JSON.stringify(playerData),
     });
   }
 
-  async updatePlayer(playerId: number, playerData: any) {
-    return this.request<any>(`/players/${playerId}`, {
+  async updatePlayer(playerId: number, playerData: Partial<Player>) {
+    return this.request<Player>(`/players/${playerId}`, {
       method: 'PUT',
       body: JSON.stringify(playerData),
     });
@@ -64,22 +73,22 @@ export class ApiService {
 
   // Game operations
   async getAllGames() {
-    return this.request<any[]>('/games');
+    return this.request<Game[]>('/games');
   }
 
   async getGameById(gameId: number) {
-    return this.request<any>(`/games/${gameId}`);
+    return this.request<Game>(`/games/${gameId}`);
   }
 
-  async createGame(gameData: any) {
-    return this.request<any>('/games', {
+  async createGame(gameData: GameFormData) {
+    return this.request<Game>('/games', {
       method: 'POST',
       body: JSON.stringify(gameData),
     });
   }
 
-  async updateGame(gameId: number, gameData: any) {
-    return this.request<any>(`/games/${gameId}`, {
+  async updateGame(gameId: number, gameData: Partial<GameFormData>) {
+    return this.request<Game>(`/games/${gameId}`, {
       method: 'PUT',
       body: JSON.stringify(gameData),
     });
@@ -94,22 +103,22 @@ export class ApiService {
   // Game Expansion operations
   async getAllExpansions(gameId?: number) {
     const query = gameId ? `?game_id=${gameId}` : '';
-    return this.request<any[]>(`/expansions${query}`);
+    return this.request<GameExpansion[]>(`/expansions${query}`);
   }
 
   async getExpansionById(expansionId: number) {
-    return this.request<any>(`/expansions/${expansionId}`);
+    return this.request<GameExpansion>(`/expansions/${expansionId}`);
   }
 
-  async createExpansion(expansionData: any) {
-    return this.request<any>('/expansions', {
+  async createExpansion(expansionData: Omit<GameExpansion, 'expansion_id'>) {
+    return this.request<GameExpansion>('/expansions', {
       method: 'POST',
       body: JSON.stringify(expansionData),
     });
   }
 
-  async updateExpansion(expansionId: number, expansionData: any) {
-    return this.request<any>(`/expansions/${expansionId}`, {
+  async updateExpansion(expansionId: number, expansionData: Omit<GameExpansion, 'expansion_id' | 'game_id'>) {
+    return this.request<GameExpansion>(`/expansions/${expansionId}`, {
       method: 'PUT',
       body: JSON.stringify(expansionData),
     });
@@ -124,22 +133,22 @@ export class ApiService {
   // Game Character operations
   async getAllCharacters(gameId?: number) {
     const query = gameId ? `?game_id=${gameId}` : '';
-    return this.request<any[]>(`/characters${query}`);
+    return this.request<GameCharacter[]>(`/characters${query}`);
   }
 
   async getCharacterById(characterId: number) {
-    return this.request<any>(`/characters/${characterId}`);
+    return this.request<GameCharacter>(`/characters/${characterId}`);
   }
 
-  async createCharacter(characterData: any) {
-    return this.request<any>('/characters', {
+  async createCharacter(characterData: Omit<GameCharacter, 'character_id'>) {
+    return this.request<GameCharacter>('/characters', {
       method: 'POST',
       body: JSON.stringify(characterData),
     });
   }
 
-  async updateCharacter(characterId: number, characterData: any) {
-    return this.request<any>(`/characters/${characterId}`, {
+  async updateCharacter(characterId: number, characterData: Omit<GameCharacter, 'character_id' | 'game_id'>) {
+    return this.request<GameCharacter>(`/characters/${characterId}`, {
       method: 'PUT',
       body: JSON.stringify(characterData),
     });
@@ -151,8 +160,8 @@ export class ApiService {
     });
   }
 
-  async createSession(sessionData: any) {
-    return this.request<any>('/sessions', {
+  async createSession(sessionData: CreateSessionPayload) {
+    return this.request<GameSession>('/sessions', {
       method: 'POST',
       body: JSON.stringify(sessionData),
     });
@@ -161,19 +170,19 @@ export class ApiService {
   // Session operations
   async getAllSessions(gameId?: number) {
     const query = gameId ? `?game_id=${gameId}` : '';
-    return this.request<any[]>(`/sessions${query}`);
+    return this.request<GameSession[]>(`/sessions${query}`);
   }
 
   async getSessionsByGame(gameId: number) {
-    return this.request<any[]>(`/sessions/game/${gameId}`);
+    return this.request<GameSession[]>(`/sessions/game/${gameId}`);
   }
 
   async getSessionsByPlayer(playerId: number) {
-    return this.request<any[]>(`/sessions/player/${playerId}`);
+    return this.request<GameSession[]>(`/sessions/player/${playerId}`);
   }
 
-  async updateSession(sessionId: number, sessionData: any) {
-    return this.request<any>(`/sessions/${sessionId}`, {
+  async updateSession(sessionId: number, sessionData: Partial<GameSession>) {
+    return this.request<GameSession>(`/sessions/${sessionId}`, {
       method: 'PUT',
       body: JSON.stringify(sessionData),
     });
@@ -187,11 +196,11 @@ export class ApiService {
 
   // Statistics
   async getPlayerStats() {
-    return this.request<any>('/stats/players');
+    return this.request<unknown>('/stats/players');
   }
 
   async getGameStats() {
-    return this.request<any>('/stats/games');
+    return this.request<unknown>('/stats/games');
   }
 
   // Health check
