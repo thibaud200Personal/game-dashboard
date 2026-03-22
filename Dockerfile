@@ -5,7 +5,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY . .
+# Copy only frontend source (exclude backend/, .git, etc.)
+COPY src ./src
+COPY public ./public
+COPY index.html tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
 RUN npm run build
 
 # Stage 2: Build backend + compile native modules

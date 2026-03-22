@@ -48,12 +48,8 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
     setSearchError('');
     try {
       const gameDetails = await bggApiService.getGameDetails(id);
-      if (gameDetails) {
-        onGameSelect(gameDetails);
-        onClose();
-      } else {
-        setSearchError('Game not found on BGG. Check the ID and try again.');
-      }
+      onGameSelect(gameDetails);
+      onClose();
     } catch {
       setSearchError('Failed to load game details. Please try again.');
     } finally {
@@ -63,18 +59,13 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
 
   const handleGameSelect = async (result: BGGSearchResult) => {
     setIsLoadingDetails(true);
-    
+
     try {
       const gameDetails = await bggApiService.getGameDetails(result.id);
-      if (gameDetails) {
-        onGameSelect(gameDetails);
-        onClose();
-      } else {
-        setSearchError('Failed to load game details. Please try again.');
-      }
+      onGameSelect(gameDetails);
+      onClose();
     } catch {
       setSearchError('Failed to load game details. Please try again.');
-      // Error handling - would use proper logging in production
     } finally {
       setIsLoadingDetails(false);
     }

@@ -64,7 +64,7 @@ class BGGApiService {
     return await response.json()
   }
 
-  async getGameDetails(bggId: number): Promise<BGGGame | null> {
+  async getGameDetails(bggId: number): Promise<BGGGame> {
     const response = await fetch(`${this.baseUrl}/bgg/game/${bggId}`)
     if (!response.ok) throw new Error(`BGG game error: ${response.status}`)
     return await response.json()

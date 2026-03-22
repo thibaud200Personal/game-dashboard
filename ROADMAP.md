@@ -37,6 +37,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 ### 🔮 BGG API — Évolutions futures
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
 - **🔄 `has_expansion`/`has_characters` non recalculés à l'import BGG** — Dans `handleAddGame` (`App.tsx`), le jeu ajouté via BGG reçoit `expansions: []` / `characters: []` en dur côté client. Les flags `has_expansion` et `has_characters` ne sont donc pas recalculés après création. À corriger lors de l'implémentation de l'import complet : recalculer ces flags à partir des données retournées par l'API après création.
+- **🔀 `BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — `src/services/bggApi.ts` et `backend/bggService.ts` définissent chacun leur propre interface pour la même structure. À unifier dans `src/types/index.ts` (source de vérité partagée) pour éviter une désynchronisation silencieuse à l'avenir.
+- **🧪 Tests BGG backend non couverts** — `backend/bggService.ts` (cache, rate limiting, parsing geekdo) et les routes `/api/bgg/*` dans `server.ts` n'ont aucun test. Les tests existants dans `src/__tests__/services/bggApi.test.ts` échouent car fetch n'est pas mocké avec MSW. À corriger : mocker les appels geekdo.com avec MSW et ajouter des cas de test pour la recherche, les détails, le cache et les erreurs réseau.
 
 ---
 
