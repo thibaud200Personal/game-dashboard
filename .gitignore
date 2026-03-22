@@ -40,6 +40,10 @@ pids
 "node_modules/"
 "dist/"
 
+# SQLite WAL files
+*.db-shm
+*.db-wal
+
 # Claude Code
 .claude/
 CLAUDE.md

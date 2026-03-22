@@ -228,7 +228,6 @@ class BGGService {
       weight,
       difficulty: this.mapWeightToDifficulty(weight),
       expansions,
-      characters: this.generateMockCharacters(item.name, categories),
       supports_cooperative: gameModes.cooperative,
       supports_competitive: gameModes.competitive,
       supports_campaign: gameModes.campaign,
@@ -263,24 +262,8 @@ class BGGService {
     const cooperative = mechs.includes('cooperative') || mechs.includes('co-op') || cats.includes('cooperative')
     const campaign = mechs.includes('campaign') || mechs.includes('legacy') || mechs.includes('story')
     const hybrid = mechs.includes('semi-cooperative') || mechs.includes('traitor') || mechs.includes('hidden role')
-    return { cooperative, competitive: true, campaign, hybrid }
-  }
-
-  private generateMockCharacters(gameName: string, categories: string[]): BGGCharacter[] {
-    const cats = categories.join(' ').toLowerCase()
-    const characters: BGGCharacter[] = []
-    if (cats.includes('fantasy') || cats.includes('adventure')) {
-      characters.push(
-        { character_key: 'warrior', name: 'Warrior', description: 'Brave fighter', abilities: ['Melee Combat', 'Heavy Armor', 'Battle Cry'] },
-        { character_key: 'mage', name: 'Mage', description: 'Arcane wielder', abilities: ['Spell Casting', 'Elemental Magic', 'Mystic Shield'] }
-      )
-    }
-    if (cats.includes('sci-fi') || cats.includes('space')) {
-      characters.push(
-        { character_key: 'pilot', name: 'Pilot', description: 'Expert navigator', abilities: ['Ship Navigation', 'Evasive Maneuvers', 'Technical Repair'] }
-      )
-    }
-    return characters
+    const competitive = !cooperative || hybrid
+    return { cooperative, competitive, campaign, hybrid }
   }
 
   cleanExpiredCache(): void {

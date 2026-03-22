@@ -72,15 +72,6 @@ class BGGApiService {
       return null
     }
   }
-
-  async getGameExpansions(bggId: number): Promise<BGGExpansion[]> {
-    try {
-      const game = await this.getGameDetails(bggId)
-      return game?.expansions || []
-    } catch {
-      return []
-    }
-  }
 }
 
 export const bggApiService = new BGGApiService()

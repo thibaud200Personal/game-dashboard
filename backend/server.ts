@@ -258,7 +258,8 @@ if (process.env.NODE_ENV === 'production') {
   const staticPath = path.join(__dirname, '../public');
   app.use(express.static(staticPath));
   // SPA fallback — serve index.html for all non-API routes
-  app.get('*', (req: express.Request, res: express.Response) => {
+  app.get('*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(staticPath, 'index.html'));
   });
 } else {
