@@ -26,7 +26,7 @@ const asyncHandler = (fn: Function) => (req: express.Request, res: express.Respo
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// BGG routes — fetch + parsing XML côté backend, retourne JSON
+// BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
   const query = req.query.q as string;
   if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
