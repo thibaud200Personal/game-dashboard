@@ -464,6 +464,7 @@ Les éléments suivants sont des améliorations pertinentes identifiées dans le
 | #45 | Mars 2026 | Suppression @github/spark + 15 packages morts | [changelog/pr-45-remove-spark.md](changelog/pr-45-remove-spark.md) |
 | #46 | Mars 2026 | Réorganisation ROADMAP + répertoire changelog/ + .gitattributes LF | [changelog/pr-46-roadmap-reorganization.md](changelog/pr-46-roadmap-reorganization.md) |
 
+
 📋 Mises à jour techniques planifiées : [changelog/planned-updates.md](changelog/planned-updates.md)
 
 *Dernière mise à jour : Mars 2026*

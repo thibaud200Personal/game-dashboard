@@ -36,6 +36,9 @@ COPY --from=backend-builder /app/backend/node_modules ./node_modules
 # Copy compiled backend
 COPY --from=backend-builder /app/backend/dist ./dist
 
+# Copy SQL schema (read at runtime via __dirname)
+COPY backend/database/schema.sql ./dist/database/schema.sql
+
 # Copy frontend build
 COPY --from=frontend-builder /app/dist ./public
 

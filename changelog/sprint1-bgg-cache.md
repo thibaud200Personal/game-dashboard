@@ -52,3 +52,4 @@ Dans `backend/bggService.ts` : lire/écrire SQLite avant/après appel BGG
 
 ## Estimation
 ~30 min (localStorage uniquement)
+
