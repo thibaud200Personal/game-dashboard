@@ -40,7 +40,8 @@ pids
 "node_modules/"
 "dist/"
 
-# SQLite WAL files
+# SQLite database files
+*.db
 *.db-shm
 *.db-wal
 
