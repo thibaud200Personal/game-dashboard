@@ -130,11 +130,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **CORS trim** : `.map(o => o.trim())` sur `CORS_ORIGINS` pour éviter mismatch whitespace
 - **JSON.parse robuste** : `parseJSONField` helper utilisé partout dans `DatabaseManager`
 - **BGG parseInt** : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
-- **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production (Synology reverse proxy + `x-forwarded-proto`)
+- **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production (reverse proxy + `x-forwarded-proto`)
 
 ### ⚠️ Authentification — À faire (PRIORITÉ HAUTE)
 - **État** : Aucune route protégée — l'app est exposée sur internet, toute personne connaissant l'URL peut lire/modifier les données
-- **Action** : Ajouter une authentification simple (ex: API key en header, ou JWT, ou Basic Auth via reverse proxy Synology)
+- **Action** : Ajouter une authentification simple (ex: API key en header, ou JWT, ou Basic Auth via reverse proxy)
 - **Impact** : Critique pour une exposition publique
 
 ### 📦 Dépendances majeures à mettre à jour
