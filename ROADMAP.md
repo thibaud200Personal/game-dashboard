@@ -122,6 +122,31 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
+## 🔒 SÉCURITÉ — AUDIT MARS 2026
+
+### ✅ Corrigé (28 mars 2026)
+- **npm audit** : 0 vulnérabilité frontend + backend (vitest 4.1.2, path-to-regexp 0.1.13, picomatch, brace-expansion)
+- **Zod sur toutes les routes** : middleware `validateBody` appliqué sur POST/PUT players, games, sessions
+- **CORS trim** : `.map(o => o.trim())` sur `CORS_ORIGINS` pour éviter mismatch whitespace
+- **JSON.parse robuste** : `parseJSONField` helper utilisé partout dans `DatabaseManager`
+- **BGG parseInt** : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
+- **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production (Synology reverse proxy + `x-forwarded-proto`)
+
+### ⚠️ Authentification — À faire (PRIORITÉ HAUTE)
+- **État** : Aucune route protégée — l'app est exposée sur internet, toute personne connaissant l'URL peut lire/modifier les données
+- **Action** : Ajouter une authentification simple (ex: API key en header, ou JWT, ou Basic Auth via reverse proxy Synology)
+- **Impact** : Critique pour une exposition publique
+
+### 📦 Dépendances majeures à mettre à jour
+- `express` 4 → 5 (breaking changes à valider)
+- `zod` 3 → 4 (breaking changes à valider)
+- `recharts` 2 → 3 (déjà en roadmap)
+- `vite` 7 → 8 (déjà en roadmap)
+- `typescript` 5 → 6
+- `lucide-react` 0.577 → 1.7
+
+---
+
 ## 🎯 PHASE 2 : FINITIONS CRITIQUES - PRIORITÉ IMMÉDIATE (1-2 semaines)
 
 ### 🗄️ Finalisation BGG & Base de Données (Impact ⭐⭐)
