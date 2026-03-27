@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { bggApiService, BGGSearchResult, BGGGame } from '@/services/bggApi';
+import { bggApiService } from '@/services/bggApi';
+import type { BGGGame, BGGSearchResult } from '@/types';
 
 interface BGGSearchProps {
   onGameSelect: (game: BGGGame) => void

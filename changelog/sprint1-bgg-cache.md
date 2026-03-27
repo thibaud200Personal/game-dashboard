@@ -45,5 +45,10 @@ Dans `backend/bggService.ts` : lire/écrire SQLite avant/après appel BGG
 ## Fichiers à modifier
 - `src/services/bggApi.ts` — ajouter helpers cache localStorage
 
+## Décision
+
+- **Option 2 (cache SQLite backend) : annulée** — double BDD non justifiée, le backend n'a pas vocation à redémarrer souvent.
+- **Option 1 (cache localStorage frontend) : à faire quand le besoin se fait sentir** — ~30 lignes dans `bggApi.ts`, utile si le backend redémarre ou pour éviter des appels redondants entre sessions.
+
 ## Estimation
-2-3 jours
+~30 min (localStorage uniquement)

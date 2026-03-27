@@ -22,11 +22,17 @@ export interface Game {
   name: string;
   description?: string;
   image?: string;
+  thumbnail?: string;
   min_players: number;
   max_players: number;
+  playing_time?: number;
+  min_playtime?: number;
+  max_playtime?: number;
   duration?: string;
   difficulty?: string;
   category?: string;
+  categories?: string[];
+  mechanics?: string[];
   year_published?: number;
   publisher?: string;
   designer?: string;
@@ -37,8 +43,10 @@ export interface Game {
   supports_cooperative: boolean;
   supports_competitive: boolean;
   supports_campaign: boolean;
+  supports_hybrid?: boolean;
   has_expansion: boolean;
   has_characters: boolean;
+  is_expansion?: boolean;
   created_at: Date;
   updated_at?: Date;
   // Related data
@@ -111,11 +119,17 @@ export interface CreateGameRequest {
   name: string;
   description?: string;
   image?: string;
+  thumbnail?: string;
   min_players: number;
   max_players: number;
+  playing_time?: number;
+  min_playtime?: number;
+  max_playtime?: number;
   duration?: string;
   difficulty?: string;
   category?: string;
+  categories?: string[];
+  mechanics?: string[];
   year_published?: number;
   publisher?: string;
   designer?: string;
@@ -129,6 +143,7 @@ export interface CreateGameRequest {
   supports_hybrid?: boolean;
   has_expansion?: boolean;
   has_characters?: boolean;
+  is_expansion?: boolean;
   expansions?: GameExpansion[];
   characters?: GameCharacter[];
 }
@@ -138,11 +153,17 @@ export interface UpdateGameRequest {
   name?: string;
   description?: string;
   image?: string;
+  thumbnail?: string;
   min_players?: number;
   max_players?: number;
+  playing_time?: number;
+  min_playtime?: number;
+  max_playtime?: number;
   duration?: string;
   difficulty?: string;
   category?: string;
+  categories?: string[];
+  mechanics?: string[];
   year_published?: number;
   publisher?: string;
   designer?: string;
@@ -156,6 +177,7 @@ export interface UpdateGameRequest {
   supports_hybrid?: boolean;
   has_expansion?: boolean;
   has_characters?: boolean;
+  is_expansion?: boolean;
   expansions?: GameExpansion[];
   characters?: GameCharacter[];
 }
