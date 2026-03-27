@@ -23,6 +23,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// HTTPS enforcement + HSTS in production (app is exposed to the internet)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
+    }
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    return next();
+  });
+}
+
 // Error handler middleware
 const asyncHandler = (fn: Function) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
   Promise.resolve(fn(req, res, next)).catch(next);
