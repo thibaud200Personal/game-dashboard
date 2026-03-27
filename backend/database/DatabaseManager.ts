@@ -487,7 +487,7 @@ class DatabaseManager {
     const characters = this.db.prepare('SELECT * FROM game_characters WHERE game_id = ?').all(gameId) as (GameCharacter & { abilities: string })[];
     return characters.map((character) => ({
       ...character,
-      abilities: character.abilities ? JSON.parse(character.abilities) : []
+      abilities: this.parseJSONField<string[]>(character.abilities, [])
     }));
   }
 

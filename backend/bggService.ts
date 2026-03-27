@@ -146,13 +146,11 @@ class BGGService {
 
     return data.items
       .filter(item => item.objectid && item.name)
-      .map(item => ({
-        id: parseInt(item.objectid),
-        name: item.name,
-        year_published: 0,
-        type: 'boardgame'
-      }))
-      .filter(r => r.id > 0)
+      .map(item => {
+        const id = parseInt(item.objectid, 10);
+        return isNaN(id) || id <= 0 || id > Number.MAX_SAFE_INTEGER ? null : { id, name: item.name, year_published: 0, type: 'boardgame' };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null)
   }
 
   /**

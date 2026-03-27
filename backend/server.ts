@@ -6,13 +6,15 @@ import cors = require('cors');
 import path = require('path');
 import DatabaseManager from './database/DatabaseManager';
 import { bggService } from './bggService';
+import { CreatePlayerSchema, UpdatePlayerSchema, CreateGameSchema, UpdateGameSchema, CreateSessionSchema } from './validation/schemas';
+import { ZodSchema } from 'zod';
 
 const app = express();
 const db = new DatabaseManager();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Middleware
-const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5000,http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173').split(',');
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5000,http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173').split(',').map(o => o.trim());
 app.use(cors({
   origin: corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -24,6 +26,16 @@ app.use(express.json());
 // Error handler middleware
 const asyncHandler = (fn: Function) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
   Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// Zod validation middleware
+const validateBody = (schema: ZodSchema) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ error: result.error.errors.map(e => e.message).join(', ') });
+  }
+  req.body = result.data;
+  return next();
 };
 
 // BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
@@ -61,16 +73,9 @@ app.get('/api/players/:id', asyncHandler(async (req: express.Request, res: expre
   return res.json(player);
 }));
 
-app.post('/api/players', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const playerData = req.body;
-  
-  // Validation
-  if (!playerData.player_name) {
-    return res.status(400).json({ error: 'Player name is required' });
-  }
-  
+app.post('/api/players', validateBody(CreatePlayerSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
   try {
-    const newPlayer = db.createPlayer(playerData);
+    const newPlayer = db.createPlayer(req.body);
     return res.status(201).json(newPlayer);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -80,16 +85,10 @@ app.post('/api/players', asyncHandler(async (req: express.Request, res: express.
   }
 }));
 
-app.put('/api/players/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
+app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
   const playerId = parseInt(req.params.id);
-  const playerData = req.body;
-  
-  if (!playerData.player_name) {
-    return res.status(400).json({ error: 'Player name is required' });
-  }
-  
   try {
-    const updatedPlayer = db.updatePlayer(playerId, playerData);
+    const updatedPlayer = db.updatePlayer(playerId, req.body);
     if (!updatedPlayer) {
       return res.status(404).json({ error: 'Player not found' });
     }
@@ -132,48 +131,17 @@ app.get('/api/games/:id', asyncHandler(async (req: express.Request, res: express
   return res.json(game);
 }));
 
-app.post('/api/games', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const gameData = req.body;
-  
-  // Validation
-  if (!gameData.name || !gameData.min_players || !gameData.max_players) {
-    return res.status(400).json({ 
-      error: 'Game name, min_players, and max_players are required' 
-    });
-  }
-  
-  if (gameData.min_players < 1 || gameData.max_players < gameData.min_players) {
-    return res.status(400).json({ 
-      error: 'Invalid player count configuration' 
-    });
-  }
-  
-  const newGame = db.createGame(gameData);
+app.post('/api/games', validateBody(CreateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
+  const newGame = db.createGame(req.body);
   return res.status(201).json(newGame);
 }));
 
-app.put('/api/games/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
+app.put('/api/games/:id', validateBody(UpdateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
   const gameId = parseInt(req.params.id);
-  const gameData = req.body;
-  
-  // Validation
-  if (!gameData.name || !gameData.min_players || !gameData.max_players) {
-    return res.status(400).json({ 
-      error: 'Game name, min_players, and max_players are required' 
-    });
-  }
-  
-  if (gameData.min_players < 1 || gameData.max_players < gameData.min_players) {
-    return res.status(400).json({ 
-      error: 'Invalid player count configuration' 
-    });
-  }
-  
-  const updatedGame = db.updateGame(gameId, gameData);
+  const updatedGame = db.updateGame(gameId, req.body);
   if (!updatedGame) {
     return res.status(404).json({ error: 'Game not found' });
   }
-  
   return res.json(updatedGame);
 }));
 
@@ -195,26 +163,17 @@ app.get('/api/sessions', asyncHandler(async (req: express.Request, res: express.
   return res.json(sessions);
 }));
 
-app.post('/api/sessions', asyncHandler(async (req: express.Request, res: express.Response) => {
+app.post('/api/sessions', validateBody(CreateSessionSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
   const sessionData = req.body;
-  
-  // Validation
-  if (!sessionData.game_id) {
-    return res.status(400).json({ error: 'Game ID is required' });
-  }
-  
   const newSession = db.createGameSession(sessionData);
-  
-  // Add players to session if provided
-  if (sessionData.players && Array.isArray(sessionData.players)) {
-    for (const playerData of sessionData.players) {
-      db.addSessionPlayer({
-        session_id: newSession.session_id,
-        ...playerData
-      });
-    }
+
+  for (const playerData of sessionData.players) {
+    db.addSessionPlayer({
+      session_id: newSession.session_id,
+      ...playerData
+    });
   }
-  
+
   return res.status(201).json(newSession);
 }));
 
