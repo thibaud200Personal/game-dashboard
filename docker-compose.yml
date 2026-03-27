@@ -10,7 +10,7 @@ services:
       PORT: 5000
       DB_PATH: /data/board_game_score.db
       # CORS_ORIGINS: domaine(s) autorisé(s), séparés par une virgule
-      CORS_ORIGINS: http://boardgame.thibs200.synology.me:10805,http://localhost:5000
+      CORS_ORIGINS: http://localhost:5000
     restart: unless-stopped
 
 volumes:

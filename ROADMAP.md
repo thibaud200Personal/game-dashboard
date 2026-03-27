@@ -4,7 +4,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 **📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec **85% des fonctionnalités atteintes** et une architecture plus robuste. **Infrastructure tests solide** (31/31 ✅) prête pour évolution vers 50+ tests.
 
-**🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets [boardGameScore](https://github.com/thibaud200/boardGameScore) et [board-game-scorekeep](https://github.com/thibaud200/board-game-scorekeep) plutôt que de repartir de zéro.
+**🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets boardGameScore et board-game-scorekeep plutôt que de repartir de zéro.
 
 **🧪 Focus Tests** : Suite à l'analyse comparative avec board-game-scorekeep (52/52 tests), priorité donnée à l'évolution de l'infrastructure tests pour atteindre les standards de production (objectif 50+ tests).
 
@@ -211,7 +211,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 #### **Restructuration & E2E**
 - **État** : 31/31 tests ✅, structure plate
 - **Objectif** : Organisation mature (unit/technical/, unit/functional/, integration/) + 7 workflows E2E BGG
-- **Référence** : [board-game-scorekeep](https://github.com/thibaud200/board-game-scorekeep) (52/52 tests ✅)
+- **Référence** : board-game-scorekeep (52/52 tests ✅)
 - **Impact** : Qualité code et robustesse application
 
 #### **Tests Unitaires Core Étendus** - 1-2 semaines
