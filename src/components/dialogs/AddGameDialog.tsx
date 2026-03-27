@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import BGGSearch from '@/components/BGGSearch';
-import { BGGGame } from '@/services/bggApi';
+import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
 
@@ -45,11 +45,13 @@ interface FormData {
   supports_hybrid: boolean
   bgg_id?: number
   thumbnail?: string
+  playing_time?: number
   min_playtime?: number
   max_playtime?: number
   categories?: string[]
   mechanics?: string[]
   families?: string[]
+  is_expansion?: boolean
 }
 
 interface ValidationErrors {
@@ -273,21 +275,23 @@ export default function AddGameDialog({
                     name: bggGame.name || '',
                     image: bggGame.image || '',
                     year_published: bggGame.year_published || new Date().getFullYear(),
-                    publisher: Array.isArray(bggGame.publishers) ? bggGame.publishers.join(', ') : (bggGame.publishers || ''),
-                    designer: Array.isArray(bggGame.designers) ? bggGame.designers.join(', ') : (bggGame.designers || ''),
+                    publisher: bggGame.publishers?.[0] || '',
+                    designer: bggGame.designers?.[0] || '',
                     bgg_rating: bggGame.rating || 0,
                     weight: bggGame.weight || 0,
                     min_players: bggGame.min_players || 1,
                     max_players: bggGame.max_players || 1,
                     duration: bggGame.playing_time ? `${bggGame.playing_time} min` : '',
+                    playing_time: bggGame.playing_time ?? undefined,
                     age_min: bggGame.min_age || 1,
                     bgg_id: bggGame.id || undefined,
                     thumbnail: bggGame.thumbnail || '',
-                    min_playtime: bggGame.min_playtime || 0,
-                    max_playtime: bggGame.max_playtime || 0,
+                    min_playtime: bggGame.min_playtime ?? undefined,
+                    max_playtime: bggGame.max_playtime ?? undefined,
+                    category: bggGame.categories?.[0] || '',
                     categories: bggGame.categories || [],
                     mechanics: bggGame.mechanics || [],
-                    families: [],
+                    is_expansion: bggGame.is_expansion ?? false,
                   });
                   onBGGGameSelect(bggGame);
                   onBGGSearchToggle(false);
@@ -369,7 +373,7 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="duration">Duration</Label>
+              <Label htmlFor="duration">Durée (affichage)</Label>
               <Input
                 id="duration"
                 name="duration"
@@ -380,7 +384,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="age-min">Min Age</Label>
+              <Label htmlFor="age-min">Âge minimum</Label>
               <Input
                 id="age-min"
                 name="age-min"
@@ -394,38 +398,52 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="edit-min-playtime">Min Playtime</Label>
+              <Label htmlFor="edit-min-playtime">Durée min (min)</Label>
               <Input
                 id="edit-min-playtime"
                 type="number"
                 min="0"
-                value={formData.min_playtime || ''}
-                onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) || 0 })}
+                value={formData.min_playtime ?? ''}
+                onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) || undefined })}
                 className="bg-slate-700 border-slate-600 text-white"
-                placeholder="min"
+                placeholder="—"
               />
             </div>
             <div>
-              <Label htmlFor="edit-max-playtime">Max Playtime</Label>
+              <Label htmlFor="edit-playing-time">Durée recommandée (min)</Label>
+              <Input
+                id="edit-playing-time"
+                type="number"
+                min="0"
+                value={formData.playing_time ?? ''}
+                onChange={(e) => onFormDataChange({ playing_time: parseInt(e.target.value) || undefined })}
+                className="bg-slate-700 border-slate-600 text-white"
+                placeholder="—"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-max-playtime">Durée max (min)</Label>
               <Input
                 id="edit-max-playtime"
                 type="number"
                 min="0"
-                value={formData.max_playtime || ''}
-                onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) || 0 })}
+                value={formData.max_playtime ?? ''}
+                onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) || undefined })}
                 className="bg-slate-700 border-slate-600 text-white"
-                placeholder="max"
+                placeholder="—"
               />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="difficulty">Difficulty</Label>
+              <Label htmlFor="difficulty">Difficulté</Label>
               <Select value={formData.difficulty} onValueChange={(value) => onFormDataChange({ difficulty: value })}>
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Beginner">Débutant</SelectItem>
+                  <SelectItem value="Intermediate">Intermédiaire</SelectItem>
                   <SelectItem value="Expert">Expert</SelectItem>
                 </SelectContent>
               </Select>
@@ -499,51 +517,27 @@ export default function AddGameDialog({
             />
           </div>
           <div>
-            <Label htmlFor="edit-categories">Categories (JSON)</Label>
-            <Textarea
+            <Label htmlFor="edit-categories">Catégories</Label>
+            <Input
               id="edit-categories"
-              value={formData.categories ? JSON.stringify(formData.categories, null, 2) : ''}
-              onChange={(e) => {
-                try {
-                  onFormDataChange({ categories: JSON.parse(e.target.value) });
-                } catch {
-                  onFormDataChange({ categories: [] });
-                }
-              }}
+              value={(formData.categories || []).join(', ')}
+              onChange={(e) => onFormDataChange({
+                categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+              })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder='["Adventure", "Fantasy"]'
+              placeholder="Stratégie, Aventure, ..."
             />
           </div>
           <div>
-            <Label htmlFor="edit-mechanics">Mechanics (JSON)</Label>
-            <Textarea
+            <Label htmlFor="edit-mechanics">Mécaniques</Label>
+            <Input
               id="edit-mechanics"
-              value={formData.mechanics ? JSON.stringify(formData.mechanics, null, 2) : ''}
-              onChange={(e) => {
-                try {
-                  onFormDataChange({ mechanics: JSON.parse(e.target.value) });
-                } catch {
-                  onFormDataChange({ mechanics: [] });
-                }
-              }}
+              value={(formData.mechanics || []).join(', ')}
+              onChange={(e) => onFormDataChange({
+                mechanics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+              })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder='["Hand Management", "Cooperative Game"]'
-            />
-          </div>
-          <div>
-            <Label htmlFor="edit-families">Families (JSON)</Label>
-            <Textarea
-              id="edit-families"
-              value={formData.families ? JSON.stringify(formData.families, null, 2) : ''}
-              onChange={(e) => {
-                try {
-                  onFormDataChange({ families: JSON.parse(e.target.value) });
-                } catch {
-                  onFormDataChange({ families: [] });
-                }
-              }}
-              className="bg-slate-700 border-slate-600 text-white"
-              placeholder='["Legacy", "Family"]'
+              placeholder="Gestion de main, Jeu coopératif, ..."
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -627,13 +621,23 @@ export default function AddGameDialog({
           </div>
 
           <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <Checkbox 
-                id="has_expansion"
-                checked={formData.has_expansion}
-                onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked })}
-              />
-              <Label htmlFor="has_expansion">Has expansions</Label>
+            <div className="flex items-center gap-6 mb-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="is_expansion"
+                  checked={formData.is_expansion ?? false}
+                  onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked })}
+                />
+                <Label htmlFor="is_expansion">Est une extension</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="has_expansion"
+                  checked={formData.has_expansion}
+                  onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked })}
+                />
+                <Label htmlFor="has_expansion">A des extensions</Label>
+              </div>
             </div>
             {/* Expansions Display - show if checkbox is checked */}
             {formData.has_expansion && (

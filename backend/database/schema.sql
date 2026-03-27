@@ -47,6 +47,7 @@ CREATE TABLE games (
     supports_hybrid BOOLEAN DEFAULT FALSE,
     has_expansion BOOLEAN DEFAULT FALSE,
     has_characters BOOLEAN DEFAULT FALSE,
+    is_expansion INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

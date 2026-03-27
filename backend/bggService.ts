@@ -59,19 +59,23 @@ export interface BGGSearchResult {
 }
 
 export interface BGGExpansion {
+  expansion_id?: number
   bgg_expansion_id: number
   name: string
   year_published: number
+  description?: string
 }
 
 export interface BGGCharacter {
+  character_id?: string
   character_key: string
   name: string
   description: string
   abilities: string[]
+  avatar?: string
 }
 
-export interface BGGGameDetails {
+export interface BGGGame {
   id: number
   name: string
   description: string
@@ -103,7 +107,7 @@ export interface BGGGameDetails {
 }
 
 interface CacheEntry {
-  data: BGGGameDetails
+  data: BGGGame
   expiresAt: number
 }
 
@@ -155,7 +159,7 @@ class BGGService {
    * Récupère les détails d'un jeu par son BGG ID.
    * Utilise l'API JSON interne de geekdo.com (pas d'auth requise).
    */
-  async getGameDetails(bggId: number): Promise<BGGGameDetails | null> {
+  async getGameDetails(bggId: number): Promise<BGGGame | null> {
     const cacheKey = String(bggId)
     const cached = this.cache.get(cacheKey)
     if (cached && cached.expiresAt > Date.now()) return cached.data
@@ -175,7 +179,7 @@ class BGGService {
     return details
   }
 
-  private parseGeekdoItem(item: GeekdoItem): BGGGameDetails {
+  private parseGeekdoItem(item: GeekdoItem): BGGGame {
     const categories = (item.links?.boardgamecategory || []).map(l => l.name)
     const mechanics = (item.links?.boardgamemechanic || []).map(l => l.name)
     const families = (item.links?.boardgamefamily || []).map(l => l.name)

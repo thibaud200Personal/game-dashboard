@@ -77,17 +77,41 @@ class DatabaseManager {
 
   private initializeDatabase() {
     try {
-      // Check if database has tables
       const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
-      
       if (tables.length === 0) {
-        // Database initialization
         const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
         this.db.exec(schema);
       }
+      this.runMigrations();
     } catch (error) {
       throw new Error(`Error initializing database: ${error}`);
     }
+  }
+
+  private runMigrations() {
+    const columns = (this.db.pragma('table_info(games)') as { name: string }[]).map(c => c.name);
+    if (!columns.includes('is_expansion')) {
+      this.db.exec('ALTER TABLE games ADD COLUMN is_expansion INTEGER DEFAULT 0');
+    }
+  }
+
+  private parseJSONField<T>(value: string | T | undefined, defaultValue: T): T {
+    if (typeof value === 'string') {
+      try {
+        return value ? (JSON.parse(value) as T) : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return (value as T) ?? defaultValue;
+  }
+
+  private parseGameRow(game: Game & { categories?: string | string[]; mechanics?: string | string[] }): Game {
+    return {
+      ...game,
+      categories: this.parseJSONField<string[]>(game.categories, []),
+      mechanics: this.parseJSONField<string[]>(game.mechanics, []),
+    };
   }
 
   // Player operations
@@ -143,8 +167,7 @@ class DatabaseManager {
    * Uses has_expansion and has_characters booleans to load only necessary data
    */
   getAllGamesFullyOptimized(): Game[] {
-    // 1. Get all games in one query
-    const games = this.db.prepare('SELECT * FROM games ORDER BY name').all() as Game[];
+    const games = (this.db.prepare('SELECT * FROM games ORDER BY name').all() as Game[]).map(g => this.parseGameRow(g));
     
     if (games.length === 0) return [];
     
@@ -172,11 +195,9 @@ class DatabaseManager {
 
   // Game operations
   getAllGames(): Game[] {
-    const stmt = this.db.prepare('SELECT * FROM games');
-    const rows = stmt.all() as Game[];
-    
+    const rows = this.db.prepare('SELECT * FROM games').all() as Game[];
     return rows.map((game: Game) => ({
-      ...game,
+      ...this.parseGameRow(game),
       expansions: this.getGameExpansions(game.game_id),
     }));
   }
@@ -187,9 +208,8 @@ class DatabaseManager {
   getGameByIdFullyOptimized(gameId: number): Game | null {
     const game = this.db.prepare('SELECT * FROM games WHERE game_id = ?').get(gameId) as Game;
     if (!game) return null;
-    
     return {
-      ...game,
+      ...this.parseGameRow(game),
       expansions: game.has_expansion ? this.getGameExpansions(gameId) : [],
       characters: game.has_characters ? this.getGameCharacters(gameId) : []
     };
@@ -198,9 +218,8 @@ class DatabaseManager {
   getGameById(gameId: number): Game | null {
     const game = this.db.prepare('SELECT * FROM games WHERE game_id = ?').get(gameId) as Game;
     if (!game) return null;
-    
     return {
-      ...game,
+      ...this.parseGameRow(game),
       expansions: this.getGameExpansions(gameId),
       characters: this.getGameCharacters(gameId)
     };
@@ -211,11 +230,14 @@ class DatabaseManager {
       // Insert main game record
       const gameStmt = this.db.prepare(`
         INSERT INTO games (
-          bgg_id, name, description, image, min_players, max_players,
-          duration, difficulty, category, year_published, publisher, designer,
+          bgg_id, name, description, image, thumbnail,
+          min_players, max_players, playing_time, min_playtime, max_playtime,
+          duration, difficulty, category, categories, mechanics,
+          year_published, publisher, designer,
           bgg_rating, weight, age_min, game_type, supports_cooperative,
-          supports_competitive, supports_campaign, supports_hybrid, has_expansion, has_characters
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          supports_competitive, supports_campaign, supports_hybrid,
+          has_expansion, has_characters, is_expansion
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const result = gameStmt.run(
@@ -223,11 +245,17 @@ class DatabaseManager {
         gameData.name,
         gameData.description || null,
         gameData.image || null,
+        gameData.thumbnail || null,
         gameData.min_players,
         gameData.max_players,
+        gameData.playing_time || null,
+        gameData.min_playtime || null,
+        gameData.max_playtime || null,
         gameData.duration || null,
         gameData.difficulty || null,
         gameData.category || null,
+        gameData.categories ? JSON.stringify(gameData.categories) : null,
+        gameData.mechanics ? JSON.stringify(gameData.mechanics) : null,
         gameData.year_published || null,
         gameData.publisher || null,
         gameData.designer || null,
@@ -240,7 +268,8 @@ class DatabaseManager {
         gameData.supports_campaign ? 1 : 0,
         gameData.supports_hybrid ? 1 : 0,
         gameData.has_expansion ? 1 : 0,
-        gameData.has_characters ? 1 : 0
+        gameData.has_characters ? 1 : 0,
+        gameData.is_expansion ? 1 : 0
       );
 
       const gameId = result.lastInsertRowid as number;
@@ -294,11 +323,13 @@ class DatabaseManager {
       // Update main game record
       const gameStmt = this.db.prepare(`
         UPDATE games SET
-          bgg_id = ?, name = ?, description = ?, image = ?, min_players = ?, max_players = ?,
-          duration = ?, difficulty = ?, category = ?, year_published = ?, publisher = ?, designer = ?,
+          bgg_id = ?, name = ?, description = ?, image = ?, thumbnail = ?,
+          min_players = ?, max_players = ?, playing_time = ?, min_playtime = ?, max_playtime = ?,
+          duration = ?, difficulty = ?, category = ?, categories = ?, mechanics = ?,
+          year_published = ?, publisher = ?, designer = ?,
           bgg_rating = ?, weight = ?, age_min = ?, game_type = ?, supports_cooperative = ?,
           supports_competitive = ?, supports_campaign = ?, supports_hybrid = ?,
-          has_expansion = ?, has_characters = ?,
+          has_expansion = ?, has_characters = ?, is_expansion = ?,
           updated_at = CURRENT_TIMESTAMP
         WHERE game_id = ?
       `);
@@ -308,11 +339,17 @@ class DatabaseManager {
         gameData.name,
         gameData.description || null,
         gameData.image || null,
+        gameData.thumbnail || null,
         gameData.min_players,
         gameData.max_players,
+        gameData.playing_time || null,
+        gameData.min_playtime || null,
+        gameData.max_playtime || null,
         gameData.duration || null,
         gameData.difficulty || null,
         gameData.category || null,
+        gameData.categories ? JSON.stringify(gameData.categories) : null,
+        gameData.mechanics ? JSON.stringify(gameData.mechanics) : null,
         gameData.year_published || null,
         gameData.publisher || null,
         gameData.designer || null,
@@ -326,6 +363,7 @@ class DatabaseManager {
         gameData.supports_hybrid ? 1 : 0,
         gameData.has_expansion ? 1 : 0,
         gameData.has_characters ? 1 : 0,
+        gameData.is_expansion ? 1 : 0,
         gameId
       );
       
@@ -433,9 +471,7 @@ class DatabaseManager {
       const gameCharacters = characterMap.get(character.game_id!) || [];
       gameCharacters.push({
         ...character,
-        abilities: typeof character.abilities === 'string' 
-          ? JSON.parse(character.abilities) 
-          : character.abilities || []
+        abilities: this.parseJSONField<string[]>(character.abilities as string | string[], [])
       });
       characterMap.set(character.game_id!, gameCharacters);
     });

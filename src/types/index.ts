@@ -133,6 +133,7 @@ export interface GameFormData {
   supports_hybrid: boolean;
   has_expansion: boolean;
   has_characters: boolean;
+  is_expansion?: boolean;
   bgg_id?: number;
 }
 
@@ -157,6 +158,13 @@ export interface GameStats {
 }
 
 // BGG API types
+export interface BGGSearchResult {
+  id: number;
+  name: string;
+  year_published: number;
+  type: string;
+}
+
 export interface BGGGame {
   id: number;
   name: string;
@@ -172,6 +180,7 @@ export interface BGGGame {
   year_published: number;
   categories: string[];
   mechanics: string[];
+  families: string[];
   designers: string[];
   publishers: string[];
   rating: number;
