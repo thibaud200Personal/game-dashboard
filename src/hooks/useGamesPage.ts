@@ -37,7 +37,7 @@ export const useGamesPage = (data: GamesPageData) => {
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -78,13 +78,13 @@ export const useGamesPage = (data: GamesPageData) => {
 
   // Check mobile viewport
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setIsMobile(window.innerWidth < 768), 150);
     };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); clearTimeout(timeoutId); };
   }, []);
 
   // Computed values

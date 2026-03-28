@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   getDifficultyColor,
   formatExpansion,
-  formatExpansionLabel,
   getCredit,
   getGameCardStyles,
   getContentClass,
@@ -69,19 +68,19 @@ describe('formatExpansion', () => {
 });
 
 // ---------------------------------------------------------------------------
-// formatExpansionLabel (same logic, GameExpansion type)
+// formatExpansion with GameExpansion type
 // ---------------------------------------------------------------------------
-describe('formatExpansionLabel', () => {
+describe('formatExpansion (GameExpansion)', () => {
   it('includes year when positive', () => {
-    expect(formatExpansionLabel(makeExpansion('Jaws of the Lion', 2020))).toBe('Jaws of the Lion (2020)');
+    expect(formatExpansion(makeExpansion('Jaws of the Lion', 2020))).toBe('Jaws of the Lion (2020)');
   });
 
   it('omits year when 0', () => {
-    expect(formatExpansionLabel(makeExpansion('Jaws of the Lion', 0))).toBe('Jaws of the Lion');
+    expect(formatExpansion(makeExpansion('Jaws of the Lion', 0))).toBe('Jaws of the Lion');
   });
 
   it('omits year when undefined', () => {
-    expect(formatExpansionLabel(makeExpansion('Jaws of the Lion'))).toBe('Jaws of the Lion');
+    expect(formatExpansion(makeExpansion('Jaws of the Lion'))).toBe('Jaws of the Lion');
   });
 });
 

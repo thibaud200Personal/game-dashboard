@@ -19,7 +19,7 @@ import BGGSearch from '@/components/BGGSearch';
 import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
-import { withUpdatedAbility, withRemovedAbility, formatExpansionLabel } from '@/utils/gameHelpers';
+import { withUpdatedAbility, withRemovedAbility, formatExpansion } from '@/utils/gameHelpers';
 
 interface FormData {
   name: string
@@ -637,7 +637,7 @@ export default function AddGameDialog({
                 <Textarea
                   id="expansions-list"
                   name="expansions-list"
-                  value={(formData.expansions || []).map(formatExpansionLabel).join(', ')}
+                  value={(formData.expansions || []).map(formatExpansion).join(', ')}
                   onChange={(e) => {
                     // Parse the textarea content back to expansions array
                     const expansionTexts = e.target.value.split(',').map(text => text.trim()).filter(text => text);
