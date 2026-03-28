@@ -38,7 +38,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       const results = await bggApiService.searchGames(trimmed);
       setSearchResults(results);
     } catch {
-      setSearchError('Failed to search BoardGameGeek. Please try again.');
+      setSearchError('Échec de la recherche sur BoardGameGeek. Veuillez réessayer.');
     } finally {
       setIsSearching(false);
     }
@@ -52,7 +52,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       onGameSelect(gameDetails);
       onClose();
     } catch {
-      setSearchError('Failed to load game details. Please try again.');
+      setSearchError('Impossible de charger les détails du jeu. Veuillez réessayer.');
     } finally {
       setIsLoadingDetails(false);
     }
@@ -66,13 +66,13 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       onGameSelect(gameDetails);
       onClose();
     } catch {
-      setSearchError('Failed to load game details. Please try again.');
+      setSearchError('Impossible de charger les détails du jeu. Veuillez réessayer.');
     } finally {
       setIsLoadingDetails(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -88,8 +88,8 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             name="bgg-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Search by name or enter BGG ID..."
+            onKeyDown={handleKeyDown}
+            placeholder="Rechercher par nom ou ID BGG..."
             className={darkMode ? "pl-10 bg-slate-700 border-slate-600 text-white" : "pl-10 bg-white border-slate-300 text-slate-900"}
             disabled={isSearching || isLoadingDetails}
           />
@@ -116,7 +116,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       {isLoadingDetails && (
         <div className="flex items-center justify-center py-8">
           <Circle className={darkMode ? "w-6 h-6 animate-spin text-teal-400" : "w-6 h-6 animate-spin text-blue-700"} />
-          <span className={darkMode ? "ml-2 text-white/60" : "ml-2 text-blue-700/80"}>Loading game details...</span>
+          <span className={darkMode ? "ml-2 text-white/60" : "ml-2 text-blue-700/80"}>Chargement des détails...</span>
         </div>
       )}
 
@@ -150,7 +150,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
         
         {searchResults.length === 0 && query && !isSearching && (
           <div className={darkMode ? "text-center py-8 text-white/60" : "text-center py-8 text-slate-500"}>
-            No games found. Try a different search term.
+            Aucun jeu trouvé. Essayez un autre terme de recherche.
           </div>
         )}
       </div>

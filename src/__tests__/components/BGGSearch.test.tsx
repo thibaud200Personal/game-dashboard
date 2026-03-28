@@ -21,7 +21,7 @@ describe('BGGSearch', () => {
     
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/search by name or enter bgg id/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/rechercher par nom ou id bgg/i)).toBeInTheDocument();
   });
 
   it('should handle search input changes', async () => {
@@ -134,7 +134,7 @@ describe('BGGSearch', () => {
     });
     
     await waitFor(() => {
-      expect(screen.getByText(/failed.*search/i)).toBeInTheDocument();
+      expect(screen.getByText(/échec de la recherche/i)).toBeInTheDocument();
     });
   });
 });

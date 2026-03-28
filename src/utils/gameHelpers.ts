@@ -1,4 +1,4 @@
-import type { Game, GameCharacter, GameExpansion } from '@/types';
+import type { Game, GameCharacter } from '@/types';
 
 // ---------------------------------------------------------------------------
 // Difficulty
@@ -18,11 +18,6 @@ export function getDifficultyColor(difficulty: string): string {
 export function formatExpansion(exp: { name: string; year_published?: number }): string {
   const year = exp.year_published && exp.year_published > 0 ? ` (${exp.year_published})` : '';
   return exp.name + year;
-}
-
-export function formatExpansionLabel(expansion: GameExpansion): string {
-  const year = expansion.year_published && expansion.year_published > 0 ? ` (${expansion.year_published})` : '';
-  return expansion.name + year;
 }
 
 // ---------------------------------------------------------------------------
