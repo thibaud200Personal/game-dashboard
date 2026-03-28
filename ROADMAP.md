@@ -10,6 +10,16 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
+## 🧹 Dette Technique — Refacto Audit PR #55 (mars 2026)
+
+- **Feedback UI erreurs** : `handleAddGame`/`handleUpdateGame` dans `App.tsx` logguent en `console.error` — l'utilisateur ne voit rien si la création/modification échoue. Remplacer par un toast (Sonner déjà installé).
+- **Tests helpers purs** : les fonctions extraites lors du refacto (`formatExpansion`, `getCredit`, `withUpdatedAbility`, `withRemovedAbility`, `getGameCardStyles`, etc.) sont testables unitairement et non couvertes. À ajouter dans Sprint 2.
+- **Duplicate keys BGGSearch** : `BGGSearch.tsx` génère des clés React dupliquées (IDs BGG identiques dans les résultats). Concaténer l'index : `key={`${game.id}-${index}`}`.
+- **Migrations SQLite hors transaction** : `runMigrations()` exécute les `ALTER TABLE` un à un sans transaction. Encapsuler dans `db.transaction(...)` pour éviter état partiel en cas de crash.
+- **`eslint.audit.config.js`** : config one-shot d'audit, ne doit pas être commitée. Supprimée en PR #55 — à utiliser localement uniquement via `npx eslint --config eslint.audit.config.js`.
+
+---
+
 ## 🐛 Bugs Connus & Polish
 
 ### Page Jeux
@@ -151,10 +161,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ### 🗄️ Finalisation BGG & Base de Données (Impact ⭐⭐)
 
-#### **Migration Schema BGG Étendu** - 2-3 jours
-- **État** : API récupère tous les champs, BDD stockage partiel
-- **Reste à faire** : Ajouter thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON)
-- **Impact** : Persistance complète métadonnées BGG
+#### **✅ Migration Schema BGG Étendu** — PR #55 mars 2026
+- Colonnes `thumbnail`, `playing_time`, `min_playtime`, `max_playtime`, `categories`, `mechanics`, `families` ajoutées en BDD
+- `runMigrations()` étendu pour couvrir toutes ces colonnes automatiquement au démarrage
 
 #### **Formulaire Édition BGG Pré-Import** - 3-4 jours
 - **État** : Import direct BGG → BDD, pas d'édition pré-import
@@ -162,10 +171,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : Interface modification tous champs avant sauvegarde
 - **Impact** : Contrôle utilisateur sur données importées
 
-#### **Système Migration Automatique** - 2-3 jours
-- **État** : Schema fixe, pas de versioning
-- **Reste à faire** : Scripts migration pour ajout champs sans perte données
-- **Impact** : Évolutivité schema et déploiements sécurisés
+#### **✅ Système Migration Automatique** — PR #55 mars 2026
+- `runMigrations()` dans `DatabaseManager.ts` : vérifie et applique les colonnes manquantes à chaque démarrage
+- **Dette** : migrations hors transaction SQLite — un crash en milieu de migration laisse la BDD en état partiel. À encapsuler dans `db.transaction(...)` si on passe en prod.
 
 ### 📊 Cache BGG Local (Impact ⭐⭐) - 2-3 jours
 - **État** : Appels API répétés sans cache
