@@ -20,6 +20,25 @@ import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
 
+function withUpdatedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number, value: string): GameCharacter[] {
+  return chars.map((char, i) => {
+    if (i !== charIndex) return char;
+    return { ...char, abilities: (char.abilities || []).map((a, j) => j === abilityIndex ? value : a) };
+  });
+}
+
+function withRemovedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number): GameCharacter[] {
+  return chars.map((char, i) => {
+    if (i !== charIndex) return char;
+    return { ...char, abilities: (char.abilities || []).filter((_, j) => j !== abilityIndex) };
+  });
+}
+
+function formatExpansionLabel(expansion: GameExpansion): string {
+  const year = expansion.year_published && expansion.year_published > 0 ? ` (${expansion.year_published})` : '';
+  return expansion.name + year;
+}
+
 interface FormData {
   name: string
   image: string
@@ -212,24 +231,14 @@ export default function AddGameDialog({
   const updateAbility = (charIndex: number, abilityIndex: number, value: string) => {
     setFormData(prev => ({
       ...prev,
-      characters: (prev.characters || []).map((char, i) => 
-        i === charIndex ? {
-          ...char,
-          abilities: (char.abilities || []).map((ability, j) => j === abilityIndex ? value : ability)
-        } : char
-      )
+      characters: withUpdatedAbility(prev.characters || [], charIndex, abilityIndex, value)
     }));
   };
 
   const removeAbility = (charIndex: number, abilityIndex: number) => {
     setFormData(prev => ({
       ...prev,
-      characters: (prev.characters || []).map((char, i) => 
-        i === charIndex ? {
-          ...char,
-          abilities: (char.abilities || []).filter((_, j) => j !== abilityIndex)
-        } : char
-      )
+      characters: withRemovedAbility(prev.characters || [], charIndex, abilityIndex)
     }));
   };
 
@@ -646,15 +655,12 @@ export default function AddGameDialog({
                 <Textarea
                   id="expansions-list"
                   name="expansions-list"
-                  value={(formData.expansions || [])
-                    .map(expansion => 
-                      `${expansion.name}${expansion.year_published && expansion.year_published > 0 ? ` (${expansion.year_published})` : ''}`
-                    ).join(', ')}
+                  value={(formData.expansions || []).map(formatExpansionLabel).join(', ')}
                   onChange={(e) => {
                     // Parse the textarea content back to expansions array
                     const expansionTexts = e.target.value.split(',').map(text => text.trim()).filter(text => text);
                     const parsedExpansions = expansionTexts.map((text, index) => {
-                      const match = text.match(/^(.+?)\s*\((\d{4})\)$/);
+                      const match = text.match(/^([^(]+)\((\d{4})\)$/);
                       if (match) {
                         return {
                           expansion_id: index,

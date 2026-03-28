@@ -21,6 +21,34 @@ interface ValidationErrors {
   avatar?: string;
 }
 
+const AVATAR_URL_PATTERN = /^https?:\/\/[^(]+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+
+function validateAddPlayerForm(formData: PlayerFormData): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  if (!formData.player_name.trim()) {
+    errors.player_name = 'Player name is required';
+  } else if (formData.player_name.trim().length < 2) {
+    errors.player_name = 'Player name must be at least 2 characters long';
+  } else if (formData.player_name.trim().length > 50) {
+    errors.player_name = 'Player name must be less than 50 characters';
+  }
+
+  if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
+    errors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
+  }
+
+  return errors;
+}
+
+function getInputClass(field: keyof ValidationErrors, errors: ValidationErrors, darkMode: boolean): string {
+  const hasError = !!errors[field];
+  if (darkMode) {
+    return `bg-white/10 border-white/20 text-white${hasError ? ' border-red-500' : ''}`;
+  }
+  return `bg-slate-100 border-slate-300 text-slate-900${hasError ? ' border-red-500' : ''}`;
+}
+
 export function AddPlayerDialog({
   isOpen,
   onOpenChange,
@@ -32,39 +60,16 @@ export function AddPlayerDialog({
 }: AddPlayerDialogProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    // Player name validation
-    if (!formData.player_name.trim()) {
-      newErrors.player_name = 'Player name is required';
-    } else if (formData.player_name.trim().length < 2) {
-      newErrors.player_name = 'Player name must be at least 2 characters long';
-    } else if (formData.player_name.trim().length > 50) {
-      newErrors.player_name = 'Player name must be less than 50 characters';
-    }
-
-    // Avatar URL validation (if provided)
-    if (formData.avatar && formData.avatar.trim()) {
-      const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
-      if (!urlPattern.test(formData.avatar.trim())) {
-        newErrors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleAdd = () => {
-    if (validateForm()) {
+    const newErrors = validateAddPlayerForm(formData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
       onAdd();
     }
   };
 
   const handleInputChange = (field: keyof PlayerFormData, value: string) => {
     setFormData({ ...formData, [field]: value });
-    // Clear error for this field when user starts typing
     if (errors[field as keyof ValidationErrors]) {
       setErrors({ ...errors, [field]: undefined });
     }
@@ -92,12 +97,10 @@ export function AddPlayerDialog({
               name="player_name"
               value={formData.player_name}
               onChange={(e) => handleInputChange('player_name', e.target.value)}
-              className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.player_name ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.player_name ? 'border-red-500' : ''}`}
+              className={getInputClass('player_name', errors, darkMode)}
               placeholder="Enter player name"
             />
-            {errors.player_name && (
-              <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>
-            )}
+            {errors.player_name && <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>}
           </div>
           <div>
             <Label htmlFor="avatar" className={darkMode ? "text-white" : "text-blue-700"}>Avatar URL</Label>
@@ -106,12 +109,10 @@ export function AddPlayerDialog({
               name="avatar"
               value={formData.avatar}
               onChange={(e) => handleInputChange('avatar', e.target.value)}
-              className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.avatar ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.avatar ? 'border-red-500' : ''}`}
+              className={getInputClass('avatar', errors, darkMode)}
               placeholder="https://example.com/avatar.jpg (optional)"
             />
-            {errors.avatar && (
-              <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>
-            )}
+            {errors.avatar && <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>}
           </div>
           <div>
             <Label htmlFor="favorite_game" className={darkMode ? "text-white" : "text-blue-700"}>Favorite Game</Label>
@@ -125,16 +126,8 @@ export function AddPlayerDialog({
             />
           </div>
           <div className="flex gap-4">
-            <Button onClick={handleAdd} className="flex-1">
-              Add Player
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={onCancel}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
+            <Button onClick={handleAdd} className="flex-1">Add Player</Button>
+            <Button variant="outline" onClick={onCancel} className="flex-1">Cancel</Button>
           </div>
         </div>
       </DialogContent>

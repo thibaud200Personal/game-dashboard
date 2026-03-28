@@ -90,8 +90,20 @@ class DatabaseManager {
 
   private runMigrations() {
     const columns = (this.db.pragma('table_info(games)') as { name: string }[]).map(c => c.name);
-    if (!columns.includes('is_expansion')) {
-      this.db.exec('ALTER TABLE games ADD COLUMN is_expansion INTEGER DEFAULT 0');
+    const gameMigrations: Array<[string, string]> = [
+      ['is_expansion',  'ALTER TABLE games ADD COLUMN is_expansion INTEGER DEFAULT 0'],
+      ['thumbnail',     'ALTER TABLE games ADD COLUMN thumbnail TEXT'],
+      ['playing_time',  'ALTER TABLE games ADD COLUMN playing_time INTEGER'],
+      ['min_playtime',  'ALTER TABLE games ADD COLUMN min_playtime INTEGER'],
+      ['max_playtime',  'ALTER TABLE games ADD COLUMN max_playtime INTEGER'],
+      ['categories',    'ALTER TABLE games ADD COLUMN categories TEXT'],
+      ['mechanics',     'ALTER TABLE games ADD COLUMN mechanics TEXT'],
+      ['families',      'ALTER TABLE games ADD COLUMN families TEXT'],
+    ];
+    for (const [col, sql] of gameMigrations) {
+      if (!columns.includes(col)) {
+        this.db.exec(sql);
+      }
     }
   }
 

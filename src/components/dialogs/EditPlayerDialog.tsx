@@ -23,6 +23,48 @@ interface ValidationErrors {
   total_score?: string;
 }
 
+const AVATAR_URL_PATTERN = /^https?:\/\/[^(]+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+
+function validatePlayerForm(formData: PlayerFormData): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  if (!formData.player_name.trim()) {
+    errors.player_name = 'Player name is required';
+  } else if (formData.player_name.trim().length < 2) {
+    errors.player_name = 'Player name must be at least 2 characters long';
+  } else if (formData.player_name.trim().length > 50) {
+    errors.player_name = 'Player name must be less than 50 characters';
+  }
+
+  if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
+    errors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
+  }
+
+  if (formData.games_played < 0) {
+    errors.games_played = 'Games played cannot be negative';
+  }
+
+  if (formData.wins < 0) {
+    errors.wins = 'Wins cannot be negative';
+  } else if (formData.wins > formData.games_played) {
+    errors.wins = 'Wins cannot exceed games played';
+  }
+
+  if (formData.total_score < 0) {
+    errors.total_score = 'Total score cannot be negative';
+  }
+
+  return errors;
+}
+
+function getInputClass(field: keyof ValidationErrors, errors: ValidationErrors, darkMode: boolean): string {
+  const hasError = !!errors[field];
+  if (darkMode) {
+    return `bg-white/10 border-white/20 text-white${hasError ? ' border-red-500' : ''}`;
+  }
+  return `bg-slate-100 border-slate-300 text-slate-900${hasError ? ' border-red-500' : ''}`;
+}
+
 export function EditPlayerDialog({
   isOpen,
   onOpenChange,
@@ -34,56 +76,16 @@ export function EditPlayerDialog({
 }: EditPlayerDialogProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    // Player name validation
-    if (!formData.player_name.trim()) {
-      newErrors.player_name = 'Player name is required';
-    } else if (formData.player_name.trim().length < 2) {
-      newErrors.player_name = 'Player name must be at least 2 characters long';
-    } else if (formData.player_name.trim().length > 50) {
-      newErrors.player_name = 'Player name must be less than 50 characters';
-    }
-
-    // Avatar URL validation (if provided)
-    if (formData.avatar && formData.avatar.trim()) {
-      const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
-      if (!urlPattern.test(formData.avatar.trim())) {
-        newErrors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
-      }
-    }
-
-    // Games played validation
-    if (formData.games_played < 0) {
-      newErrors.games_played = 'Games played cannot be negative';
-    }
-
-    // Wins validation
-    if (formData.wins < 0) {
-      newErrors.wins = 'Wins cannot be negative';
-    } else if (formData.wins > formData.games_played) {
-      newErrors.wins = 'Wins cannot exceed games played';
-    }
-
-    // Total score validation
-    if (formData.total_score < 0) {
-      newErrors.total_score = 'Total score cannot be negative';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleUpdate = () => {
-    if (validateForm()) {
+    const newErrors = validatePlayerForm(formData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
       onUpdate();
     }
   };
 
   const handleInputChange = (field: keyof PlayerFormData, value: string | number) => {
     setFormData({ ...formData, [field]: value });
-    // Clear error for this field when user starts typing
     if (errors[field as keyof ValidationErrors]) {
       setErrors({ ...errors, [field]: undefined });
     }
@@ -106,12 +108,10 @@ export function EditPlayerDialog({
               name="edit_player_name"
               value={formData.player_name}
               onChange={(e) => handleInputChange('player_name', e.target.value)}
-              className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.player_name ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.player_name ? 'border-red-500' : ''}`}
+              className={getInputClass('player_name', errors, darkMode)}
               placeholder="Enter player name"
             />
-            {errors.player_name && (
-              <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>
-            )}
+            {errors.player_name && <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>}
           </div>
           <div>
             <Label htmlFor="edit_avatar" className={darkMode ? "text-white" : "text-blue-700"}>Avatar URL</Label>
@@ -120,12 +120,10 @@ export function EditPlayerDialog({
               name="edit_avatar"
               value={formData.avatar}
               onChange={(e) => handleInputChange('avatar', e.target.value)}
-              className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.avatar ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.avatar ? 'border-red-500' : ''}`}
+              className={getInputClass('avatar', errors, darkMode)}
               placeholder="https://example.com/avatar.jpg"
             />
-            {errors.avatar && (
-              <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>
-            )}
+            {errors.avatar && <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>}
           </div>
           <div>
             <Label htmlFor="edit_favorite_game" className={darkMode ? "text-white" : "text-blue-700"}>Favorite Game</Label>
@@ -147,11 +145,9 @@ export function EditPlayerDialog({
                 min="0"
                 value={formData.games_played}
                 onChange={(e) => handleInputChange('games_played', parseInt(e.target.value) || 0)}
-                className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.games_played ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.games_played ? 'border-red-500' : ''}`}
+                className={getInputClass('games_played', errors, darkMode)}
               />
-              {errors.games_played && (
-                <p className="text-red-400 text-sm mt-1">{errors.games_played}</p>
-              )}
+              {errors.games_played && <p className="text-red-400 text-sm mt-1">{errors.games_played}</p>}
             </div>
             <div>
               <Label htmlFor="edit_wins" className={darkMode ? "text-white" : "text-blue-700"}>Wins</Label>
@@ -161,11 +157,9 @@ export function EditPlayerDialog({
                 min="0"
                 value={formData.wins}
                 onChange={(e) => handleInputChange('wins', parseInt(e.target.value) || 0)}
-                className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.wins ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.wins ? 'border-red-500' : ''}`}
+                className={getInputClass('wins', errors, darkMode)}
               />
-              {errors.wins && (
-                <p className="text-red-400 text-sm mt-1">{errors.wins}</p>
-              )}
+              {errors.wins && <p className="text-red-400 text-sm mt-1">{errors.wins}</p>}
             </div>
           </div>
           <div>
@@ -176,21 +170,15 @@ export function EditPlayerDialog({
               min="0"
               value={formData.total_score}
               onChange={(e) => handleInputChange('total_score', parseInt(e.target.value) || 0)}
-              className={darkMode ? `bg-white/10 border-white/20 text-white ${errors.total_score ? 'border-red-500' : ''}` : `bg-slate-100 border-slate-300 text-slate-900 ${errors.total_score ? 'border-red-500' : ''}`}
+              className={getInputClass('total_score', errors, darkMode)}
             />
-            {errors.total_score && (
-              <p className="text-red-400 text-sm mt-1">{errors.total_score}</p>
-            )}
+            {errors.total_score && <p className="text-red-400 text-sm mt-1">{errors.total_score}</p>}
           </div>
           <div className="flex gap-4">
             <Button onClick={handleUpdate} className="flex-1">
               Update Player
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={onCancel}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
           </div>
