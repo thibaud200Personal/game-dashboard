@@ -2,29 +2,36 @@
 
 Ce document présente l'état d'avancement et les prochaines étapes pour l'application Board Game Dashboard. La roadmap est organisée pour séparer clairement ce qui est **terminé** de ce qui **reste à faire**.
 
-**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec **85% des fonctionnalités atteintes** et une architecture plus robuste. **Infrastructure tests solide** (31/31 ✅) prête pour évolution vers 50+ tests.
+**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (63/63 ✅). Les gaps restants sont des finitions techniques.
 
 **🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets boardGameScore et board-game-scorekeep plutôt que de repartir de zéro.
 
-**🧪 Focus Tests** : Suite à l'analyse comparative avec board-game-scorekeep (52/52 tests), priorité donnée à l'évolution de l'infrastructure tests pour atteindre les standards de production (objectif 50+ tests).
-
 ---
 
-## 🧹 Dette Technique — Refacto Audit PR #55 (mars 2026)
+## 🧹 Dette Technique — Livrée (mars 2026)
 
-- ✅ **Feedback UI erreurs** : `handleAddGame`/`handleUpdateGame` dans `App.tsx` — toast Sonner ajouté (PR #56).
-- ✅ **Tests helpers purs** : 32 tests unitaires ajoutés dans `src/__tests__/helpers/pureHelpers.test.ts` (PR #56).
-- ✅ **Duplicate keys BGGSearch** : clé `${result.id}-${index}` (PR #56).
-- ✅ **Migrations SQLite hors transaction** : `runMigrations()` encapsulé dans `db.transaction()` (PR #56).
-- ✅ **`eslint.audit.config.js`** : ajouté à `.gitignore` (PR #56).
+### PR #55 — Audit sécurité & refacto
+- ✅ **Duplicate keys BGGSearch** : clé `${result.id}-${index}`
+- ✅ **Migrations SQLite dans transaction** : `runMigrations()` encapsulé dans `db.transaction()`
+- ✅ **`eslint.audit.config.js`** : ajouté à `.gitignore`
 
-- ✅ **`handleAddGame` / `handleUpdateGame` dans `App.tsx`** wrappés avec `useCallback(fn, [])` (PR #56).
+### PR #56 — Performance & feedback UI
+- ✅ **Toast Sonner** sur `handleAddGame`/`handleUpdateGame` dans `App.tsx`
+- ✅ **32 tests unitaires** helpers purs : `src/__tests__/helpers/pureHelpers.test.ts`
+- ✅ **`useCallback`** sur `handleAddGame`, `handleUpdateGame`, handlers `usePlayersPage`
+- ✅ **`React.memo`** sur `GameCard` et `PlayerCard`
+- ✅ **`React.lazy` + `Suspense`** : 9 pages lazy-loadées
 
-## 🧹 Dette Technique — Quick Wins PR #58 (mars 2026)
+### PR #57 — Authentification
+- ✅ **Bearer token statique** : `POST /api/auth/login` valide `AUTH_PASSWORD` (env var), token 64-hex généré en mémoire au démarrage
+- ✅ **Middleware `requireAuth`** protège toutes les routes `/api/*` sauf `/api/health` et `/api/auth/login`
+- ✅ **Startup guard** : le serveur refuse de démarrer si `AUTH_PASSWORD` manquant (`process.exit(1)`)
+- ✅ **Frontend** : `LoginPage`, token en `localStorage`, logout dans Settings, 401 → redirect auto
 
-- ✅ **`formatExpansionLabel` supprimé** — fusionné dans `formatExpansion` (même logique, `GameExpansion` satisfait déjà le shape). `AddGameDialog.tsx` et tests mis à jour.
-- ✅ **BGGSearch — texte UI harmonisé FR** — Messages d'erreur, placeholder, loading et "aucun résultat" tous en français. `onKeyPress` → `onKeyDown`.
-- ✅ **Debounce resize 150ms** — `usePlayersPage` et `useGamesPage` : handler debounced, init via `useState` lazy initializer (fix lint `react-hooks/set-state-in-effect`).
+### PR #58 — Quick wins
+- ✅ **`formatExpansionLabel` supprimé** — fusionné dans `formatExpansion` (`GameExpansion` satisfait déjà le shape)
+- ✅ **BGGSearch harmonisé FR** — tous les messages en français, `onKeyPress` → `onKeyDown`
+- ✅ **Debounce resize 150ms** dans `usePlayersPage` et `useGamesPage`
 
 ---
 
@@ -35,7 +42,6 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **✅ CORRIGÉ `supports_hybrid` non persisté** — PR #43 mars 2026 : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts` + interfaces backend mises à jour.
 - **✅ CORRIGÉ Popup de suppression joueur** — PR #43 mars 2026 : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop, aligné avec `DeleteGameDialog`.
 - **✅ CORRIGÉ `NewGamePage.tsx` — interfaces locales dupliquées** — PR #43 mars 2026 : imports depuis `@/types`, 0 interface locale.
-- *(déplacé dans section PR #58 ci-dessus)*
 
 ### BGG API — Évolutions futures
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
@@ -45,9 +51,30 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
-## ✅ PHASE 1 : FOUNDATION - TERMINÉE (95% COMPLETE)
+## 🔒 SÉCURITÉ — AUDIT MARS 2026
 
-**Approche UI/UX First** : Contrairement aux projets backend-first qui accumulent une dette UX, nous avons priorisé l'expérience utilisateur dès le début. Cette stratégie évite les problèmes d'intégration UI impossibles à corriger et garantit une architecture cohérente.
+### ✅ Corrigé (28 mars 2026)
+- **npm audit** : 0 vulnérabilité frontend + backend
+- **Zod sur toutes les routes** : middleware `validateBody` appliqué sur POST/PUT players, games, sessions
+- **CORS trim** : `.map(o => o.trim())` sur `CORS_ORIGINS` pour éviter mismatch whitespace
+- **JSON.parse robuste** : `parseJSONField` helper utilisé partout dans `DatabaseManager`
+- **BGG parseInt** : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
+- **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production
+- **Authentification Bearer token** : voir PR #57 dans Dette Technique ci-dessus
+
+### 📦 Dépendances majeures à mettre à jour
+- `express` 4 → 5 (breaking changes à valider)
+- `zod` 3 → 4 (breaking changes à valider)
+- `recharts` 2 → 3 (déjà en roadmap)
+- `vite` 7 → 8 (déjà en roadmap)
+- `typescript` 5 → 6
+- `lucide-react` 0.577 → 1.7
+
+---
+
+## ✅ PHASE 1 : FOUNDATION - TERMINÉE
+
+**Approche UI/UX First** : Contrairement aux projets backend-first qui accumulent une dette UX, nous avons priorisé l'expérience utilisateur dès le début.
 
 ### 🏗️ Architecture & Infrastructure TERMINÉE
 -   ✅ **Architecture Frontend Complète** : Pattern Container/Presenter avec séparation stricte logique/présentation
@@ -81,9 +108,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
     - Détection intelligente modes de jeu basée sur mechanics/categories
     - Persistance BDD complète via bggService.ts + DatabaseManager typé
     - `characters: []` — BGG ne fournit pas de personnages, placeholder correct en place
--   ⚠️ **BGG Base de Données** : Stockage partiel des métadonnées étendues
+-   ✅ **BGG Base de Données** : Métadonnées complètes en BDD (PR #55)
     - ✅ Champs basiques : bgg_rating, weight, age_min, supports_modes
-    - ❌ Métadonnées manquantes : thumbnail, playing_time, categories/mechanics (JSON), families
+    - ✅ Métadonnées étendues : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
 -   ✅ **Analytics Avancé** :
     - Dashboard centralisé avec métriques générales
     - Analytics par jeu : sessions, joueurs uniques, durées, scores
@@ -93,76 +120,23 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
     - Recherche intelligente multi-critères (texte + catégorie + difficulté)
     - Interface BGG intégrée avec import automatique
     - Filtres avancés avec tri dynamique
-    - Architecture extensible pour nouveaux filtres
 
 ### 🎨 Interface & UX Avancée TERMINÉE
 -   ✅ **Design System Moderne** : React 19 + Radix UI + Tailwind CSS
--   ✅ **Architecture TypeScript** : 0 `any`, 0 erreur de compilation — types stricts de bout en bout (PR #42, mars 2026)
+-   ✅ **Architecture TypeScript** : 0 `any`, 0 erreur de compilation — types stricts de bout en bout (PR #42)
 -   ✅ **Flux de types** : DB schema → `src/types/index.ts` → backend → frontend, source de vérité unique
--   ✅ **`CreateSessionPayload`** : Nouveau type dédié à la création de session (modes compétitif/coopératif/campagne/hybride)
--   ✅ **Champs optionnels alignés** : `Player.avatar?`, `Player.stats?`, `GameExpansion.year_published?`, `GameCharacter.description?` alignés avec le schéma BDD
--   ✅ **Responsive Design** : Adaptation mobile/desktop optimisée
--   ✅ **Validation Robuste** : Champs obligatoires, feedback immédiat
+-   ✅ **`CreateSessionPayload`** : Nouveau type dédié à la création de session
+-   ✅ **Champs optionnels alignés** : `Player.avatar?`, `GameExpansion.year_published?`, `GameCharacter.description?` alignés BDD
 -   ✅ **Icônes Cohérentes** : @phosphor-icons/react dans toute l'application
 -   ✅ **Notifications** : Sonner pour feedback utilisateur
 
-### 🧪 Tests & Qualité — Baseline Solide ✅
-
-**✅ État Actuel :**
+### 🧪 Tests & Qualité TERMINÉS
 -   ✅ **Infrastructure Tests** : Vitest + React Testing Library + MSW configurés
--   ✅ **31/31 Tests Passent** : 100% de réussite avec couverture seuils 80%
+-   ✅ **63/63 Tests Passent** : 100% de réussite avec couverture seuils 80%
 -   ✅ **Tests Services** : BGG API service avec mocks MSW fonctionnels
 -   ✅ **Tests Hooks** : useGamesPage et autres hooks React validés
--   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard
--   ✅ **Scripts Manuels** : `test-validation.ts` et `test-n1-optimization.ts`
--   ✅ **React Query** : TanStack Query v5 déjà intégré pour le server state
-
-**🎯 Objectifs Évolution (Inspiration board-game-scorekeep 52/52 tests) :**
--   ⚡ **Structure Organisée** : Migration vers `unit/technical/`, `unit/functional/`, `integration/`
--   ⚡ **Tests E2E** : 7 workflows BGG complets (search → select → import → save)
--   ⚡ **Fixtures Réalistes** : Données BGG authentiques (Gloomhaven, Wingspan, Catan)
--   ⚡ **Mocks Sophistiqués** : Builders, matchers custom, support multilingue
--   ⚡ **50+ Tests Target** : Extension coverage pour égaler référence projet
-
-**📊 État Actuel vs Référence :**
-- ✅ **Infrastructure Solide** : 31/31 tests ✅ vs 52/52 tests ✅ (board-game-scorekeep)
-- ✅ **Framework Moderne** : Vitest + RTL + MSW configurés et fonctionnels
-- ⚠️ **Organisation** : Structure plate vs organisation mature (unit/technical/, functional/, integration/)
-- ❌ **Tests E2E** : Aucun workflow d'intégration vs 7 tests BGG complets
-- ❌ **Fixtures** : Mocks basiques vs données BGG réalistes (Gloomhaven, Catan)
-
-**🎯 Plan d'Évolution Tests (3-4 jours) :**
-1. **🏗️ Restructuration** : `unit/technical/`, `unit/functional/`, `integration/`, `fixtures/`
-2. **🔄 Tests Intégration E2E** : 7 workflows BGG (search → select → import → save)
-3. **📊 Fixtures Réalistes** : Données BGG authentiques (Gloomhaven, Wingspan, Catan)
-4. **🎭 Mocks Avancés** : Builders configurables, matchers custom (`toHaveValidGameTemplate`)
-5. **📈 Extension Coverage** : 31 → 50+ tests (17 techniques + 28 fonctionnels + 7 intégration)
-
----
-
-## 🔒 SÉCURITÉ — AUDIT MARS 2026
-
-### ✅ Corrigé (28 mars 2026)
-- **npm audit** : 0 vulnérabilité frontend + backend (vitest 4.1.2, path-to-regexp 0.1.13, picomatch, brace-expansion)
-- **Zod sur toutes les routes** : middleware `validateBody` appliqué sur POST/PUT players, games, sessions
-- **CORS trim** : `.map(o => o.trim())` sur `CORS_ORIGINS` pour éviter mismatch whitespace
-- **JSON.parse robuste** : `parseJSONField` helper utilisé partout dans `DatabaseManager`
-- **BGG parseInt** : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
-- **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production (reverse proxy + `x-forwarded-proto`)
-
-### ✅ Authentification — Corrigé (28 mars 2026) — PR #57
-- Bearer token statique : `POST /api/auth/login` valide `AUTH_PASSWORD` (env var), retourne un token 64-hex généré en mémoire au démarrage
-- Middleware `requireAuth` protège toutes les routes `/api/*` sauf `/api/health` et `/api/auth/login`
-- Serveur refuse de démarrer si `AUTH_PASSWORD` manquant (`process.exit(1)`)
-- Frontend : `LoginPage`, token en `localStorage`, logout dans Settings, 401 → redirect auto
-
-### 📦 Dépendances majeures à mettre à jour
-- `express` 4 → 5 (breaking changes à valider)
-- `zod` 3 → 4 (breaking changes à valider)
-- `recharts` 2 → 3 (déjà en roadmap)
-- `vite` 7 → 8 (déjà en roadmap)
-- `typescript` 5 → 6
-- `lucide-react` 0.577 → 1.7
+-   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard, helpers purs
+-   ✅ **React Query** : TanStack Query v5 intégré pour le server state
 
 ---
 
@@ -226,14 +200,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 ### 🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours
 
 #### **Restructuration & E2E**
-- **État** : 31/31 tests ✅, structure plate
+- **État** : 63/63 tests ✅, structure plate
 - **Objectif** : Organisation mature (unit/technical/, unit/functional/, integration/) + 7 workflows E2E BGG
 - **Référence** : board-game-scorekeep (52/52 tests ✅)
 - **Impact** : Qualité code et robustesse application
 
 #### **Tests Unitaires Core Étendus** - 1-2 semaines
 - **Scope** : BGGService, DatabaseManager, validation Zod, hooks principaux
-- **Objectif** : Couverture 80%+ des fonctions critiques, 31 → 50+ tests
+- **Objectif** : Couverture 80%+ des fonctions critiques, 63 → 80+ tests
 - **Impact** : Prévention régressions et debugging facilité
 
 #### **Tests d'Intégration** - 1 semaine
@@ -359,92 +333,49 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
-## 📋 RESSOURCES DISPONIBLES - NE PAS RÉINVENTER
+## 📋 RÉFÉRENCES PROJETS — NE PAS RÉINVENTER
 
-### 🎮 boardGameScore (Scraping UltraBoardGames)
-- **Service complet** : `backend/src/services/externalGameDataService.ts`
-- **Mapping fonctionnel** : BGG ID → UltraBoardGames slug déjà fait
-- **URLs testées** : Structure HTML existante avec données mockées
-- **Jeux supportés** : Citadels, Dark Souls, Zombicide, Arkham Horror, This War of Mine
-- **Action** : Copier directement, ne pas refaire
+### 🎮 boardGameScore
+- **Service UltraBoardGames complet** : `backend/src/services/externalGameDataService.ts` — copier directement
+- **Mapping BGG ID → slug** déjà fait : Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror, This War of Mine
 
-### 🧪 board-game-scorekeep (Tests & BGG Avancé)
-- **Tests complets** : 52/52 ✅ avec Jest + React Testing Library
-- **BGG schema étendu** : Tous les champs manquants dans votre DB
-- **Formulaire BGG** : Édition complète avant import
-- **Architecture qualité** : TypeScript strict, validation complète
-- **Action** : Porter les tests et composants manquants
+### 🧪 board-game-scorekeep
+- **Formulaire BGG pré-import** : édition complète avant sauvegarde (pas encore implémenté ici)
+- **Cache BGG intelligent** : localStorage + expiration
+- **Architecture tests** : 52/52 Jest + RTL (référence pour structuration unit/integration)
 
-### 💡 Plan d'Action Smart
-1. **Jour 1-2** : Copier service UltraBoardGames de boardGameScore
-2. **Jour 3-4** : Ajouter champs BGG manquants de board-game-scorekeep
-3. **Jour 5-8** : Porter infrastructure tests complète
-4. **Jour 9-10** : Cache BGG et formulaire pré-import
-5. **Semaine 3** : Finitions UX (thème, graphiques)
-
----
-
-## 🎯 COMPARAISON AVEC LA ROADMAP V1 (board-game-scorekeep)
-
-### ✅ **OBJECTIFS V1 SURPASSÉS (85% atteints ou dépassés)**
-
-#### 🚀 **Fonctionnalités Bien Plus Avancées**
-- **Extensions & Characters Management** 🚀 **DÉPASSÉ** - Gestion complète (pas prévu en v1)
-- **Advanced Player Statistics** 🚀 **DÉPASSÉ** - Stats détaillées + visualisations
-- **Multi-mode Game Support** 🚀 **DÉPASSÉ** - Support coopératif/versus/solo/campaign
-- **Database Normalization** 🚀 **DÉPASSÉ** - Schéma relationnel avec foreign keys vs JSON
-
-#### ✅ **Fonctionnalités V1 Complètement Implémentées**
-- Backend Express + SQLite ✅
-- BGG Integration avancée (recherche, XML parsing, métadonnées étendues) ✅
-- CRUD complet (games, players, sessions) ✅
-- Responsive design + composants modernes ✅
-- Validation robuste (Zod vs validation basique) ✅
-
-#### ⚠️ **Gaps Mineurs vs V1**
-- **Theme Toggle** : Infrastructure prête, manque Provider React
-- **BGG Persistance** : API récupère tout, BDD stockage partiel (métadonnées étendues)
-- **BGG Édition** : Import direct, pas de formulaire pré-import
-- **Tests** : V1 avait 52/52 tests, projet actuel à **31/31 ✅** (objectif : 50+)
-- **Import/Export** : Fonctionnalité backup à ajouter
-
-### 🎯 **VERDICT GLOBAL**
-Le projet actuel **dépasse largement** la vision v1 avec une architecture plus robuste, des fonctionnalités bonus, et une UX moderne. Les gaps restants sont principalement des finitions techniques plutôt que des manques fonctionnels.
+### ❌ À ne pas réimplémenter
+- Multi-utilisateurs, internationalisation, PWA complète
 
 ---
 
 ## 🎯 PROCHAINES ACTIONS — DÉCOUPAGE EN SPRINTS
 
 ### Sprint 1 — Complétude BGG (1-2 semaines)
-Fermer les lacunes données BGG identifiées depuis le début :
-1. **🗄️ Migration schema BGG étendu** : Ajouter thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON) à la DB (2-3 jours) → [détail](changelog/sprint1-bgg-schema-migration.md)
+1. ✅ **🗄️ Migration schema BGG étendu** — PR #55 : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
 2. **📝 Formulaire pré-import BGG** : Permettre l'édition avant sauvegarde (3-4 jours) → [détail](changelog/sprint1-bgg-preimport-form.md)
 3. **📊 Cache BGG local** : localStorage + expiration (2-3 jours) → [détail](changelog/sprint1-bgg-cache.md)
 4. **🔀 Unifier BGGGame/BGGGameDetails** : Source de vérité unique dans `src/types/index.ts` (1 jour) → [détail](changelog/sprint1-bgg-interfaces-unification.md)
 
 ### Sprint 2 — Tests & Qualité (1-2 semaines)
-Atteindre les standards de production :
 1. **🧪 Tests BGG backend** : Mocker geekdo.com avec MSW, couvrir bggService.ts + routes `/api/bgg/*` → [détail](changelog/sprint2-bgg-backend-tests.md)
 2. **🏗️ Restructuration tests** : Dossiers `unit/technical/`, `unit/functional/`, `integration/`, `fixtures/` → [détail](changelog/sprint2-tests-restructure.md)
 3. **📊 Fixtures réalistes** : Données BGG authentiques (Gloomhaven, Wingspan, Catan) → [détail](changelog/sprint2-realistic-fixtures.md)
-4. **📈 31 → 50+ tests** : Compléter coverage jusqu'aux standards de board-game-scorekeep → [détail](changelog/sprint2-tests-coverage-50plus.md)
+4. **📈 63 → 80+ tests** : Compléter coverage → [détail](changelog/sprint2-tests-coverage-50plus.md)
 
 ### Sprint 3 — Bug Fix & Polish (2-4 jours)
-Items rapides, zero-risk, haute valeur perçue :
 1. **🎨 Thème Sombre/Clair** : ThemeProvider React Context + localStorage persistence (2-3 jours) → [détail](changelog/sprint3-theme-toggle.md)
-2. **🌐 BGGSearch FR/EN** : Harmoniser les messages dans une seule langue (< 1 jour) → [détail](changelog/sprint3-bgg-search-lang.md)
-3. **👤 BGGGameDetails.characters** : Initialiser à `[]` dans `parseGeekdoItem` (< 1 jour) → [détail](changelog/sprint3-bgg-characters-init.md)
-4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG dans `handleAddGame` (< 1 jour) → [détail](changelog/sprint3-bgg-flags-recalculation.md)
+2. ✅ **🌐 BGGSearch FR** — PR #58 : tous les messages en français
+3. ✅ **👤 BGGGameDetails.characters** — `characters: []` déjà initialisé dans `parseGeekdoItem`
+4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet → [détail](changelog/sprint3-bgg-flags-recalculation.md)
 
 ### Sprint 4 — Features UX (2-4 semaines)
-Nouvelles fonctionnalités visibles :
-1. **📊 Graphiques temporels** : Implémenter visualisations Recharts dans StatsPage (infrastructure prête) → [détail](changelog/sprint4-temporal-charts.md)
+1. **📊 Graphiques temporels** : Implémenter visualisations Recharts dans StatsPage → [détail](changelog/sprint4-temporal-charts.md)
 2. **🎮 Sélection personnages en session** : Interface modale dans NewGamePage → [détail](changelog/sprint4-character-selection-session.md)
 3. **🎮 Service UltraBoardGames** : Copier `externalGameDataService.ts` de boardGameScore → [détail](changelog/sprint4-ultraboardgames-service.md)
 4. **💾 Export/Import données** : Implémenter les stubs existants dans `useSettingsPage` → [détail](changelog/sprint4-export-import.md)
 
 ### Sprint 5 — Évolutions Long Terme (1-3 mois)
-Non bloquant, décidé selon les besoins :
 1. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
 2. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)
 3. Système d'achievements / gamification → [détail](changelog/sprint5-achievements.md)
@@ -452,34 +383,6 @@ Non bloquant, décidé selon les besoins :
 5. Mode tournoi / brackets → [détail](changelog/sprint5-tournament-mode.md)
 6. Tests E2E (Cypress/Playwright) → [détail](changelog/sprint5-e2e-tests.md)
 7. PWA basique → [détail](changelog/sprint5-pwa.md)
-
----
-
-## 🎯 **FONCTIONNALITÉS INSPIRÉES DES PROJETS EXISTANTS**
-
-Les éléments suivants sont des améliorations pertinentes identifiées dans les projets de référence :
-
-#### ✅ **Déjà Supérieur dans ce Projet**
-- **Architecture BDD** : Normalisée avec foreign keys vs structure CSV
-- **Validation Zod** : Plus robuste que validation basique
-- **UI/UX** : shadcn/ui + Tailwind vs interface plus simple
-- **React Query** : TanStack Query v5 déjà intégré (server state, cache, sync)
-
-#### 🎯 **À Copier de boardGameScore (Immédiat)**
-- **Service UltraBoardGames complet** : Copier `externalGameDataService.ts`
-- **Mapping BGG→UltraBoardGames** : Ne pas refaire, c'est déjà fait
-- **Structure scraping** : Architecture prête avec URLs testées
-
-#### 🎯 **À Porter de board-game-scorekeep (Priorité haute)**
-- **Schema BGG complet** : Tous les champs manquants en DB
-- **Tests infrastructure** : 52/52 tests Jest + RTL à adapter
-- **Formulaire BGG pré-import** : Édition avant sauvegarde
-- **Cache BGG intelligent** : Performance et limitation API
-
-#### 🔮 **Évolutions futures (Priorité moyenne)**
-- **Mode campagne multi-scénarios** (support base existant)
-- **Export/Import données** (placeholders déjà présents)
-- **Système recommandations** basé patterns
 
 ---
 
@@ -505,6 +408,8 @@ Les éléments suivants sont des améliorations pertinentes identifiées dans le
 | #44 | Mars 2026 | Mise à jour stack : Node 24, Vite 7.3, Vitest 4, TS 5.9 | [changelog/pr-44-stack-update.md](changelog/pr-44-stack-update.md) |
 | #45 | Mars 2026 | Suppression @github/spark + 15 packages morts | [changelog/pr-45-remove-spark.md](changelog/pr-45-remove-spark.md) |
 | #46 | Mars 2026 | Réorganisation ROADMAP + répertoire changelog/ + .gitattributes LF | [changelog/pr-46-roadmap-reorganization.md](changelog/pr-46-roadmap-reorganization.md) |
+| #57 | Mars 2026 | Authentification Bearer token statique (AUTH_PASSWORD + LoginPage + logout) | — |
+| #58 | Mars 2026 | Quick wins : formatExpansion merge, BGGSearch FR, debounce resize, onKeyDown | — |
 
 
 📋 Mises à jour techniques planifiées : [changelog/planned-updates.md](changelog/planned-updates.md)
