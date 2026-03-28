@@ -144,10 +144,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **BGG parseInt** : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
 - **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production (reverse proxy + `x-forwarded-proto`)
 
-### ⚠️ Authentification — À faire (PRIORITÉ HAUTE)
-- **État** : Aucune route protégée — l'app est exposée sur internet, toute personne connaissant l'URL peut lire/modifier les données
-- **Action** : Ajouter une authentification simple (ex: API key en header, ou JWT, ou Basic Auth via reverse proxy)
-- **Impact** : Critique pour une exposition publique
+### ✅ Authentification — Corrigé (28 mars 2026) — PR #57
+- Bearer token statique : `POST /api/auth/login` valide `AUTH_PASSWORD` (env var), retourne un token 64-hex généré en mémoire au démarrage
+- Middleware `requireAuth` protège toutes les routes `/api/*` sauf `/api/health` et `/api/auth/login`
+- Serveur refuse de démarrer si `AUTH_PASSWORD` manquant (`process.exit(1)`)
+- Frontend : `LoginPage`, token en `localStorage`, logout dans Settings, 401 → redirect auto
 
 ### 📦 Dépendances majeures à mettre à jour
 - `express` 4 → 5 (breaking changes à valider)
