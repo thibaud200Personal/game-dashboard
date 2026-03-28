@@ -10,44 +10,78 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ## 🧹 Dette Technique — Livrée (mars 2026)
 
-### PR #55 — Audit sécurité & refacto
+<details>
+<summary>Voir le détail</summary>
+
+<details>
+<summary><b>PR #55 — Audit sécurité & refacto</b></summary>
+
 - ✅ **Duplicate keys BGGSearch** : clé `${result.id}-${index}`
 - ✅ **Migrations SQLite dans transaction** : `runMigrations()` encapsulé dans `db.transaction()`
 - ✅ **`eslint.audit.config.js`** : ajouté à `.gitignore`
 
-### PR #56 — Performance & feedback UI
+</details>
+
+<details>
+<summary><b>PR #56 — Performance & feedback UI</b></summary>
+
 - ✅ **Toast Sonner** sur `handleAddGame`/`handleUpdateGame` dans `App.tsx`
 - ✅ **32 tests unitaires** helpers purs : `src/__tests__/helpers/pureHelpers.test.ts`
 - ✅ **`useCallback`** sur `handleAddGame`, `handleUpdateGame`, handlers `usePlayersPage`
 - ✅ **`React.memo`** sur `GameCard` et `PlayerCard`
 - ✅ **`React.lazy` + `Suspense`** : 9 pages lazy-loadées
 
-### PR #57 — Authentification
+</details>
+
+<details>
+<summary><b>PR #57 — Authentification</b></summary>
+
 - ✅ **Bearer token statique** : `POST /api/auth/login` valide `AUTH_PASSWORD` (env var), token 64-hex généré en mémoire au démarrage
 - ✅ **Middleware `requireAuth`** protège toutes les routes `/api/*` sauf `/api/health` et `/api/auth/login`
 - ✅ **Startup guard** : le serveur refuse de démarrer si `AUTH_PASSWORD` manquant (`process.exit(1)`)
 - ✅ **Frontend** : `LoginPage`, token en `localStorage`, logout dans Settings, 401 → redirect auto
 
-### PR #58 — Quick wins
+</details>
+
+<details>
+<summary><b>PR #58 — Quick wins</b></summary>
+
 - ✅ **`formatExpansionLabel` supprimé** — fusionné dans `formatExpansion` (`GameExpansion` satisfait déjà le shape)
 - ✅ **BGGSearch harmonisé FR** — tous les messages en français, `onKeyPress` → `onKeyDown`
 - ✅ **Debounce resize 150ms** dans `usePlayersPage` et `useGamesPage`
+
+</details>
+
+</details>
 
 ---
 
 ## 🐛 Bugs Connus & Polish
 
-### Page Jeux
+<details open>
+<summary>Voir le détail</summary>
+
+<details>
+<summary><b>Page Jeux</b></summary>
+
 - **✅ CORRIGÉ Suppression de jeux non fonctionnelle** — PR #43 mars 2026 : handler frontend + SQL `DELETE /api/games/:id` opérationnel.
 - **✅ CORRIGÉ `supports_hybrid` non persisté** — PR #43 mars 2026 : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts` + interfaces backend mises à jour.
 - **✅ CORRIGÉ Popup de suppression joueur** — PR #43 mars 2026 : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop, aligné avec `DeleteGameDialog`.
 - **✅ CORRIGÉ `NewGamePage.tsx` — interfaces locales dupliquées** — PR #43 mars 2026 : imports depuis `@/types`, 0 interface locale.
 
-### BGG API — Évolutions futures
+</details>
+
+<details open>
+<summary><b>BGG API — Évolutions futures</b></summary>
+
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
 - **🔄 `has_expansion`/`has_characters` non recalculés à l'import BGG** — Dans `handleAddGame` (`App.tsx`), le jeu ajouté via BGG reçoit `expansions: []` / `characters: []` en dur côté client. Les flags `has_expansion` et `has_characters` ne sont donc pas recalculés après création. À corriger lors de l'implémentation de l'import complet : recalculer ces flags à partir des données retournées par l'API après création.
 - **🔀 `BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — `src/services/bggApi.ts` et `backend/bggService.ts` définissent chacun leur propre interface pour la même structure. À unifier dans `src/types/index.ts` (source de vérité partagée) pour éviter une désynchronisation silencieuse à l'avenir.
 - **🧪 Tests BGG backend non couverts** — `backend/bggService.ts` (cache, rate limiting, parsing geekdo) et les routes `/api/bgg/*` dans `server.ts` n'ont aucun test. Les tests existants dans `src/__tests__/services/bggApi.test.ts` échouent car fetch n'est pas mocké avec MSW. À corriger : mocker les appels geekdo.com avec MSW et ajouter des cas de test pour la recherche, les détails, le cache et les erreurs réseau.
+
+</details>
+
+</details>
 
 ---
 
@@ -79,7 +113,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 **Approche UI/UX First** : Contrairement aux projets backend-first qui accumulent une dette UX, nous avons priorisé l'expérience utilisateur dès le début.
 
-### 🏗️ Architecture & Infrastructure TERMINÉE
+<details>
+<summary><b>🏗️ Architecture & Infrastructure TERMINÉE</b></summary>
+
 -   ✅ **Architecture Frontend Complète** : Pattern Container/Presenter avec séparation stricte logique/présentation
 -   ✅ **Documentation Centralisée** : Réorganisation complète dans `/src/docs/` avec guides détaillés
 -   ✅ **Structure Modulaire** : Organisation cohérente des composants, hooks, views et services
@@ -89,14 +125,22 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 -   ✅ **Validation Zod** : Schémas complets et middleware intégrés dans tous les contrôleurs
 -   ✅ **Optimisations SQL** : Vues `player_statistics` et `game_statistics`, résolution N+1, 37.5% réduction requêtes
 
-### 🎨 Interface Utilisateur TERMINÉE
+</details>
+
+<details>
+<summary><b>🎨 Interface Utilisateur TERMINÉE</b></summary>
+
 -   ✅ **Design System Complet** : Tailwind CSS + shadcn/ui avec glassmorphisme
 -   ✅ **Navigation Contextuelle** : Système mobile/desktop avec gestion d'état avancée
 -   ✅ **Responsive Design** : Adaptation complète mobile/tablet/desktop
 -   ✅ **Dashboard Analytics** : Page d'accueil avec métriques générales et navigation intuitive
 -   ✅ **Menu Principal et Breadcrumbs** : Navigation contextuelle avec retour intelligent
 
-### 🔧 Fonctionnalités Core TERMINÉES
+</details>
+
+<details>
+<summary><b>🔧 Fonctionnalités Core TERMINÉES</b></summary>
+
 -   ✅ **Gestion Joueurs Complète** : CRUD avec statistiques détaillées, recherche, profils riches, comparaisons
 -   ✅ **Gestion Jeux Avancée** : CRUD avec intégration BGG API, métadonnées complètes, filtres intelligents
 -   ✅ **Sessions de Jeu Sophistiquées** :
@@ -124,7 +168,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
     - Interface BGG intégrée avec import automatique
     - Filtres avancés avec tri dynamique
 
-### 🎨 Interface & UX Avancée TERMINÉE
+</details>
+
+<details>
+<summary><b>🎨 Interface & UX Avancée TERMINÉE</b></summary>
+
 -   ✅ **Design System Moderne** : React 19 + Radix UI + Tailwind CSS
 -   ✅ **Architecture TypeScript** : 0 `any`, 0 erreur de compilation — types stricts de bout en bout (PR #42)
 -   ✅ **Flux de types** : DB schema → `src/types/index.ts` → backend → frontend, source de vérité unique
@@ -133,13 +181,19 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 -   ✅ **Icônes Cohérentes** : @phosphor-icons/react dans toute l'application
 -   ✅ **Notifications** : Sonner pour feedback utilisateur
 
-### 🧪 Tests & Qualité TERMINÉS
+</details>
+
+<details>
+<summary><b>🧪 Tests & Qualité TERMINÉS</b></summary>
+
 -   ✅ **Infrastructure Tests** : Vitest + React Testing Library + MSW configurés
 -   ✅ **63/63 Tests Passent** : 100% de réussite avec couverture seuils 80%
 -   ✅ **Tests Services** : BGG API service avec mocks MSW fonctionnels
 -   ✅ **Tests Hooks** : useGamesPage et autres hooks React validés
 -   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard, helpers purs
 -   ✅ **React Query** : TanStack Query v5 intégré pour le server state
+
+</details>
 
 </details>
 
@@ -150,7 +204,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details open>
 <summary>Voir le détail</summary>
 
-### 🗄️ Finalisation BGG & Base de Données (Impact ⭐⭐)
+<details open>
+<summary><b>🗄️ Finalisation BGG & Base de Données (Impact ⭐⭐)</b></summary>
 
 #### **✅ Migration Schema BGG Étendu** — PR #55 mars 2026
 - Colonnes `thumbnail`, `playing_time`, `min_playtime`, `max_playtime`, `categories`, `mechanics`, `families` ajoutées en BDD
@@ -166,16 +221,26 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - `runMigrations()` dans `DatabaseManager.ts` : vérifie et applique les colonnes manquantes à chaque démarrage
 - **Dette** : migrations hors transaction SQLite — un crash en milieu de migration laisse la BDD en état partiel. À encapsuler dans `db.transaction(...)` si on passe en prod.
 
-### 📊 Cache BGG Local (Impact ⭐⭐) - 2-3 jours
+</details>
+
+<details open>
+<summary><b>📊 Cache BGG Local (Impact ⭐⭐) - 2-3 jours</b></summary>
+
 - **État** : Appels API répétés sans cache
 - **Référence** : board-game-scorekeep a cache BGG intelligent
 - **Action** : Implémenter cache localStorage + expiration
 - **Impact** : Performance et limitation API BGG
 
-### 🔀 Unification Interfaces BGG (Impact ⭐⭐) - 1 jour
+</details>
+
+<details open>
+<summary><b>🔀 Unification Interfaces BGG (Impact ⭐⭐) - 1 jour</b></summary>
+
 - **État** : `BGGGame`/`BGGGameDetails` dupliquées entre frontend et backend
 - **Reste à faire** : Source de vérité unique dans `src/types/index.ts`
 - **Impact** : Prévention désynchronisation silencieuse
+
+</details>
 
 </details>
 
@@ -186,25 +251,41 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details open>
 <summary>Voir le détail</summary>
 
-### 🔄 Thème Sombre/Clair - 2-3 jours
+<details open>
+<summary><b>🔄 Thème Sombre/Clair - 2-3 jours</b></summary>
+
 - **État** : ✅ Prop `darkMode` correctement propagée dans toute la chaîne (App → StatsPage → PlayerStatsPage/GameStatsPage → views). Détection DOM fragile remplacée par prop-driven. Pages Players et Stats corrigées (mars 2026).
 - **Reste** : ThemeProvider (React Context), persistance localStorage, toggle SettingsPage survit au reload
 - **Action** : Provider React Context, toggle fonctionnel, persistance utilisateur
 - **Impact** : UX personnalisée et accessibilité améliorée
 
-### 📊 Graphiques Temporels - 1 semaine
+</details>
+
+<details open>
+<summary><b>📊 Graphiques Temporels - 1 semaine</b></summary>
+
 - **État** : Infrastructure Recharts prête, placeholders "coming soon" en place
 - **Action** : Implémentation visualisations évolution scores, tendances jeux, performances temporelles
 - **Impact** : Analytics visuels et insights utilisateur puissants
 
-### 🎮 Sélection Personnages en Session - 1-2 jours
+</details>
+
+<details open>
+<summary><b>🎮 Sélection Personnages en Session - 1-2 jours</b></summary>
+
 - **État** : Détection `has_characters` en place, interface sélection manquante
 - **Action** : Interface modale sélection personnages pour sessions
 - **Impact** : Fonctionnalité complète pour jeux à personnages
 
-### 🌐 Harmonisation UI/UX Globale - REPORTÉ
+</details>
+
+<details>
+<summary><b>🌐 Harmonisation UI/UX Globale - REPORTÉ</b></summary>
+
 - L'harmonisation complète des boutons, couleurs, tailles et cohérence visuelle sur toutes les pages/dialogs est reportée.
 - Prochaines étapes : stabilisation technique, audit des usages, puis reprise du design UI/UX en phase dédiée.
+
+</details>
 
 </details>
 
@@ -215,7 +296,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details>
 <summary>Voir le détail</summary>
 
-### 🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours
+<details>
+<summary><b>🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours</b></summary>
 
 #### **Restructuration & E2E**
 - **État** : 63/63 tests ✅, structure plate
@@ -237,7 +319,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Objectif** : Benchmarking et optimisation suite de tests
 - **Impact** : Qualité et rapidité CI
 
-### 🚀 Enrichissement Données (Impact ⭐⭐⭐)
+</details>
+
+<details>
+<summary><b>🚀 Enrichissement Données (Impact ⭐⭐⭐)</b></summary>
 
 #### 🎮 **Service UltraBoardGames** - 1-2 jours
 - **État** : Service placeholder non fonctionnel
@@ -256,7 +341,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : Export JSON/CSV, import avec validation, backup automatique
 - **Impact** : Portabilité données et sécurité utilisateur
 
-### ⚛️ Backend Scalabilité (Impact ⭐⭐)
+</details>
+
+<details>
+<summary><b>⚛️ Backend Scalabilité (Impact ⭐⭐)</b></summary>
 
 #### **Cache Intelligent BGG** - 1 semaine
 - **Objectif** : Cache persistant résultats BGG, sync périodique métadonnées
@@ -282,6 +370,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+</details>
+
 ---
 
 ## ✨ PHASE 5 : FONCTIONNALITÉS AVANCÉES - LONG TERME (2-6 mois)
@@ -289,7 +379,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details>
 <summary>Voir le détail</summary>
 
-### 📊 Analytics & Intelligence
+<details>
+<summary><b>📊 Analytics & Intelligence</b></summary>
 
 #### **Tableau de Bord Avancé** - 2-3 semaines
 - **Objectif** : Graphiques sophistiqués avec recharts
@@ -306,7 +397,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : ML basique basé sur historique parties, préférences joueurs, catégories
 - **Impact** : Découverte personnalisée et engagement utilisateur
 
-### 🎮 Expérience de Jeu Enrichie
+</details>
+
+<details>
+<summary><b>🎮 Expérience de Jeu Enrichie</b></summary>
 
 #### **Mode Campagne Multi-Scénarios** - 3-4 semaines
 - **Objectif** : Gestion multi-sessions liées, progression personnages, scénarios
@@ -328,7 +422,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : Interface badges, conditions accomplissements, système récompenses
 - **Impact** : Gamification et engagement utilisateur
 
-### 🏆 Gamification & Social
+</details>
+
+<details>
+<summary><b>🏆 Gamification & Social</b></summary>
 
 #### **Profils & Comparaisons** - 2-3 semaines
 - **Objectif** : Head-to-head, rivalités, statistiques sociales
@@ -338,7 +435,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Objectif** : Génération résumés parties
 - **Impact** : Partage social externe
 
-### ⚛️ Qualité & Testing
+</details>
+
+<details>
+<summary><b>⚛️ Qualité & Testing</b></summary>
 
 #### **Tests End-to-End** - 1-2 semaines
 - **Objectif** : Tests automatisés Cypress/Playwright
@@ -356,51 +456,91 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+</details>
+
 ---
 
 ## 📋 RÉFÉRENCES PROJETS — NE PAS RÉINVENTER
 
-### 🎮 boardGameScore
+<details>
+<summary>Voir le détail</summary>
+
+<details>
+<summary><b>🎮 boardGameScore</b></summary>
+
 - **Service UltraBoardGames complet** : `backend/src/services/externalGameDataService.ts` — copier directement
 - **Mapping BGG ID → slug** déjà fait : Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror, This War of Mine
 
-### 🧪 board-game-scorekeep
+</details>
+
+<details>
+<summary><b>🧪 board-game-scorekeep</b></summary>
+
 - **Formulaire BGG pré-import** : édition complète avant sauvegarde (pas encore implémenté ici)
 - **Cache BGG intelligent** : localStorage + expiration
 - **Architecture tests** : 52/52 Jest + RTL (référence pour structuration unit/integration)
 
-### ❌ À ne pas réimplémenter
+</details>
+
+<details>
+<summary><b>❌ À ne pas réimplémenter</b></summary>
+
 - Multi-utilisateurs, internationalisation, PWA complète
+
+</details>
+
+</details>
 
 ---
 
 ## 🎯 PROCHAINES ACTIONS — DÉCOUPAGE EN SPRINTS
 
-### Sprint 1 — Complétude BGG (1-2 semaines)
+<details open>
+<summary>Voir le détail</summary>
+
+<details open>
+<summary><b>Sprint 1 — Complétude BGG (1-2 semaines)</b></summary>
+
 1. ✅ **🗄️ Migration schema BGG étendu** — PR #55 : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
 2. **📝 Formulaire pré-import BGG** : Permettre l'édition avant sauvegarde (3-4 jours) → [détail](changelog/sprint1-bgg-preimport-form.md)
 3. **📊 Cache BGG local** : localStorage + expiration (2-3 jours) → [détail](changelog/sprint1-bgg-cache.md)
 4. **🔀 Unifier BGGGame/BGGGameDetails** : Source de vérité unique dans `src/types/index.ts` (1 jour) → [détail](changelog/sprint1-bgg-interfaces-unification.md)
 
-### Sprint 2 — Tests & Qualité (1-2 semaines)
+</details>
+
+<details open>
+<summary><b>Sprint 2 — Tests & Qualité (1-2 semaines)</b></summary>
+
 1. **🧪 Tests BGG backend** : Mocker geekdo.com avec MSW, couvrir bggService.ts + routes `/api/bgg/*` → [détail](changelog/sprint2-bgg-backend-tests.md)
 2. **🏗️ Restructuration tests** : Dossiers `unit/technical/`, `unit/functional/`, `integration/`, `fixtures/` → [détail](changelog/sprint2-tests-restructure.md)
 3. **📊 Fixtures réalistes** : Données BGG authentiques (Gloomhaven, Wingspan, Catan) → [détail](changelog/sprint2-realistic-fixtures.md)
 4. **📈 63 → 80+ tests** : Compléter coverage → [détail](changelog/sprint2-tests-coverage-50plus.md)
 
-### Sprint 3 — Bug Fix & Polish (2-4 jours)
+</details>
+
+<details>
+<summary><b>Sprint 3 — Bug Fix & Polish (2-4 jours)</b></summary>
+
 1. **🎨 Thème Sombre/Clair** : ThemeProvider React Context + localStorage persistence (2-3 jours) → [détail](changelog/sprint3-theme-toggle.md)
 2. ✅ **🌐 BGGSearch FR** — PR #58 : tous les messages en français
 3. ✅ **👤 BGGGameDetails.characters** — `characters: []` déjà initialisé dans `parseGeekdoItem`
 4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet → [détail](changelog/sprint3-bgg-flags-recalculation.md)
 
-### Sprint 4 — Features UX (2-4 semaines)
+</details>
+
+<details>
+<summary><b>Sprint 4 — Features UX (2-4 semaines)</b></summary>
+
 1. **📊 Graphiques temporels** : Implémenter visualisations Recharts dans StatsPage → [détail](changelog/sprint4-temporal-charts.md)
 2. **🎮 Sélection personnages en session** : Interface modale dans NewGamePage → [détail](changelog/sprint4-character-selection-session.md)
 3. **🎮 Service UltraBoardGames** : Copier `externalGameDataService.ts` de boardGameScore → [détail](changelog/sprint4-ultraboardgames-service.md)
 4. **💾 Export/Import données** : Implémenter les stubs existants dans `useSettingsPage` → [détail](changelog/sprint4-export-import.md)
 
-### Sprint 5 — Évolutions Long Terme (1-3 mois)
+</details>
+
+<details>
+<summary><b>Sprint 5 — Évolutions Long Terme (1-3 mois)</b></summary>
+
 1. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
 2. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)
 3. Système d'achievements / gamification → [détail](changelog/sprint5-achievements.md)
@@ -408,6 +548,10 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 5. Mode tournoi / brackets → [détail](changelog/sprint5-tournament-mode.md)
 6. Tests E2E (Cypress/Playwright) → [détail](changelog/sprint5-e2e-tests.md)
 7. PWA basique → [détail](changelog/sprint5-pwa.md)
+
+</details>
+
+</details>
 
 ---
 
