@@ -12,11 +12,13 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ## 🧹 Dette Technique — Refacto Audit PR #55 (mars 2026)
 
-- **Feedback UI erreurs** : `handleAddGame`/`handleUpdateGame` dans `App.tsx` logguent en `console.error` — l'utilisateur ne voit rien si la création/modification échoue. Remplacer par un toast (Sonner déjà installé).
-- **Tests helpers purs** : les fonctions extraites lors du refacto (`formatExpansion`, `getCredit`, `withUpdatedAbility`, `withRemovedAbility`, `getGameCardStyles`, etc.) sont testables unitairement et non couvertes. À ajouter dans Sprint 2.
-- **Duplicate keys BGGSearch** : `BGGSearch.tsx` génère des clés React dupliquées (IDs BGG identiques dans les résultats). Concaténer l'index : `key={`${game.id}-${index}`}`.
-- **Migrations SQLite hors transaction** : `runMigrations()` exécute les `ALTER TABLE` un à un sans transaction. Encapsuler dans `db.transaction(...)` pour éviter état partiel en cas de crash.
-- **`eslint.audit.config.js`** : config one-shot d'audit, ne doit pas être commitée. Supprimée en PR #55 — à utiliser localement uniquement via `npx eslint --config eslint.audit.config.js`.
+- ✅ **Feedback UI erreurs** : `handleAddGame`/`handleUpdateGame` dans `App.tsx` — toast Sonner ajouté (PR #56).
+- ✅ **Tests helpers purs** : 32 tests unitaires ajoutés dans `src/__tests__/helpers/pureHelpers.test.ts` (PR #56).
+- ✅ **Duplicate keys BGGSearch** : clé `${result.id}-${index}` (PR #56).
+- ✅ **Migrations SQLite hors transaction** : `runMigrations()` encapsulé dans `db.transaction()` (PR #56).
+- ✅ **`eslint.audit.config.js`** : ajouté à `.gitignore` (PR #56).
+
+- ✅ **`handleAddGame` / `handleUpdateGame` dans `App.tsx`** wrappés avec `useCallback(fn, [])` (PR #56).
 
 ---
 

@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { toast } from 'sonner';
 import ApiService from '@/services/ApiService';
-import Dashboard from '@/components/Dashboard';
-import PlayersPage from '@/components/PlayersPage';
-import GamesPage from '@/components/GamesPage';
-import SettingsPage from '@/components/SettingsPage';
-import StatsPage from '@/components/StatsPage';
-import NewGamePage from '@/components/NewGamePage';
-import GameDetailPage from '@/components/GameDetailPage';
-import GameExpansionsPage from '@/components/GameExpansionsPage';
-import GameCharactersPage from '@/components/GameCharactersPage';
 import BottomNavigation from '@/components/BottomNavigation';
+
+const Dashboard = lazy(() => import('@/components/Dashboard'));
+const PlayersPage = lazy(() => import('@/components/PlayersPage'));
+const GamesPage = lazy(() => import('@/components/GamesPage'));
+const SettingsPage = lazy(() => import('@/components/SettingsPage'));
+const StatsPage = lazy(() => import('@/components/StatsPage'));
+const NewGamePage = lazy(() => import('@/components/NewGamePage'));
+const GameDetailPage = lazy(() => import('@/components/GameDetailPage'));
+const GameExpansionsPage = lazy(() => import('@/components/GameExpansionsPage'));
+const GameCharactersPage = lazy(() => import('@/components/GameCharactersPage'));
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Player, Game, CreateSessionPayload } from '@/types';
 
@@ -51,12 +53,9 @@ export default function App() {
     loadData();
   }, []);
 
-  const handleNavigation = (view: string, id?: number, source?: string) => {
+  const handleNavigation = useCallback((view: string, id?: number, source?: string) => {
     setCurrentView(view);
-    
-    // Enhanced context setting for stats
     if (view === 'stats') {
-      // Determine which tab to show based on source or current context
       let initialTab: 'players' | 'games' = 'players';
       if (source === 'games' || currentView === 'games') {
         initialTab = 'games';
@@ -65,50 +64,52 @@ export default function App() {
     } else {
       setNavigationContext({ id, source });
     }
-  };
+  }, [currentView]);
 
   // Handler functions for data management
-  const handleAddPlayer = async (playerData: { player_name: string; avatar?: string; favorite_game?: string }) => {
+  const handleAddPlayer = useCallback(async (playerData: { player_name: string; avatar?: string; favorite_game?: string }) => {
     const created = await ApiService.createPlayer(playerData);
     setPlayers(prev => [...prev, created]);
-  };
+  }, []);
 
-  const handleUpdatePlayer = async (playerId: number, playerData: Partial<Player>) => {
+  const handleUpdatePlayer = useCallback(async (playerId: number, playerData: Partial<Player>) => {
     const updated = await ApiService.updatePlayer(playerId, playerData);
     setPlayers(prev => prev.map(p => p.player_id === playerId ? updated : p));
-  };
+  }, []);
 
-  const handleDeletePlayer = async (playerId: number) => {
+  const handleDeletePlayer = useCallback(async (playerId: number) => {
     await ApiService.deletePlayer(playerId);
     setPlayers(prev => prev.filter(p => p.player_id !== playerId));
-  };
+  }, []);
 
-  const handleAddGame = async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
+  const handleAddGame = useCallback(async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
     try {
       const created = await ApiService.createGame(gameData);
       setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
-    } catch (error) {
-      console.error('Failed to create game:', error);
+      toast.success('Jeu ajouté avec succès');
+    } catch {
+      toast.error('Erreur lors de l\'ajout du jeu');
     }
-  };
+  }, []);
 
-  const handleUpdateGame = async (gameId: number, gameData: Partial<Game>) => {
+  const handleUpdateGame = useCallback(async (gameId: number, gameData: Partial<Game>) => {
     try {
       const updated = await ApiService.updateGame(gameId, gameData);
       setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, ...updated } : g));
-    } catch (error) {
-      console.error('Failed to update game:', error);
+      toast.success('Jeu modifié avec succès');
+    } catch {
+      toast.error('Erreur lors de la modification du jeu');
     }
-  };
+  }, []);
 
-  const handleDeleteGame = async (gameId: number) => {
+  const handleDeleteGame = useCallback(async (gameId: number) => {
     await ApiService.deleteGame(gameId);
     setGames(prev => prev.filter(g => g.game_id !== gameId));
-  };
+  }, []);
 
-  const handleCreateSession = async (sessionData: CreateSessionPayload) => {
+  const handleCreateSession = useCallback(async (sessionData: CreateSessionPayload) => {
     await ApiService.createSession(sessionData);
-  };
+  }, []);
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -229,7 +230,9 @@ export default function App() {
   return (
     <TooltipProvider>
       <div className={darkMode ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white" : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900"}>
-        {renderCurrentView()}
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-lg opacity-60">Chargement...</div></div>}>
+          {renderCurrentView()}
+        </Suspense>
         <BottomNavigation currentView={currentView} onNavigation={handleNavigation} />
       </div>
     </TooltipProvider>

@@ -16,20 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { Game, GameExpansion, GameCharacter } from '@/types';
-
-function withUpdatedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number, value: string): GameCharacter[] {
-  return chars.map((char, i) => {
-    if (i !== charIndex) return char;
-    return { ...char, abilities: (char.abilities || []).map((a, j) => j === abilityIndex ? value : a) };
-  });
-}
-
-function withRemovedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number): GameCharacter[] {
-  return chars.map((char, i) => {
-    if (i !== charIndex) return char;
-    return { ...char, abilities: (char.abilities || []).filter((_, j) => j !== abilityIndex) };
-  });
-}
+import { withUpdatedAbility, withRemovedAbility } from '@/utils/gameHelpers';
 
 interface FormData {
   name: string

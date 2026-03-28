@@ -121,9 +121,9 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       )}
 
       <div className="space-y-2 max-h-64 overflow-y-auto">
-        {searchResults.map((result) => (
-          <Card 
-            key={result.id} 
+        {searchResults.map((result, index) => (
+          <Card
+            key={`${result.id}-${index}`} 
             className={darkMode ? "bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all cursor-pointer" : "bg-white border-slate-200 hover:bg-slate-100 transition-all cursor-pointer"}
             onClick={() => handleGameSelect(result)}
           >

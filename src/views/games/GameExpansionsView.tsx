@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, PencilSimple, Trash, Calendar } from '@phosphor-icons/
 import { useGameExpansions, UseGameExpansionsProps } from '@/hooks/games/useGameExpansions';
 import { AddExpansionDialog, EditExpansionDialog, DeleteExpansionDialog } from '@/components/dialogs';
 import { GameExpansion } from '@/types';
+import { getContentClass } from '@/utils/gameHelpers';
 
 interface ExpansionCardProps {
   expansion: GameExpansion;
@@ -70,11 +71,6 @@ function ExpansionCard({ expansion, darkMode, onEdit, onDelete }: ExpansionCardP
   );
 }
 
-function getContentClass(embedded: boolean, darkMode: boolean): string {
-  if (embedded) return "";
-  const base = "max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8";
-  return darkMode ? base : base + " bg-slate-100";
-}
 
 export default function GameExpansionsView(props: UseGameExpansionsProps & { darkMode: boolean }) {
   const {

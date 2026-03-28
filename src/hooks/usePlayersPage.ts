@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Player, NavigationHandler, PlayerFormData } from '@/types';
 
 export interface PlayersPageData {
@@ -103,7 +103,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
     }
   };
 
-  const handleEditPlayer = (player: Player) => {
+  const handleEditPlayer = useCallback((player: Player) => {
     setEditingPlayer(player);
     setFormData({
       player_name: player.player_name,
@@ -114,7 +114,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
       wins: player.wins
     });
     setIsEditDialogOpen(true);
-  };
+  }, [setEditingPlayer, setFormData, setIsEditDialogOpen]);
 
   const handleUpdatePlayer = () => {
     if (editingPlayer && formData.player_name.trim()) {
@@ -131,13 +131,13 @@ export const usePlayersPage = (data: PlayersPageData) => {
     }
   };
 
-  const handleDeletePlayer = (playerId: number) => {
+  const handleDeletePlayer = useCallback((playerId: number) => {
     onDeletePlayer(playerId);
-  };
+  }, [onDeletePlayer]);
 
-  const handleViewPlayerStats = (playerId: number) => {
+  const handleViewPlayerStats = useCallback((playerId: number) => {
     onNavigation('stats', playerId, 'players');
-  };
+  }, [onNavigation]);
 
   return {
     // Data
