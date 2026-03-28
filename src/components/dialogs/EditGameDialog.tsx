@@ -262,7 +262,7 @@ export default function EditGameDialog({
                 type="number"
                 min="0"
                 value={formData.min_playtime ?? ''}
-                onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) ?? undefined })}
+                onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) || undefined })}
                 className="bg-slate-700 border-slate-600 text-white"
                 placeholder="min"
               />
@@ -274,7 +274,7 @@ export default function EditGameDialog({
                 type="number"
                 min="0"
                 value={formData.max_playtime ?? ''}
-                onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) ?? undefined })}
+                onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) || undefined })}
                 className="bg-slate-700 border-slate-600 text-white"
                 placeholder="max"
               />
