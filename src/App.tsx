@@ -82,7 +82,7 @@ export default function App() {
     setPlayers(prev => prev.filter(p => p.player_id !== playerId));
   }, []);
 
-  const handleAddGame = async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
+  const handleAddGame = useCallback(async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
     try {
       const created = await ApiService.createGame(gameData);
       setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
@@ -90,9 +90,9 @@ export default function App() {
     } catch {
       toast.error('Erreur lors de l\'ajout du jeu');
     }
-  };
+  }, []);
 
-  const handleUpdateGame = async (gameId: number, gameData: Partial<Game>) => {
+  const handleUpdateGame = useCallback(async (gameId: number, gameData: Partial<Game>) => {
     try {
       const updated = await ApiService.updateGame(gameId, gameData);
       setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, ...updated } : g));
@@ -100,7 +100,7 @@ export default function App() {
     } catch {
       toast.error('Erreur lors de la modification du jeu');
     }
-  };
+  }, []);
 
   const handleDeleteGame = useCallback(async (gameId: number) => {
     await ApiService.deleteGame(gameId);
