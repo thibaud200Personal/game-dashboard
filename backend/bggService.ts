@@ -14,6 +14,10 @@ interface GeekdoSearchItem {
   objecttype: string
   objectid: string
   name: string
+  yearpublished?: string
+  imageurl?: string
+  'imageurl@2x'?: string
+  images?: { thumb?: string; square?: string; original?: string }
 }
 
 // --- Types API interne geekdo.com ---
@@ -56,6 +60,7 @@ export interface BGGSearchResult {
   name: string
   year_published: number
   type: string
+  thumbnail: string
 }
 
 export interface BGGExpansion {
@@ -129,28 +134,42 @@ class BGGService {
 
   /**
    * Recherche des jeux sur BGG par nom.
-   * Utilise l'API JSON interne de geekdo.com — pas d'authentification requise.
+   * Retourne jusqu'à 15 résultats uniques instantanément depuis geekdo search.
+   * Thumbnails + années sont vides ici — le frontend les charge en arrière-plan via getGameDetails.
    */
   async searchGames(query: string): Promise<BGGSearchResult[]> {
     await this.rateLimit()
 
-    const url = `${this.GEEKDO_BASE_URL}/geekitems?nosession=1&objecttype=thing&subtype=boardgame&showcount=50&pageid=1&search=${encodeURIComponent(query)}`
-    const response = await fetch(url, { headers: { 'Accept': 'application/json' } })
+    const url = `${this.GEEKDO_BASE_URL}/geekitems?nosession=1&objecttype=thing&subtype=boardgame&showcount=20&pageid=1&search=${encodeURIComponent(query)}`
+    const searchResp = await fetch(url, { headers: { 'Accept': 'application/json' } })
 
-    if (!response.ok) {
-      throw new Error(`BGG search API error: ${response.status}`)
-    }
+    if (!searchResp.ok) throw new Error(`BGG search API error: ${searchResp.status}`)
 
-    const data = await response.json() as GeekdoSearchResponse
-    if (!data.items) return []
+    const data = await searchResp.json() as GeekdoSearchResponse
+    if (!data.items || data.items.length === 0) return []
 
+    // Deduplicate by ID (geekdo returns multilingual duplicates), keep top 15
+    const seenIds = new Set<number>()
     return data.items
       .filter(item => item.objectid && item.name)
       .map(item => {
-        const id = parseInt(item.objectid, 10);
-        return isNaN(id) || id <= 0 || id > Number.MAX_SAFE_INTEGER ? null : { id, name: item.name, year_published: 0, type: 'boardgame' };
+        const id = parseInt(item.objectid, 10)
+        return isNaN(id) || id <= 0 || id > Number.MAX_SAFE_INTEGER ? null : { item, id }
       })
-      .filter((r): r is NonNullable<typeof r> => r !== null)
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .filter(({ id }) => {
+        if (seenIds.has(id)) return false
+        seenIds.add(id)
+        return true
+      })
+      .slice(0, 15)
+      .map(({ item, id }) => ({
+        id,
+        name: item.name,
+        year_published: 0,
+        type: 'boardgame' as const,
+        thumbnail: '',
+      }))
   }
 
   /**

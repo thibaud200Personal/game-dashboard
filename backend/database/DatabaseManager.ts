@@ -101,10 +101,36 @@ class DatabaseManager {
       ['families',      'ALTER TABLE games ADD COLUMN families TEXT'],
     ];
     const pending = gameMigrations.filter(([col]) => !columns.includes(col));
-    if (pending.length === 0) return;
+    const tables = (this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]).map(t => t.name);
+    const needsCatalog = !tables.includes('bgg_catalog');
+    const needsLogImport = !tables.includes('log_import');
+
+    if (pending.length === 0 && !needsCatalog && !needsLogImport) return;
     this.db.transaction(() => {
       for (const [, sql] of pending) {
         this.db.exec(sql);
+      }
+      if (needsCatalog) {
+        this.db.exec(`
+          CREATE TABLE IF NOT EXISTS bgg_catalog (
+            bgg_id         INTEGER PRIMARY KEY,
+            name           TEXT NOT NULL,
+            year_published INTEGER,
+            is_expansion   INTEGER NOT NULL DEFAULT 0
+          );
+          CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
+        `);
+      }
+      if (needsLogImport) {
+        this.db.exec(`
+          CREATE TABLE IF NOT EXISTS log_import (
+            id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+            bgg_catalog_imported_at TIMESTAMP,
+            data_exported_at        TIMESTAMP,
+            data_imported_at        TIMESTAMP
+          );
+          INSERT OR IGNORE INTO log_import (id) VALUES (1);
+        `);
       }
     })();
   }
@@ -637,10 +663,11 @@ class DatabaseManager {
    */
   getAllGamesOptimized() {
     const games = this.db.prepare(`
-      SELECT 
+      SELECT
         g.game_id,
         g.name,
         g.image,
+        g.thumbnail,
         g.min_players,
         g.max_players,
         g.difficulty,
@@ -685,10 +712,11 @@ class DatabaseManager {
    */
   getGameByIdOptimized(gameId: number): Game | null {
     const game = this.db.prepare(`
-      SELECT 
+      SELECT
         g.game_id,
         g.name,
         g.image,
+        g.thumbnail,
         g.min_players,
         g.max_players,
         g.difficulty,
@@ -798,6 +826,35 @@ class DatabaseManager {
       popular_games: popularGames,
       top_rated_games: topRatedGames
     };
+  }
+
+  getImportLog(): { bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null } {
+    return (
+      this.db.prepare('SELECT bgg_catalog_imported_at, data_exported_at, data_imported_at FROM log_import WHERE id = 1').get() as { bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null }
+    ) ?? { bgg_catalog_imported_at: null, data_exported_at: null, data_imported_at: null }
+  }
+
+  updateImportLog(field: 'bgg_catalog_imported_at' | 'data_exported_at' | 'data_imported_at'): void {
+    this.db.prepare(`UPDATE log_import SET ${field} = CURRENT_TIMESTAMP WHERE id = 1`).run()
+  }
+
+  getBggCatalogCount(): number {
+    const row = this.db.prepare('SELECT COUNT(*) as count FROM bgg_catalog').get() as { count: number }
+    return row.count
+  }
+
+  importBggCatalog(rows: { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[]): number {
+    const insert = this.db.prepare(
+      'INSERT OR REPLACE INTO bgg_catalog (bgg_id, name, year_published, is_expansion) VALUES (?, ?, ?, ?)'
+    )
+    this.db.transaction(() => {
+      this.db.exec('DELETE FROM bgg_catalog')
+      for (const row of rows) {
+        insert.run(row.bgg_id, row.name, row.year_published, row.is_expansion)
+      }
+    })()
+    this.updateImportLog('bgg_catalog_imported_at')
+    return rows.length
   }
 
   close() {

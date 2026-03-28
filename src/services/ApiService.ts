@@ -250,6 +250,39 @@ class ApiService {
   async healthCheck() {
     return this.request<{ status: string; timestamp: string }>('/health');
   }
+
+  // Import / Export log
+  async getImportLog(): Promise<{ bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null }> {
+    return this.request('/settings/import-log');
+  }
+
+  // BGG Catalog
+  async getBggCatalogStatus(): Promise<{ count: number }> {
+    return this.request<{ count: number }>('/bgg/catalog/status');
+  }
+
+  async importBggCatalog(file: File): Promise<{ count: number }> {
+    const text = await file.text();
+    const url = `${this.baseUrl}/bgg/catalog/import`;
+    const token = this.getToken();
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: text,
+    });
+    if (response.status === 401) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      throw new Error('UNAUTHORIZED');
+    }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+    return response.json();
+  }
 }
 
 export default new ApiService();

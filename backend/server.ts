@@ -87,6 +87,32 @@ app.use('/api', (req: express.Request, res: express.Response, next: express.Next
   return requireAuth(req, res, next);
 });
 
+// Parses a BGG CSV dump (boardgames_ranks.csv) into importable rows.
+// Handles quoted names with commas (e.g. "Brass: Birmingham").
+function parseBggCsv(csv: string): { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] {
+  const lines = csv.split('\n')
+  const results: { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] = []
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+    // Regex: id, name (optional quotes), year, skip 4 cols, is_expansion
+    const m = line.match(/^(\d+),"?([^",]*(?:"[^"]*"[^",]*)*)"?,(\d*),(?:[^,]*,){4}(\d)/)
+    if (!m) continue
+    const bgg_id = parseInt(m[1])
+    if (isNaN(bgg_id) || bgg_id <= 0) continue
+    const name = m[2].trim()
+    if (!name) continue
+    const year = parseInt(m[3])
+    results.push({
+      bgg_id,
+      name,
+      year_published: isNaN(year) ? null : year,
+      is_expansion: parseInt(m[4]) === 1 ? 1 : 0,
+    })
+  }
+  return results
+}
+
 // BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
   const query = req.query.q as string;
@@ -102,6 +128,31 @@ app.get('/api/bgg/game/:id', asyncHandler(async (req: express.Request, res: expr
   if (!game) return res.status(404).json({ error: 'Game not found on BGG' });
   return res.json(game);
 }));
+
+// Settings routes
+app.get('/api/settings/import-log', asyncHandler(async (req: express.Request, res: express.Response) => {
+  return res.json(db.getImportLog())
+}))
+
+// BGG Catalog routes
+app.get('/api/bgg/catalog/status', asyncHandler(async (req: express.Request, res: express.Response) => {
+  const count = db.getBggCatalogCount()
+  return res.json({ count })
+}))
+
+app.post('/api/bgg/catalog/import',
+  express.text({ limit: '20mb' }),
+  asyncHandler(async (req: express.Request, res: express.Response) => {
+    const csvText = req.body as string
+    if (!csvText || typeof csvText !== 'string') {
+      return res.status(400).json({ error: 'CSV text body required' })
+    }
+    const rows = parseBggCsv(csvText)
+    if (rows.length === 0) return res.status(400).json({ error: 'No valid rows parsed from CSV' })
+    const count = db.importBggCatalog(rows)
+    return res.json({ count })
+  })
+)
 
 // Player routes
 app.get('/api/players', asyncHandler(async (req: express.Request, res: express.Response) => {

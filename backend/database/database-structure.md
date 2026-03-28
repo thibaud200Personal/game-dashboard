@@ -226,6 +226,44 @@ CREATE INDEX idx_game_characters_game_id ON game_characters(game_id);
 }
 ```
 
+## BGG Catalog Table
+
+Table catalogue locale contenant l'ensemble des jeux BGG, importée depuis le dump CSV mensuel de BoardGameGeek. Permet une recherche full-text et un filtre par année/extension sans dépendre de l'API geekdo en temps réel.
+
+```sql
+CREATE TABLE IF NOT EXISTS bgg_catalog (
+    bgg_id         INTEGER PRIMARY KEY,  -- BGG ID (source: CSV dump)
+    name           TEXT NOT NULL,         -- Nom du jeu
+    year_published INTEGER,               -- Année de publication (nullable)
+    is_expansion   INTEGER NOT NULL DEFAULT 0  -- 0 = jeu de base, 1 = extension
+);
+CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
+```
+
+**Usage :** La table est peuplée par un script d'import one-shot (`npm run import-bgg-catalog`, à implémenter). Elle est interrogée pour la recherche dans `BGGSearch` à la place de l'API geekdo. Au clic sur un résultat, `getGameDetails(bgg_id)` appelle toujours l'API geekdo pour les métadonnées complètes (image, mécaniques, etc.).
+
+**Source :** `boardgames_ranks.csv` — dump mensuel BGG (~175k lignes, colonnes : id, name, yearpublished, rank, bayesaverage, is_expansion).
+
+## Import / Export Log Table
+
+Table à ligne unique (toujours `id = 1`) servant de journal des dernières opérations de data management. Mise à jour automatiquement lors de chaque opération.
+
+```sql
+CREATE TABLE IF NOT EXISTS log_import (
+    id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    bgg_catalog_imported_at TIMESTAMP,  -- dernière import catalogue BGG
+    data_exported_at        TIMESTAMP,  -- dernier export des données
+    data_imported_at        TIMESTAMP   -- dernier import des données
+);
+```
+
+**Colonnes :**
+- `bgg_catalog_imported_at` : mis à jour par `importBggCatalog()` dans `DatabaseManager`
+- `data_exported_at` : mis à jour lors de l'implémentation future de l'export données
+- `data_imported_at` : mis à jour lors de l'implémentation future de l'import données
+
+**Méthodes DatabaseManager :** `getImportLog()`, `updateImportLog(field)`
+
 ## Migration Notes
 
 - The current in-memory data structure can be migrated to this database schema

@@ -32,6 +32,11 @@ interface SettingsPageViewProps {
   handleExportData: () => void;
   handleImportData: () => void;
   handleResetData: () => void;
+  importLog: { bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null } | null;
+  bggCatalogCount: number | null;
+  isBggImporting: boolean;
+  bggImportError: string | null;
+  handleImportBggCatalog: (file: File) => void;
   onLogout: () => void;
 }
 
@@ -163,7 +168,21 @@ export function SettingsPageView(props: SettingsPageViewProps) {
         <div className={cardClass}>
           <h2 className={titleClass}>Data Management</h2>
           <div className="space-y-3">
-            <Button 
+            {/* Last operation dates */}
+            <div className="space-y-1 pb-2 border-b border-white/10 text-xs text-white/40">
+              {([
+                ['BGG Catalog importé', props.importLog?.bgg_catalog_imported_at],
+                ['Données exportées',   props.importLog?.data_exported_at],
+                ['Données importées',   props.importLog?.data_imported_at],
+              ] as [string, string | null | undefined][]).map(([label, date]) => (
+                <div key={label} className="flex justify-between">
+                  <span>{label}</span>
+                  <span>{date ? new Date(date).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button
               onClick={props.handleExportData}
               className="w-full justify-start"
               variant="outline"
@@ -181,7 +200,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               Import Data
             </Button>
 
-            <Button 
+            <Button
               onClick={props.handleResetData}
               className="w-full justify-start"
               variant="destructive"
@@ -189,6 +208,47 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               <Trash className="w-4 h-4 mr-2" />
               Reset All Data
             </Button>
+
+            {/* BGG Catalog */}
+            <div className="pt-3 border-t border-white/10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-white/70">BGG Catalog</span>
+                <span className="text-xs text-white/40">
+                  {props.bggCatalogCount === null
+                    ? '…'
+                    : props.bggCatalogCount === 0
+                      ? 'Non importé'
+                      : `${props.bggCatalogCount.toLocaleString()} jeux`}
+                </span>
+              </div>
+              {props.bggImportError && (
+                <p className="text-xs text-red-400 mb-2">{props.bggImportError}</p>
+              )}
+              <label className="w-full cursor-pointer">
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  disabled={props.isBggImporting}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) props.handleImportBggCatalog(file);
+                    e.target.value = '';
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  className="w-full justify-start pointer-events-none"
+                  disabled={props.isBggImporting}
+                  asChild
+                >
+                  <span>
+                    <Upload className="w-4 h-4 mr-2" />
+                    {props.isBggImporting ? 'Import en cours…' : 'Importer boardgames_ranks.csv'}
+                  </span>
+                </Button>
+              </label>
+            </div>
           </div>
         </div>
 

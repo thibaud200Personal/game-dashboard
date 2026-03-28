@@ -163,6 +163,7 @@ export interface BGGSearchResult {
   name: string;
   year_published: number;
   type: string;
+  thumbnail: string;
 }
 
 export interface BGGGame {
