@@ -46,7 +46,7 @@ export const GameCharacterSchema = z.object({
 export const CreateGameBaseSchema = z.object({
   bgg_id: z.number().int().positive('ID BGG invalide').optional(),
   name: z.string().min(1, 'Le nom du jeu est requis').max(200, 'Le nom ne peut pas dépasser 200 caractères'),
-  description: z.string().max(2000, 'La description ne peut pas dépasser 2000 caractères').optional(),
+  description: z.string().max(9000, 'La description ne peut pas dépasser 9000 caractères').optional(),
   image: z.string().url('URL d\'image invalide').optional(),
   thumbnail: z.string().url('URL de miniature invalide').optional(),
   min_players: z.number().int().min(1, 'Le nombre minimum de joueurs doit être au moins 1').max(20, 'Le nombre maximum de joueurs ne peut pas dépasser 20'),

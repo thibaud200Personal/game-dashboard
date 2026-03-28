@@ -30,28 +30,18 @@ export default function StatsPage({
   darkMode
 }: StatsPageProps) {
   // Determine initial tab based on navigation context
-  let initialTab: 'players' | 'games' = 'players';
-  if (navigationContext?.initialTab) {
-    initialTab = navigationContext.initialTab;
-  } else if (selectedGameId || navigationContext?.source === 'games') {
-    initialTab = 'games';
-  } else if (navigationContext?.source === 'players') {
-    initialTab = 'players';
-  }
+  const resolveTab = (): 'players' | 'games' => {
+    if (navigationContext?.initialTab) return navigationContext.initialTab;
+    if (selectedGameId || navigationContext?.source === 'games') return 'games';
+    return 'players';
+  };
 
-  const [activeTab, setActiveTab] = useState<'players' | 'games'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'players' | 'games'>(resolveTab);
 
   // Update active tab when navigation context changes
   useEffect(() => {
-    let newTab: 'players' | 'games' = 'players';
-    if (navigationContext?.initialTab) {
-      newTab = navigationContext.initialTab;
-    } else if (selectedGameId || navigationContext?.source === 'games') {
-      newTab = 'games';
-    } else if (navigationContext?.source === 'players') {
-      newTab = 'players';
-    }
-    setActiveTab(newTab);
+    setActiveTab(resolveTab());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigationContext, selectedGameId, selectedPlayerId]);
 
   const handleBackNavigation = () => {

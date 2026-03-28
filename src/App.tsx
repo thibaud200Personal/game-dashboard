@@ -60,8 +60,6 @@ export default function App() {
       let initialTab: 'players' | 'games' = 'players';
       if (source === 'games' || currentView === 'games') {
         initialTab = 'games';
-      } else if (source === 'players' || currentView === 'players') {
-        initialTab = 'players';
       }
       setNavigationContext({ id, source, initialTab });
     } else {
@@ -86,13 +84,21 @@ export default function App() {
   };
 
   const handleAddGame = async (gameData: Omit<Game, 'game_id' | 'created_at' | 'expansions' | 'characters' | 'players'>) => {
-    const created = await ApiService.createGame(gameData);
-    setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
+    try {
+      const created = await ApiService.createGame(gameData);
+      setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
+    } catch (error) {
+      console.error('Failed to create game:', error);
+    }
   };
 
   const handleUpdateGame = async (gameId: number, gameData: Partial<Game>) => {
-    const updated = await ApiService.updateGame(gameId, gameData);
-    setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, ...updated } : g));
+    try {
+      const updated = await ApiService.updateGame(gameId, gameData);
+      setGames(prev => prev.map(g => g.game_id === gameId ? { ...g, ...updated } : g));
+    } catch (error) {
+      console.error('Failed to update game:', error);
+    }
   };
 
   const handleDeleteGame = async (gameId: number) => {
@@ -208,16 +214,7 @@ export default function App() {
           ) : null;
         }
       default:
-        return (
-          <Dashboard
-            stats={{ ...stats, playersCount: players.length, gamesCount: games.length }}
-            recentPlayers={players?.slice(0, 3) || []}
-            recentGames={games?.slice(0, 3) || []}
-            currentView={currentView}
-            onNavigation={handleNavigation}
-            darkMode={darkMode}
-          />
-        );
+        return null;
     }
   };
 

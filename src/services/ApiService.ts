@@ -9,7 +9,7 @@ import {
   CreateSessionPayload
 } from '@/types';
 
-export class ApiService {
+class ApiService {
   private readonly baseUrl: string;
 
   constructor() {
@@ -81,16 +81,26 @@ export class ApiService {
   }
 
   async createGame(gameData: GameFormData) {
+    const sanitized = {
+      ...gameData,
+      image: gameData.image || undefined,
+      thumbnail: gameData.thumbnail || undefined,
+    };
     return this.request<Game>('/games', {
       method: 'POST',
-      body: JSON.stringify(gameData),
+      body: JSON.stringify(sanitized),
     });
   }
 
   async updateGame(gameId: number, gameData: Partial<GameFormData>) {
+    const sanitized = {
+      ...gameData,
+      image: gameData.image || undefined,
+      thumbnail: gameData.thumbnail || undefined,
+    };
     return this.request<Game>(`/games/${gameId}`, {
       method: 'PUT',
-      body: JSON.stringify(gameData),
+      body: JSON.stringify(sanitized),
     });
   }
 

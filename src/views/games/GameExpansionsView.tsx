@@ -5,6 +5,77 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ArrowLeft, Plus, PencilSimple, Trash, Calendar } from '@phosphor-icons/react';
 import { useGameExpansions, UseGameExpansionsProps } from '@/hooks/games/useGameExpansions';
 import { AddExpansionDialog, EditExpansionDialog, DeleteExpansionDialog } from '@/components/dialogs';
+import { GameExpansion } from '@/types';
+
+interface ExpansionCardProps {
+  expansion: GameExpansion;
+  darkMode: boolean;
+  onEdit: (expansion: GameExpansion) => void;
+  onDelete: (id: number) => void;
+}
+
+function ExpansionCard({ expansion, darkMode, onEdit, onDelete }: ExpansionCardProps) {
+  const cardClass = darkMode ? 'bg-slate-800 text-white border-slate-700' : 'bg-white text-slate-900 border-slate-200';
+  const titleClass = darkMode ? 'text-white text-base md:text-lg' : 'text-slate-900 text-base md:text-lg';
+  const rowClass = darkMode ? 'flex items-center gap-2 text-slate-300' : 'flex items-center gap-2 text-slate-700';
+  const calClass = darkMode ? 'w-4 h-4 text-primary' : 'w-4 h-4 text-slate-700';
+  const descClass = darkMode ? 'text-slate-300 text-sm' : 'text-slate-700 text-sm';
+  const bggClass = darkMode ? 'text-slate-400 text-xs' : 'text-slate-500 text-xs';
+  const editBtnClass = darkMode
+    ? 'border-slate-600 bg-slate-800 text-white hover:bg-slate-700 flex-1'
+    : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100 flex-1';
+  const deleteBtnClass = darkMode
+    ? 'border-red-600/50 text-red-400 hover:bg-red-600/10 hover:border-red-600'
+    : 'border-red-300 text-red-600 hover:bg-red-100 hover:border-red-600';
+
+  return (
+    <Card className={cardClass}>
+      <CardHeader className="pb-3 md:pb-6">
+        <CardTitle className={titleClass}>{expansion.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 md:space-y-4">
+        {expansion.year_published && (
+          <div className={rowClass}>
+            <Calendar className={calClass} />
+            <span className="text-sm">{expansion.year_published}</span>
+          </div>
+        )}
+        {expansion.description && (
+          <p className={descClass}>{expansion.description}</p>
+        )}
+        {expansion.bgg_expansion_id && (
+          <p className={bggClass}>BGG ID: {expansion.bgg_expansion_id}</p>
+        )}
+        <div className="flex gap-2 pt-2 md:pt-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={() => onEdit(expansion)} className={editBtnClass}>
+                <PencilSimple className="w-4 h-4 md:mr-2" />
+                <span className="hidden md:inline">Modifier</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Edit Expansion</p></TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={() => onDelete(expansion.expansion_id!)} className={deleteBtnClass}>
+                <Trash className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Delete Expansion</p></TooltipContent>
+          </Tooltip>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getContentClass(embedded: boolean, darkMode: boolean): string {
+  if (embedded) return "";
+  const base = "max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8";
+  return darkMode ? base : base + " bg-slate-100";
+}
+
 export default function GameExpansionsView(props: UseGameExpansionsProps & { darkMode: boolean }) {
   const {
     isAddDialogOpen,
@@ -21,19 +92,19 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
     handleEditExpansion,
     handleDeleteExpansion
   } = useGameExpansions(props);
-  const {
-    game,
-    onNavigation,
-    navigationSource,
-    embedded = false,
-    darkMode
-  } = props;
+  const { game, onNavigation, navigationSource, embedded = false, darkMode } = props;
+
+  const backTarget = navigationSource === 'game-detail' ? 'game-detail' : 'games';
+  const wrapperClass = darkMode ? 'bg-slate-900 min-h-screen' : 'bg-gradient-to-br from-slate-100 to-slate-300 min-h-screen';
+  const headerClass = darkMode ? "bg-slate-800/50 border-b border-slate-700/50" : "bg-white border-b border-slate-200";
+  const contentClass = getContentClass(embedded, darkMode);
+  const cardClass = darkMode ? 'bg-slate-800 text-white border-slate-700' : 'bg-white text-slate-900 border-slate-200';
 
   return (
-    <div className={darkMode ? 'bg-slate-900 min-h-screen' : 'bg-gradient-to-br from-slate-100 to-slate-300 min-h-screen'}>
+    <div className={wrapperClass}>
       {/* Header - Only show when not embedded */}
       {!embedded && (
-        <div className={darkMode ? "bg-slate-800/50 border-b border-slate-700/50" : "bg-white border-b border-slate-200"}>
+        <div className={headerClass}>
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
             <div className="flex items-center gap-3 md:gap-4">
               <Tooltip>
@@ -41,7 +112,7 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onNavigation(navigationSource === 'game-detail' ? 'game-detail' : 'games', game.game_id)}
+                    onClick={() => onNavigation(backTarget, game.game_id)}
                     className="text-slate-300 hover:text-white hover:bg-slate-700/50 p-2"
                   >
                     <ArrowLeft className="w-5 h-5" />
@@ -55,10 +126,9 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
               <h1 className="text-lg md:text-xl font-semibold text-white flex-1 truncate">
                 <span className={darkMode ? "text-white" : "text-slate-900"}>Extensions - {game.name}</span>
               </h1>
-              
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
+                  <Button
                     onClick={() => setIsAddDialogOpen(true)}
                     className={darkMode ? "bg-primary hover:bg-primary/90 text-primary-foreground text-sm md:text-base" : "bg-teal-500 hover:bg-teal-600 text-white text-sm md:text-base"}
                   >
@@ -67,9 +137,7 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
                     <span className="md:hidden">Ajouter</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Add New Expansion</p>
-                </TooltipContent>
+                <TooltipContent><p>Add New Expansion</p></TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -77,12 +145,11 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
       )}
 
       {/* Content */}
-  <div className={embedded ? "" : darkMode ? "max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8" : "max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8 bg-slate-100"}>
-        {/* Embedded Header with Add Button */}
+      <div className={contentClass}>
         {embedded && (
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <h2 className="text-xl md:text-2xl font-bold text-white">Extensions ({expansions.length})</h2>
-            <Button 
+            <Button
               onClick={() => setIsAddDialogOpen(true)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
             >
@@ -91,73 +158,24 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
             </Button>
           </div>
         )}
-        
+
         {expansions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {expansions.map((expansion) => (
-              <Card key={expansion.expansion_id} className={darkMode ? 'bg-slate-800 text-white border-slate-700' : 'bg-white text-slate-900 border-slate-200'}>
-                <CardHeader className="pb-3 md:pb-6">
-                  <CardTitle className={darkMode ? 'text-white text-base md:text-lg' : 'text-slate-900 text-base md:text-lg'}>{expansion.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 md:space-y-4">
-                  {expansion.year_published && (
-                    <div className={darkMode ? 'flex items-center gap-2 text-slate-300' : 'flex items-center gap-2 text-slate-700'}>
-                      <Calendar className={darkMode ? 'w-4 h-4 text-primary' : 'w-4 h-4 text-slate-700'} />
-                      <span className="text-sm">{expansion.year_published}</span>
-                    </div>
-                  )}
-                  
-                  {expansion.description && (
-                    <p className={darkMode ? 'text-slate-300 text-sm' : 'text-slate-700 text-sm'}>{expansion.description}</p>
-                  )}
-                  
-                  {expansion.bgg_expansion_id && (
-                    <p className={darkMode ? 'text-slate-400 text-xs' : 'text-slate-500 text-xs'}>BGG ID: {expansion.bgg_expansion_id}</p>
-                  )}
-
-                  <div className="flex gap-2 pt-2 md:pt-4">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(expansion)}
-                          className={darkMode ? 'border-slate-600 bg-slate-800 text-white hover:bg-slate-700 flex-1' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100 flex-1'}
-                        >
-                          <PencilSimple className="w-4 h-4 md:mr-2" />
-                          <span className="hidden md:inline">Modifier</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit Expansion</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeleteExpansionId(expansion.expansion_id!)}
-                          className={darkMode ? 'border-red-600/50 text-red-400 hover:bg-red-600/10 hover:border-red-600' : 'border-red-300 text-red-600 hover:bg-red-100 hover:border-red-600'}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete Expansion</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </CardContent>
-              </Card>
+              <ExpansionCard
+                key={expansion.expansion_id}
+                expansion={expansion}
+                darkMode={darkMode}
+                onEdit={openEditDialog}
+                onDelete={setDeleteExpansionId}
+              />
             ))}
           </div>
         ) : (
-          <Card className={darkMode ? 'bg-slate-800 text-white border-slate-700' : 'bg-white text-slate-900 border-slate-200'}>
+          <Card className={cardClass}>
             <CardContent className="text-center py-12">
               <p className={darkMode ? 'text-slate-400 mb-4' : 'text-slate-500 mb-4'}>Aucune extension ajoutée pour ce jeu.</p>
-              <Button 
+              <Button
                 onClick={() => setIsAddDialogOpen(true)}
                 className={darkMode ? 'border-slate-600 bg-slate-800 text-white hover:bg-slate-700' : 'bg-teal-500 hover:bg-teal-600 text-white'}
               >
@@ -169,7 +187,7 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
         )}
       </div>
 
-      {/* Dialogs harmonisés */}
+      {/* Dialogs */}
       <AddExpansionDialog
         isOpen={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
@@ -178,7 +196,6 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
         onSubmit={handleAddExpansion}
         darkMode={darkMode}
       />
-
       <EditExpansionDialog
         isOpen={!!editingExpansion}
         onOpenChange={(open) => !open && closeDialogs()}
@@ -187,7 +204,6 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
         onSubmit={handleEditExpansion}
         darkMode={darkMode}
       />
-
       <DeleteExpansionDialog
         isOpen={!!deleteExpansionId}
         onOpenChange={(open) => !open && setDeleteExpansionId(null)}
@@ -204,13 +220,13 @@ export default function GameExpansionsView(props: UseGameExpansionsProps & { dar
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onNavigation(navigationSource === 'game-detail' ? 'game-detail' : 'games', game.game_id)}
+                onClick={() => onNavigation(backTarget, game.game_id)}
                 className={darkMode ? 'text-slate-300 hover:text-white' : 'text-slate-700 hover:text-slate-900'}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Retour
               </Button>
-              <Button 
+              <Button
                 onClick={() => setIsAddDialogOpen(true)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >

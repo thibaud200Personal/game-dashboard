@@ -9,12 +9,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Play, Users, Trophy, Timer, Target, Plus, Trash } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
 
+type SessionType = 'competitive' | 'cooperative' | 'campaign' | 'hybrid';
+
 interface NewGameViewProps {
   // State
   selectedGameId: string
   setSelectedGameId: (id: string) => void
-  sessionType: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
-  setSessionType: (type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid') => void
+  sessionType: SessionType
+  setSessionType: (type: SessionType) => void
   selectedPlayers: number[]
   playerScores: {[key: number]: number}
   winnerId: string
