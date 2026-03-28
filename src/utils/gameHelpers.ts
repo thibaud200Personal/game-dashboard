@@ -20,7 +20,6 @@ export function formatExpansion(exp: { name: string; year_published?: number }):
   return exp.name + year;
 }
 
-
 // ---------------------------------------------------------------------------
 // Game card
 // ---------------------------------------------------------------------------

@@ -72,7 +72,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -88,7 +88,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             name="bgg-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Rechercher par nom ou ID BGG..."
             className={darkMode ? "pl-10 bg-slate-700 border-slate-600 text-white" : "pl-10 bg-white border-slate-300 text-slate-900"}
             disabled={isSearching || isLoadingDetails}
