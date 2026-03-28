@@ -19,25 +19,7 @@ import BGGSearch from '@/components/BGGSearch';
 import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
-
-function withUpdatedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number, value: string): GameCharacter[] {
-  return chars.map((char, i) => {
-    if (i !== charIndex) return char;
-    return { ...char, abilities: (char.abilities || []).map((a, j) => j === abilityIndex ? value : a) };
-  });
-}
-
-function withRemovedAbility(chars: GameCharacter[], charIndex: number, abilityIndex: number): GameCharacter[] {
-  return chars.map((char, i) => {
-    if (i !== charIndex) return char;
-    return { ...char, abilities: (char.abilities || []).filter((_, j) => j !== abilityIndex) };
-  });
-}
-
-function formatExpansionLabel(expansion: GameExpansion): string {
-  const year = expansion.year_published && expansion.year_published > 0 ? ` (${expansion.year_published})` : '';
-  return expansion.name + year;
-}
+import { withUpdatedAbility, withRemovedAbility, formatExpansionLabel } from '@/utils/gameHelpers';
 
 interface FormData {
   name: string

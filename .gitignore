@@ -49,3 +49,6 @@ pids
 .claude/
 CLAUDE.md
 CONTEXT.md
+
+# One-shot audit configs — local use only, never commit
+eslint.audit.config.js

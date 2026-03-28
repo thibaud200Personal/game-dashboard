@@ -100,11 +100,13 @@ class DatabaseManager {
       ['mechanics',     'ALTER TABLE games ADD COLUMN mechanics TEXT'],
       ['families',      'ALTER TABLE games ADD COLUMN families TEXT'],
     ];
-    for (const [col, sql] of gameMigrations) {
-      if (!columns.includes(col)) {
+    const pending = gameMigrations.filter(([col]) => !columns.includes(col));
+    if (pending.length === 0) return;
+    this.db.transaction(() => {
+      for (const [, sql] of pending) {
         this.db.exec(sql);
       }
-    }
+    })();
   }
 
   private parseJSONField<T>(value: string | T | undefined, defaultValue: T): T {

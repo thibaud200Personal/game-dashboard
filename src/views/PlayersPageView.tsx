@@ -57,7 +57,7 @@ interface PlayerCardProps {
   onDelete: (id: number) => void;
 }
 
-function PlayerCard({ player, darkMode, onViewStats, onEdit, onDelete }: PlayerCardProps) {
+const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStats, onEdit, onDelete }: PlayerCardProps) {
   const cardClass = darkMode
     ? "bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-xl"
     : "bg-white rounded-xl p-4 border border-slate-200 shadow-xl";
@@ -136,7 +136,7 @@ function PlayerCard({ player, darkMode, onViewStats, onEdit, onDelete }: PlayerC
       </div>
     </div>
   );
-}
+});
 
 export function PlayersPageView(props: PlayersPageViewProps) {
   const safePlayers = props.players || [];

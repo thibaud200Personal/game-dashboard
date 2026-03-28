@@ -33,6 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 import { AddGameDialog, EditGameDialog, DeleteGameDialog } from '@/components/dialogs';
 import { Card, CardContent } from '@/components/ui/card';
+import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/utils/gameHelpers';
 
 interface GamesPageViewProps {
   games: Game[];
@@ -62,14 +63,6 @@ interface GamesPageViewProps {
   darkMode: boolean;
 }
 
-function getDifficultyColor(difficulty: string): string {
-  switch ((difficulty || '').toLowerCase()) {
-    case 'beginner': return 'text-green-400';
-    case 'intermediate': return 'text-yellow-400';
-    case 'expert': return 'text-red-400';
-    default: return 'text-white/60';
-  }
-}
 
 function getGameModesBadges(game: Game): React.ReactElement[] {
   const modes: React.ReactElement[] = [];
@@ -104,17 +97,6 @@ function getGameModesBadges(game: Game): React.ReactElement[] {
   return modes;
 }
 
-function formatExpansion(exp: { name: string; year_published?: number }): string {
-  const year = exp.year_published && exp.year_published > 0 ? ` (${exp.year_published})` : '';
-  return exp.name + year;
-}
-
-function getCredit(game: Game): string {
-  const parts: string[] = [];
-  if (game.designer !== 'Unknown') parts.push(`By ${game.designer}`);
-  if (game.publisher !== 'Unknown') parts.push(game.publisher);
-  return parts.join(' • ');
-}
 
 function getWeightStars(weight: number): React.ReactElement[] {
   const stars = Math.round(weight);
@@ -180,16 +162,8 @@ interface GameCardProps {
   descClass: string;
 }
 
-function getGameCardStyles(darkMode: boolean) {
-  return {
-    ghostBtn: darkMode ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-    meta: darkMode ? 'flex items-center space-x-4 text-white/60' : 'flex items-center space-x-4 text-slate-500',
-    credit: darkMode ? 'mt-1 text-xs text-white/50' : 'mt-1 text-xs text-slate-400',
-    dropdownItem: darkMode ? 'hover:bg-slate-700 text-white' : 'hover:bg-slate-100 text-slate-700',
-  };
-}
 
-function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, darkMode, cardClass, titleClass, descClass }: GameCardProps) {
+const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, darkMode, cardClass, titleClass, descClass }: GameCardProps) {
   const { ghostBtn: ghostBtnClass, meta: metaClass, credit: creditClass, dropdownItem: dropdownItemClass } = getGameCardStyles(darkMode);
 
   return (
@@ -360,7 +334,7 @@ function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGam
       </CardContent>
     </Card>
   );
-}
+});
 
 export function GamesPageView(props: GamesPageViewProps) {
   const {

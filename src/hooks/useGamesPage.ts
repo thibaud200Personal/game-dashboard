@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Game, NavigationHandler, GameFormData, GameExpansion, GameCharacter, BGGGame } from '@/types';
 
 export interface GamesPageData {
@@ -217,7 +217,7 @@ export const useGamesPage = (data: GamesPageData) => {
     }
   };
 
-  const handleEditGame = (game: Game) => {
+  const handleEditGame = useCallback((game: Game) => {
     setEditingGame(game);
     setFormData({
       name: game.name,
@@ -252,7 +252,7 @@ export const useGamesPage = (data: GamesPageData) => {
       characters: game.characters || []
     });
     setIsEditDialogOpen(true);
-  };
+  }, [setEditingGame, setFormData, setIsEditDialogOpen]);
 
   const handleUpdateGame = () => {
     if (editingGame && formData.name.trim()) {
@@ -269,9 +269,9 @@ export const useGamesPage = (data: GamesPageData) => {
     }
   };
 
-  const handleDeleteGame = (gameId: number) => {
+  const handleDeleteGame = useCallback((gameId: number) => {
     onDeleteGame(gameId);
-  };
+  }, [onDeleteGame]);
 
   const _handleViewGameDetail = (gameId: number) => {
     onNavigation('game-detail', gameId);

@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
 import { useGameStatsPage } from '@/hooks/useGameStatsPage';
+import { getMedalClass } from '@/utils/gameHelpers';
 
 interface GameStatsViewProps {
   selectedPeriod: 'week' | 'month' | 'year' | 'all'
@@ -39,15 +40,6 @@ const SESSION_TYPE_DOT_COLORS: Record<string, string> = {
   hybrid: 'bg-green-400',
 };
 
-const WINNER_MEDAL_CLASSES = [
-  'bg-yellow-400 text-yellow-900',
-  'bg-gray-300 text-gray-900',
-  'bg-amber-600 text-amber-100',
-];
-
-function getMedalClass(index: number): string {
-  return WINNER_MEDAL_CLASSES[index] ?? 'bg-primary/20 text-primary';
-}
 
 interface StatCardProps {
   icon: React.ReactNode;
