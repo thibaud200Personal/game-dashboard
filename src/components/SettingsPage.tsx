@@ -8,6 +8,7 @@ interface SettingsPageProps {
   currentView: string;
   darkMode: boolean;
   setDarkMode: (enabled: boolean) => void;
+  onLogout: () => void;
 }
 
 export default function SettingsPage(props: SettingsPageProps) {
@@ -15,7 +16,8 @@ export default function SettingsPage(props: SettingsPageProps) {
     onNavigation: props.onNavigation,
     currentView: props.currentView,
     darkMode: props.darkMode,
-    setDarkMode: props.setDarkMode
+    setDarkMode: props.setDarkMode,
+    onLogout: props.onLogout
   };
 
   const logic = useSettingsPage(settingsPageData);

@@ -4,6 +4,7 @@ dotenv.config();
 import express = require('express');
 import cors = require('cors');
 import path = require('path');
+import * as crypto from 'crypto';
 import DatabaseManager from './database/DatabaseManager';
 import { bggService } from './bggService';
 import { CreatePlayerSchema, UpdatePlayerSchema, CreateGameSchema, UpdateGameSchema, CreateSessionSchema } from './validation/schemas';
@@ -12,6 +13,14 @@ import { ZodSchema } from 'zod';
 const app = express();
 const db = new DatabaseManager();
 const PORT = parseInt(process.env.PORT || '3001', 10);
+
+// Auth — startup guard + in-memory token
+if (!process.env.AUTH_PASSWORD) {
+  console.error('[FATAL] AUTH_PASSWORD environment variable is not set. Refusing to start.');
+  process.exit(1);
+}
+const AUTH_PASSWORD: string = process.env.AUTH_PASSWORD;
+const AUTH_TOKEN: string = crypto.randomBytes(32).toString('hex');
 
 // Middleware
 const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5000,http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173').split(',').map(o => o.trim());
@@ -48,6 +57,35 @@ const validateBody = (schema: ZodSchema) => (req: express.Request, res: express.
   req.body = result.data;
   return next();
 };
+
+// Auth middleware
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  if (authHeader.slice(7) !== AUTH_TOKEN) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  next();
+};
+
+// Login route — public
+app.post('/api/auth/login', asyncHandler(async (req: express.Request, res: express.Response) => {
+  const { password } = req.body as { password?: unknown };
+  if (typeof password !== 'string' || password !== AUTH_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid password' });
+  }
+  return res.json({ token: AUTH_TOKEN });
+}));
+
+// Protect all /api/* routes except /api/health and /api/auth/login
+app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.path === '/health' || req.path === '/auth/login') return next();
+  return requireAuth(req, res, next);
+});
 
 // BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {

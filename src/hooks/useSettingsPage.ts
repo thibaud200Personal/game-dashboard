@@ -6,10 +6,11 @@ export interface SettingsPageData {
   currentView?: string;
   darkMode?: boolean;
   setDarkMode?: (enabled: boolean) => void;
+  onLogout?: () => void;
 }
 
 export const useSettingsPage = (data: SettingsPageData) => {
-  const { onNavigation, currentView = 'settings' } = data;
+  const { onNavigation, currentView = 'settings', onLogout = () => {} } = data;
 
   // Local state for settings
   const [notifications, setNotifications] = useState(true);
@@ -64,18 +65,18 @@ export const useSettingsPage = (data: SettingsPageData) => {
   return {
     // Data
     currentView,
-    
+
     // Settings state
     notifications,
     darkMode,
     language,
     autoSave,
     showTooltips,
-    
+
     // Navigation handlers
     handleBackClick,
     onNavigation,
-    
+
     // Settings handlers
     handleNotificationsChange,
     handleDarkModeChange,
@@ -84,6 +85,7 @@ export const useSettingsPage = (data: SettingsPageData) => {
     handleShowTooltipsChange,
     handleExportData,
     handleImportData,
-    handleResetData
+    handleResetData,
+    onLogout
   };
 };
