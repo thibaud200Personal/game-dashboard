@@ -8,7 +8,8 @@ import {
   Info,
   Download,
   Upload,
-  Trash
+  Trash,
+  SignOut
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -31,6 +32,7 @@ interface SettingsPageViewProps {
   handleExportData: () => void;
   handleImportData: () => void;
   handleResetData: () => void;
+  onLogout: () => void;
 }
 
 export function SettingsPageView(props: SettingsPageViewProps) {
@@ -199,6 +201,19 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               A modern dashboard for tracking your board game sessions and player statistics.
             </div>
           </div>
+        </div>
+
+        {/* Session */}
+        <div className={cardClass}>
+          <h2 className={titleClass}>Session</h2>
+          <Button
+            onClick={props.onLogout}
+            variant="outline"
+            className="w-full justify-start border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500"
+          >
+            <SignOut className="w-4 h-4 mr-2" />
+            Se déconnecter
+          </Button>
         </div>
       </div>
 

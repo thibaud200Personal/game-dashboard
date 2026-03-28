@@ -11,6 +11,8 @@ services:
       DB_PATH: /data/board_game_score.db
       # CORS_ORIGINS: domaine(s) autorisé(s), séparés par une virgule
       CORS_ORIGINS: http://localhost:5000
+      # AUTH_PASSWORD: à définir au déploiement (obligatoire)
+      AUTH_PASSWORD: "changeme"
     restart: unless-stopped
 
 volumes:

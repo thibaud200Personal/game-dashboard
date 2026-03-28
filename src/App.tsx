@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { toast } from 'sonner';
 import ApiService from '@/services/ApiService';
 import BottomNavigation from '@/components/BottomNavigation';
+import LoginPage from '@/components/LoginPage';
 
 const Dashboard = lazy(() => import('@/components/Dashboard'));
 const PlayersPage = lazy(() => import('@/components/PlayersPage'));
@@ -17,6 +18,8 @@ import { Player, Game, CreateSessionPayload } from '@/types';
 
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(ApiService.isAuthenticated());
+
   // Mode sombre par défaut
   const [darkMode, setDarkMode] = useState(true);
   useEffect(() => {
@@ -47,10 +50,21 @@ export default function App() {
         setGames(gamesData);
         setStats({ loading: false, error: null });
       } catch (err) {
-        setStats(s => ({ ...s, loading: false, error: err instanceof Error ? err.message : String(err) }));
+        const message = err instanceof Error ? err.message : String(err);
+        if (message === 'UNAUTHORIZED') {
+          setIsAuthenticated(false);
+          setStats({ loading: false, error: null });
+          return;
+        }
+        setStats(s => ({ ...s, loading: false, error: message }));
       }
     };
     loadData();
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    ApiService.logout();
+    setIsAuthenticated(false);
   }, []);
 
   const handleNavigation = useCallback((view: string, id?: number, source?: string) => {
@@ -148,7 +162,7 @@ export default function App() {
           />
         );
       case 'settings':
-        return <SettingsPage onNavigation={handleNavigation} currentView={currentView} darkMode={darkMode} setDarkMode={setDarkMode} />;
+        return <SettingsPage onNavigation={handleNavigation} currentView={currentView} darkMode={darkMode} setDarkMode={setDarkMode} onLogout={handleLogout} />;
       case 'player-stats':
       case 'game-stats':
       case 'stats':
@@ -218,6 +232,10 @@ export default function App() {
         return null;
     }
   };
+
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   if (stats.loading) {
     return (

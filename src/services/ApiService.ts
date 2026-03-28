@@ -11,35 +11,68 @@ import {
 
 class ApiService {
   private readonly baseUrl: string;
+  private readonly TOKEN_KEY = 'auth_token';
 
   constructor() {
     this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
 
+  private getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
   private async request<T>(endpoint: string, options: globalThis.RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+    const token = this.getToken();
+
     const config: globalThis.RequestInit = {
       method: 'GET',
+      ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers as Record<string, string> | undefined),
       },
-      ...options,
     };
 
     const response = await fetch(url, config);
-    
+
+    if (response.status === 401) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      throw new Error('UNAUTHORIZED');
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     // Handle 204 No Content responses
     if (response.status === 204) {
       return {} as T;
     }
-    
+
     return await response.json();
+  }
+
+  // Auth
+  async login(password: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (!response.ok) throw new Error('Invalid password');
+    const data = await response.json() as { token: string };
+    localStorage.setItem(this.TOKEN_KEY, data.token);
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+  }
+
+  isAuthenticated(): boolean {
+    return this.getToken() !== null;
   }
 
   // Player operations
