@@ -74,6 +74,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ## ✅ PHASE 1 : FOUNDATION - TERMINÉE
 
+<details>
+<summary>Voir le détail</summary>
+
 **Approche UI/UX First** : Contrairement aux projets backend-first qui accumulent une dette UX, nous avons priorisé l'expérience utilisateur dès le début.
 
 ### 🏗️ Architecture & Infrastructure TERMINÉE
@@ -138,9 +141,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 -   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard, helpers purs
 -   ✅ **React Query** : TanStack Query v5 intégré pour le server state
 
+</details>
+
 ---
 
 ## 🎯 PHASE 2 : FINITIONS CRITIQUES - PRIORITÉ IMMÉDIATE (1-2 semaines)
+
+<details open>
+<summary>Voir le détail</summary>
 
 ### 🗄️ Finalisation BGG & Base de Données (Impact ⭐⭐)
 
@@ -169,9 +177,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : Source de vérité unique dans `src/types/index.ts`
 - **Impact** : Prévention désynchronisation silencieuse
 
+</details>
+
 ---
 
 ## 🎨 PHASE 3 : FINITIONS UX - PRIORITÉ SECONDAIRE (2-3 semaines)
+
+<details open>
+<summary>Voir le détail</summary>
 
 ### 🔄 Thème Sombre/Clair - 2-3 jours
 - **État** : ✅ Prop `darkMode` correctement propagée dans toute la chaîne (App → StatsPage → PlayerStatsPage/GameStatsPage → views). Détection DOM fragile remplacée par prop-driven. Pages Players et Stats corrigées (mars 2026).
@@ -193,9 +206,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - L'harmonisation complète des boutons, couleurs, tailles et cohérence visuelle sur toutes les pages/dialogs est reportée.
 - Prochaines étapes : stabilisation technique, audit des usages, puis reprise du design UI/UX en phase dédiée.
 
+</details>
+
 ---
 
 ## 🔄 PHASE 4 : ÉVOLUTIONS AVANCÉES - PRIORITÉ MOYENNE (1-2 mois)
+
+<details>
+<summary>Voir le détail</summary>
 
 ### 🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours
 
@@ -262,9 +280,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Reste à faire** : Comparaison jeux, wishlist, filtres durée/nb joueurs
 - **Impact** : UX de découverte enrichie
 
+</details>
+
 ---
 
 ## ✨ PHASE 5 : FONCTIONNALITÉS AVANCÉES - LONG TERME (2-6 mois)
+
+<details>
+<summary>Voir le détail</summary>
 
 ### 📊 Analytics & Intelligence
 
@@ -330,6 +353,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Multi-utilisateurs** : Application locale par design
 - **Internationalisation** : Projet français focalisé
 - **PWA complète** : Pas de besoin offline identifié
+
+</details>
 
 ---
 
