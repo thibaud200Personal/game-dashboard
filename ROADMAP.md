@@ -20,6 +20,12 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 - ✅ **`handleAddGame` / `handleUpdateGame` dans `App.tsx`** wrappés avec `useCallback(fn, [])` (PR #56).
 
+## 🧹 Dette Technique — Quick Wins PR #58 (mars 2026)
+
+- ✅ **`formatExpansionLabel` supprimé** — fusionné dans `formatExpansion` (même logique, `GameExpansion` satisfait déjà le shape). `AddGameDialog.tsx` et tests mis à jour.
+- ✅ **BGGSearch — texte UI harmonisé FR** — Messages d'erreur, placeholder, loading et "aucun résultat" tous en français. `onKeyPress` → `onKeyDown`.
+- ✅ **Debounce resize 150ms** — `usePlayersPage` et `useGamesPage` : handler debounced, init via `useState` lazy initializer (fix lint `react-hooks/set-state-in-effect`).
+
 ---
 
 ## 🐛 Bugs Connus & Polish
@@ -29,7 +35,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **✅ CORRIGÉ `supports_hybrid` non persisté** — PR #43 mars 2026 : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts` + interfaces backend mises à jour.
 - **✅ CORRIGÉ Popup de suppression joueur** — PR #43 mars 2026 : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop, aligné avec `DeleteGameDialog`.
 - **✅ CORRIGÉ `NewGamePage.tsx` — interfaces locales dupliquées** — PR #43 mars 2026 : imports depuis `@/types`, 0 interface locale.
-- **🌐 BGGSearch — texte UI mixte FR/EN** — Les messages et placeholders de `BGGSearch.tsx` mélangent français et anglais. Harmoniser dans une seule langue.
+- *(déplacé dans section PR #58 ci-dessus)*
 
 ### BGG API — Évolutions futures
 - **👤 `BGGGameDetails.characters` non initialisé** — L'interface `BGGGameDetails` (backend) déclare `characters: BGGCharacter[]` mais `parseGeekdoItem` ne le peuple pas (champ absent du retour = `undefined` en runtime). Lors de l'implémentation des personnages BGG, initialiser à `[]` par défaut dans le return de `parseGeekdoItem`, puis alimenter depuis les données BGG réelles.
