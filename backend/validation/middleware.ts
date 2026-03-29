@@ -24,7 +24,7 @@ export const validateBody = (schema: ZodSchema) => {
       return next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map(err => ({
+        const errorMessages = error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
@@ -47,11 +47,11 @@ export const validateParams = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const validatedParams = schema.parse(req.params);
-      req.params = validatedParams;
+      req.params = validatedParams as Request['params'];
       return next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map(err => ({
+        const errorMessages = error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
@@ -74,11 +74,11 @@ export const validateQuery = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const validatedQuery = schema.parse(req.query);
-      req.query = validatedQuery;
+      req.query = validatedQuery as Request['query'];
       return next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map(err => ({
+        const errorMessages = error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message
         }));
