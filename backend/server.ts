@@ -53,7 +53,7 @@ const asyncHandler = (fn: Function) => (req: express.Request, res: express.Respo
 const validateBody = (schema: ZodSchema) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const result = schema.safeParse(req.body);
   if (!result.success) {
-    return res.status(400).json({ error: result.error.errors.map(e => e.message).join(', ') });
+    return res.status(400).json({ error: result.error.issues.map(e => e.message).join(', ') });
   }
   req.body = result.data;
   return next();
@@ -107,7 +107,7 @@ app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: expres
 }));
 
 app.get('/api/bgg/game/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const bggId = parseInt(req.params.id);
+  const bggId = parseInt(req.params.id as string);
   if (isNaN(bggId) || bggId <= 0) return res.status(400).json({ error: 'Invalid BGG game ID' });
   const game = await bggService.getGameDetails(bggId);
   if (!game) return res.status(404).json({ error: 'Game not found on BGG' });
@@ -147,7 +147,7 @@ app.get('/api/players', asyncHandler(async (req: express.Request, res: express.R
 }));
 
 app.get('/api/players/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const playerId = parseInt(req.params.id);
+  const playerId = parseInt(req.params.id as string);
   // 🚀 OPTIMIZED: Use player_statistics view instead of manual calculation
   const player = db.getPlayerByIdOptimized(playerId);
   
@@ -171,7 +171,7 @@ app.post('/api/players', validateBody(CreatePlayerSchema), asyncHandler(async (r
 }));
 
 app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
-  const playerId = parseInt(req.params.id);
+  const playerId = parseInt(req.params.id as string);
   try {
     const updatedPlayer = db.updatePlayer(playerId, req.body);
     if (!updatedPlayer) {
@@ -187,7 +187,7 @@ app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async
 }));
 
 app.delete('/api/players/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const playerId = parseInt(req.params.id);
+  const playerId = parseInt(req.params.id as string);
   const result = db.deletePlayer(playerId);
   
   if (result.changes === 0) {
@@ -205,7 +205,7 @@ app.get('/api/games', asyncHandler(async (req: express.Request, res: express.Res
 }));
 
 app.get('/api/games/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const gameId = parseInt(req.params.id);
+  const gameId = parseInt(req.params.id as string);
   // 🚀 OPTIMIZED: Use game_statistics view instead of manual calculation
   const game = db.getGameByIdOptimized(gameId);
   
@@ -229,7 +229,7 @@ app.post('/api/games', validateBody(CreateGameSchema), asyncHandler(async (req: 
 }));
 
 app.put('/api/games/:id', validateBody(UpdateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
-  const gameId = parseInt(req.params.id);
+  const gameId = parseInt(req.params.id as string);
   const updatedGame = db.updateGame(gameId, req.body);
   if (!updatedGame) {
     return res.status(404).json({ error: 'Game not found' });
@@ -238,7 +238,7 @@ app.put('/api/games/:id', validateBody(UpdateGameSchema), asyncHandler(async (re
 }));
 
 app.delete('/api/games/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
-  const gameId = parseInt(req.params.id);
+  const gameId = parseInt(req.params.id as string);
   const result = db.deleteGame(gameId);
   
   if (result.changes === 0) {
