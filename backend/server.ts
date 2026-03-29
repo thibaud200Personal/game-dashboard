@@ -163,7 +163,7 @@ app.post('/api/players', validateBody(CreatePlayerSchema), asyncHandler(async (r
     const newPlayer = db.createPlayer(req.body);
     return res.status(201).json(newPlayer);
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code: unknown }).code === 'SQLITE_CONSTRAINT_UNIQUE') {
       return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
@@ -179,7 +179,7 @@ app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async
     }
     return res.json(updatedPlayer);
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code: unknown }).code === 'SQLITE_CONSTRAINT_UNIQUE') {
       return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
@@ -221,7 +221,7 @@ app.post('/api/games', validateBody(CreateGameSchema), asyncHandler(async (req: 
     const newGame = db.createGame(req.body);
     return res.status(201).json(newGame);
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code: unknown }).code === 'SQLITE_CONSTRAINT_UNIQUE') {
       return res.status(409).json({ error: 'duplicate_game', message: 'Ce jeu est déjà dans votre collection' });
     }
     throw error;
