@@ -174,6 +174,7 @@ Un objet `navigationContext` dans l'état global (`App.tsx`) conserve la source 
 interface NavigationContext {
   id?: number;      // ID de l'entité (ex: game_id)
   source?: string;  // D'où vient l'utilisateur ('games', 'game-detail', etc.)
+  initialTab?: 'players' | 'games';  // Onglet initial à afficher (ex: stats page)
 }
 ```
 

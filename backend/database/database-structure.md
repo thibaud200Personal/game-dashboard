@@ -12,16 +12,31 @@ Stores information about individual players in the system.
 CREATE TABLE players (
     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
     player_name TEXT NOT NULL,
+    pseudo TEXT, -- alias unique (ajouté via runMigrations(), UNIQUE INDEX idx_players_pseudo COLLATE NOCASE)
     avatar TEXT, -- URL to avatar image
-    games_played INTEGER DEFAULT 0,
-    wins INTEGER DEFAULT 0,
-    total_score INTEGER DEFAULT 0,
-    average_score REAL DEFAULT 0.0,
+    games_played INTEGER DEFAULT 0,  -- ⚠️ voir note dette technique ci-dessous
+    wins INTEGER DEFAULT 0,           -- ⚠️ voir note dette technique ci-dessous
+    total_score INTEGER DEFAULT 0,    -- ⚠️ voir note dette technique ci-dessous
+    average_score REAL DEFAULT 0.0,   -- ⚠️ voir note dette technique ci-dessous
     favorite_game TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+> ⚠️ **Dette technique — colonnes stats dénormalisées**
+>
+> Les colonnes `games_played`, `wins`, `total_score`, `average_score` sont **dupliquées** : elles existent dans la table `players` **et** sont recalculées dynamiquement dans la vue `player_statistics` à partir des données réelles de `session_players`.
+>
+> **Situation actuelle :** le backend lit toujours via la vue (`player_statistics`), jamais depuis les colonnes stockées. Les colonnes de la table restent donc à leur valeur par défaut (`0`) — elles ne sont jamais mises à jour par le système de sessions. Il n'y a aucun trigger ni logique applicative qui les synchronise.
+>
+> **Conséquence :** ces colonnes sont mortes en lecture. Toute valeur affichée provient de la vue.
+>
+> **Décision à prendre :**
+> - **Option A (recommandée) — supprimer les colonnes de `players`**, utiliser uniquement la vue. Source de vérité unique, pas de risque de désynchronisation.
+> - **Option B — conserver et synchroniser** : mettre à jour les colonnes à chaque création/modification de session (via trigger SQL ou code applicatif). Redondant mais parfois utile pour les perfs sur très gros volume.
+>
+> **Statut :** non tranché. Conserver pour l'instant (rétrocompatibilité de l'API), à nettoyer lors d'un sprint dédié.
 
 ### 2. Games Table
 Stores comprehensive information about board games.
@@ -30,6 +45,13 @@ Stores comprehensive information about board games.
 CREATE TABLE games (
     game_id INTEGER PRIMARY KEY AUTOINCREMENT,
     bgg_id INTEGER UNIQUE, -- BoardGameGeek ID
+    thumbnail TEXT, -- URL miniature BGG
+    playing_time INTEGER, -- durée typique en minutes
+    min_playtime INTEGER,
+    max_playtime INTEGER,
+    categories TEXT, -- JSON array
+    mechanics TEXT, -- JSON array
+    families TEXT, -- JSON array
     name TEXT NOT NULL,
     description TEXT,
     image TEXT, -- URL to game image
@@ -51,6 +73,7 @@ CREATE TABLE games (
     supports_hybrid BOOLEAN DEFAULT FALSE,
     has_expansion BOOLEAN DEFAULT FALSE,
     has_characters BOOLEAN DEFAULT FALSE,
+    is_expansion INTEGER DEFAULT 0, -- 1 si ce jeu est lui-même une extension
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

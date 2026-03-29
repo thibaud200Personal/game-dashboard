@@ -16,7 +16,7 @@ src/
 ├── *.tsx                #
 ├── docs/                # Documentation frontend
 ├── hooks/               # Hooks React personnalisés
-│   ├── games/           # Hooks spécifiques aux jeux
+│   ├── games/           # Hooks spécifiques aux jeux (useGameCharacters.ts, useGameDetail.ts, useGameExpansions.ts)
 │   ├── players/         # Hooks spécifiques aux joueurs (n'existe pas pour le moment)
 │   └── *.tsx                #
 ├── lib/                 # Utilitaires
@@ -90,10 +90,12 @@ DB schema (schema.sql) → backend models → src/types/index.ts → composants 
 ```
 
 **Règles strictes :**
-- Aucun `any` autorisé — 0 `any` dans tout le codebase (frontend + backend)
+- Aucun `any` autorisé — 0 `any` dans tout le codebase (frontend + backend), sauf exception documentée ci-dessous
 - Les payloads de création utilisent `Omit<T, 'generated_id'>` pour exclure les champs auto-générés
 - Les payloads de mise à jour utilisent `Partial<T>` avec les champs immuables exclus via `Omit`
 - Les submit handlers utilisent `React.FormEvent` (pas `any`)
+
+**Exception documentée :** Le middleware d'erreur Express 5 (`app.use((error: any, req, res, next) => {...})`) utilise `error: any` — c'est la convention Express imposée par la signature du middleware à 4 paramètres. Cette exception est intentionnelle et ne constitue pas une violation de la policy.
 
 Interfaces principales définies dans `types/index.ts` :
 - `Player` : Représentation d'un joueur (`avatar?`, `stats?` optionnels)
@@ -217,13 +219,13 @@ Pour les conventions de nommage de fichiers et l'organisation des imports, veuil
 | Outil | Version | Notes |
 |---|---|---|
 | Node.js | 24 LTS | Migré de 20 → 24 (PR #44) |
-| Vite | 7.3 | Migré de 6 → 7 (PR #44) — Vite 8 bloqué |
+| Vite | 8.0.0 | Migré de 6 → 7 (PR #44), puis 7 → 8 (PR #62) |
 | React | 19 | — |
 | TypeScript | 5.9 | — |
 | Vitest | 4 | jsdom requis explicitement |
 | @vitejs/plugin-react-swc | 4 | SWC (pas Babel) |
 | tailwindcss | 4 | — |
-| better-sqlite3 | 12.8 | Recompilé Node 24 |
+| better-sqlite3 | 12.2.0 | Recompilé Node 24 |
 
 ### Packages CSS (imports via `@import`, invisibles au grep TS)
 - `tw-animate-css` — importé dans `src/index.css`
@@ -245,8 +247,6 @@ Les dialogs de suppression utilisent le pattern `trigger` prop :
 ## Évolutions Futures
 
 ### Améliorations Prévues
-- Vite 8 dès support dépendances
-- recharts 3 (migration API graphiques StatsPage)
 - Implémentation de PWA (Progressive Web App)
 - Optimisations de performance avancées
 

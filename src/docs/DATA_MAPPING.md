@@ -19,6 +19,7 @@ Ce document présente les correspondances entre les interfaces frontend et la ba
 interface Player {
   player_id: number
   player_name: string
+  pseudo: string         // alias/pseudo unique (ajouté via migration runMigrations())
   avatar?: string        // optionnel (aligné BDD)
   stats?: string         // champ virtuel frontend uniquement
   games_played: number
@@ -37,15 +38,22 @@ interface Player {
 |-------------------|---------------|--------------|------------|-----------|
 | `player_id` | `player_id` | INTEGER | ✅ Correspondance exacte | |
 | `player_name` | `player_name` | VARCHAR(100) | ✅ Correspondance exacte | |
+| `pseudo` | `pseudo` | TEXT UNIQUE | ✅ Correspondance exacte | Ajouté via `runMigrations()` dans DatabaseManager |
 | `avatar` | `avatar` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `games_played` | `games_played` | INTEGER | ✅ Correspondance exacte | |
-| `wins` | `wins` | INTEGER | ✅ Correspondance exacte | |
-| `total_score` | `total_score` | INTEGER | ✅ Correspondance exacte | |
-| `average_score` | `average_score` | DECIMAL(5,2) | ✅ Correspondance exacte | |
+| `games_played` | `games_played` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
+| `wins` | `wins` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
+| `total_score` | `total_score` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
+| `average_score` | `average_score` | DECIMAL(5,2) | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
 | `favorite_game` | `favorite_game` | VARCHAR(255) | ✅ Correspondance exacte | Optionnel des deux côtés |
 | `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
 | `updated_at` | `updated_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
 | `stats` | 🔄 Calculé frontend | Champ virtuel | 🔄 Champ virtuel pour affichage | Format: "2,100 pts" |
+
+> ⚠️ **Dette technique — stats dénormalisées dans `players`**
+>
+> `games_played`, `wins`, `total_score`, `average_score` sont présents à la fois comme colonnes dans la table `players` **et** comme colonnes calculées dans la vue SQL `player_statistics` (calculées depuis `session_players`).
+> Le backend lit **toujours** via la vue — les colonnes stockées dans `players` restent à `0` en permanence car aucun trigger ni code applicatif ne les met à jour.
+> **À résoudre :** supprimer ces 4 colonnes de la table `players` (Option A, recommandée) ou les synchroniser via trigger (Option B). Voir `database-structure.md` pour le détail.
 
 ---
 
@@ -56,6 +64,13 @@ interface Player {
 interface Game {
   game_id: number
   bgg_id?: number
+  thumbnail?: string
+  playing_time?: number
+  min_playtime?: number
+  max_playtime?: number
+  categories?: string    // JSON array
+  mechanics?: string     // JSON array
+  families?: string      // JSON array
   name: string
   description?: string
   image?: string
@@ -76,6 +91,7 @@ interface Game {
   supports_hybrid: boolean
   has_expansion: boolean
   has_characters: boolean
+  is_expansion: boolean
   created_at: Date
   updated_at?: Date
   // Related data
@@ -86,12 +102,21 @@ interface Game {
 }
 ```
 
+> **Note :** `game_type TEXT CHECK('competitive'|'cooperative'|'campaign'|'hybrid') DEFAULT 'competitive'` est présent dans `schema.sql` mais absent de l'interface TypeScript `Game`. La valeur par défaut BDD (`'competitive'`) garantit la cohérence. Ce champ sera ajouté à l'interface dans une future itération (voir ROADMAP).
+
 ### Correspondances Base de Données
 
 | **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
 | `game_id` | `game_id` | INTEGER | ✅ Correspondance exacte | |
 | `bgg_id` | `bgg_id` | INTEGER | ✅ Correspondance exacte | Optionnel, UNIQUE |
+| `thumbnail` | `thumbnail` | TEXT | ✅ Correspondance exacte | Optionnel — URL miniature BGG |
+| `playing_time` | `playing_time` | INTEGER | ✅ Correspondance exacte | Optionnel — durée typique (minutes) |
+| `min_playtime` | `min_playtime` | INTEGER | ✅ Correspondance exacte | Optionnel |
+| `max_playtime` | `max_playtime` | INTEGER | ✅ Correspondance exacte | Optionnel |
+| `categories` | `categories` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
+| `mechanics` | `mechanics` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
+| `families` | `families` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
 | `name` | `name` | VARCHAR(255) | ✅ Correspondance exacte | |
 | `description` | `description` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
 | `image` | `image` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
@@ -112,6 +137,8 @@ interface Game {
 | `supports_hybrid` | `supports_hybrid` | BOOLEAN | ✅ Correspondance exacte | |
 | `has_expansion` | `has_expansion` | BOOLEAN | ✅ Correspondance exacte | |
 | `has_characters` | `has_characters` | BOOLEAN | ✅ Correspondance exacte | |
+| `is_expansion` | `is_expansion` | INTEGER (0/1) | ✅ Correspondance exacte | Vrai si ce jeu est lui-même une extension |
+| — | `game_type` | TEXT CHECK | ⚠️ Absent du type TS | Présent en BDD (DEFAULT 'competitive') — voir note ci-dessus |
 | `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
 | `updated_at` | `updated_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
 | `expansions` | 🔗 Relation | Table séparée | 🔗 Relation JOIN | Table `game_expansions` |
@@ -271,15 +298,15 @@ Ce type est utilisé exclusivement dans `ApiService.createSession()` et les hook
 ## RÉSUMÉ DES CORRESPONDANCES
 
 ### 🟢 Statut Global
-✅ **Table Players** : 100% mappée
-✅ **Table Games** : 100% mappée
+✅ **Table Players** : 100% mappée (inclus `pseudo` via migration)
+✅ **Table Games** : 100% mappée (inclus BGG étendu, `is_expansion`) — voir note `game_type`
 ✅ **Table Game_Expansions** : 100% mappée
 ✅ **Table Game_Characters** : 100% mappée
 ✅ **Table Game_Sessions** : 100% mappée
 ✅ **Table Session_Players** : 100% mappée
 ✅ **CreateSessionPayload** : Type de création documenté (non persisté directement)
 
-**Score Global** : 100% de correspondance — Toutes les tables sont mappées, 0 `any` dans les interfaces
+**Note :** Le champ `game_type` (BDD) n'a pas encore d'équivalent dans l'interface TypeScript `Game`. C'est un écart documenté et intentionnel — la valeur par défaut BDD garantit la cohérence des données.
 
 ### 🔄 Champs Calculés (Frontend uniquement)
 - **`stats`** (Players) : Calculé = `${total_score} pts`
@@ -303,4 +330,4 @@ Ce type est utilisé exclusivement dans `ApiService.createSession()` et les hook
     -   `Game.characters`: Chargées depuis la table `game_characters` si `Game.has_characters` est `true`.
 
 ### Statut Final
-🎯 **Alignement Complet** : Toutes les interfaces frontend sont alignées avec le schéma BDD. Zéro `any` dans le codebase. La structure est strictement typée de bout en bout (DB schema → `src/types/index.ts` → backend → frontend).
+🎯 **Alignement quasi-complet** : Toutes les interfaces frontend sont alignées avec le schéma BDD, à l'exception de `game_type` (écart documenté, intentionnel). Zéro `any` dans les interfaces. La structure est strictement typée de bout en bout (DB schema → `src/types/index.ts` → backend → frontend).

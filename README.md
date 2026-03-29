@@ -9,8 +9,8 @@ Application web de suivi de scores et de gestion de collection de jeux de socié
 | Frontend | React 19 + TypeScript + Vite |
 | UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
 | Formulaires | React Hook Form + Zod |
-| Graphiques | Recharts + D3 |
-| Backend | Express 4 + Node.js |
+| Graphiques | Recharts 3 + D3 |
+| Backend | Express 5 + Node.js |
 | Base de données | SQLite (better-sqlite3) |
 | Tests | Vitest + React Testing Library + MSW |
 

@@ -128,6 +128,16 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+<details>
+<summary><b>Schema BDD — Colonnes stats dénormalisées dans `players`</b></summary>
+
+- **🗄️ `players.games_played/wins/total_score/average_score` — colonnes mortes** : ces 4 colonnes existent dans la table `players` ET sont recalculées dynamiquement dans la vue SQL `player_statistics` (depuis `session_players`). Le backend lit **toujours** via la vue — les colonnes stockées restent à `0` en permanence (aucun trigger, aucune mise à jour applicative).
+  - **Option A (recommandée)** : supprimer les 4 colonnes de `players`, utiliser uniquement la vue. Source de vérité unique, 0 risque de désynchronisation. Requiert une migration `ALTER TABLE` + nettoyage du `CreatePlayerSchema` Zod.
+  - **Option B** : conserver et synchroniser via trigger SQL à chaque INSERT/UPDATE sur `session_players`. Redondant mais élimine les recalculs à la lecture sur gros volume.
+  - **Statut** : non tranché — colonnes conservées pour rétrocompatibilité. À nettoyer lors d'un sprint dédié.
+
+</details>
+
 </details>
 
 ---
