@@ -114,7 +114,77 @@ describe('useGamesPage', () => {
       result.current.resetForm();
     });
 
-    // Vérifier que les données du formulaire sont remises à zéro
     expect(result.current.formData.name).toBe('');
+  });
+
+  it('handleAddGame — erreur duplicate_game → addGameError défini, dialog reste ouverte', async () => {
+    const onAddGame = vi.fn().mockRejectedValue(new Error('duplicate_game'));
+    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+
+    act(() => {
+      result.current.handleAddDialogOpen(true);
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
+    });
+
+    await act(async () => {
+      await result.current.handleAddGame();
+    });
+
+    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.');
+    expect(result.current.isAddDialogOpen).toBe(true);
+  });
+
+  it('handleAddGame — erreur générique → message générique', async () => {
+    const onAddGame = vi.fn().mockRejectedValue(new Error('network_error'));
+    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+
+    act(() => {
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
+    });
+
+    await act(async () => {
+      await result.current.handleAddGame();
+    });
+
+    expect(result.current.addGameError).toBe('Une erreur est survenue. Veuillez réessayer.');
+  });
+
+  it('handleBGGSearch — bgg_id déjà dans la collection → addGameError défini', () => {
+    const { result } = renderHook(() => useGamesPage(defaultProps));
+
+    act(() => {
+      result.current.handleBGGSearch({ id: 266192, name: 'Wingspan' } as any);
+    });
+
+    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.');
+  });
+
+  it('handleBGGSearch — bgg_id nouveau → pas d\'addGameError', () => {
+    const { result } = renderHook(() => useGamesPage(defaultProps));
+
+    act(() => {
+      result.current.handleBGGSearch({ id: 999999, name: 'New Game' } as any);
+    });
+
+    expect(result.current.addGameError).toBeNull();
+  });
+
+  it('handleAddDialogOpen(false) — clear addGameError', async () => {
+    const onAddGame = vi.fn().mockRejectedValue(new Error('duplicate_game'));
+    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+
+    act(() => {
+      result.current.handleAddDialogOpen(true);
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
+    });
+    await act(async () => {
+      await result.current.handleAddGame();
+    });
+    expect(result.current.addGameError).toBeTruthy();
+
+    act(() => {
+      result.current.handleAddDialogOpen(false);
+    });
+    expect(result.current.addGameError).toBeNull();
   });
 });

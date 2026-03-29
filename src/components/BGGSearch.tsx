@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MagnifyingGlass, Link, Circle } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const enrichmentIdRef = useRef(0);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -34,14 +35,19 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
     setIsSearching(true);
     setSearchError('');
 
+    // Increment to invalidate any in-progress enrichment from a previous search
+    const searchId = ++enrichmentIdRef.current;
+
     try {
       const results = await bggApiService.searchGames(trimmed);
       setSearchResults(results);
 
-      // Enrich thumbnails + years in the background, one by one
-      results.forEach(async (result) => {
+      // Enrich thumbnails + years sequentially; abort if a new search starts
+      for (const result of results) {
+        if (enrichmentIdRef.current !== searchId) break;
         try {
           const details = await bggApiService.getGameDetails(result.id);
+          if (enrichmentIdRef.current !== searchId) break;
           if (details) {
             setSearchResults(prev =>
               prev.map(r =>
@@ -54,7 +60,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
         } catch {
           // Silently ignore enrichment failures for individual results
         }
-      });
+      }
     } catch {
       setSearchError('Échec de la recherche sur BoardGameGeek. Veuillez réessayer.');
     } finally {

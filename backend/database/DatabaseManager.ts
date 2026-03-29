@@ -844,7 +844,16 @@ class DatabaseManager {
   }
 
   updateImportLog(field: 'bgg_catalog_imported_at' | 'data_exported_at' | 'data_imported_at'): void {
+    const ALLOWED_FIELDS = ['bgg_catalog_imported_at', 'data_exported_at', 'data_imported_at'] as const;
+    if (!(ALLOWED_FIELDS as readonly string[]).includes(field)) {
+      throw new Error(`Invalid log field: ${field}`);
+    }
     this.db.prepare(`UPDATE log_import SET ${field} = CURRENT_TIMESTAMP WHERE id = 1`).run()
+  }
+
+  hasBggCatalog(): boolean {
+    const row = this.db.prepare('SELECT EXISTS(SELECT 1 FROM bgg_catalog LIMIT 1) as exists_flag').get() as { exists_flag: number }
+    return row.exists_flag === 1
   }
 
   searchBggCatalog(query: string): { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] {
@@ -857,6 +866,7 @@ class DatabaseManager {
     const row = this.db.prepare('SELECT COUNT(*) as count FROM bgg_catalog').get() as { count: number }
     return row.count
   }
+
 
   importBggCatalog(rows: { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[]): number {
     const insert = this.db.prepare(

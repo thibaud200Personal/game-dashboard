@@ -6,6 +6,7 @@ import cors = require('cors');
 import path = require('path');
 import * as crypto from 'crypto';
 import DatabaseManager from './database/DatabaseManager';
+import { parseBggCsv } from './database/parseBggCsv';
 import { bggService } from './bggService';
 import { CreatePlayerSchema, UpdatePlayerSchema, CreateGameSchema, UpdateGameSchema, CreateSessionSchema } from './validation/schemas';
 import { ZodSchema } from 'zod';
@@ -87,37 +88,11 @@ app.use('/api', (req: express.Request, res: express.Response, next: express.Next
   return requireAuth(req, res, next);
 });
 
-// Parses a BGG CSV dump (boardgames_ranks.csv) into importable rows.
-// Handles quoted names with commas (e.g. "Brass: Birmingham").
-function parseBggCsv(csv: string): { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] {
-  const lines = csv.split('\n')
-  const results: { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] = []
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line) continue
-    // Regex: id, name (optional quotes), year, skip 4 cols, is_expansion
-    const m = line.match(/^(\d+),"?([^",]*(?:"[^"]*"[^",]*)*)"?,(\d*),(?:[^,]*,){4}(\d)/)
-    if (!m) continue
-    const bgg_id = parseInt(m[1])
-    if (isNaN(bgg_id) || bgg_id <= 0) continue
-    const name = m[2].trim()
-    if (!name) continue
-    const year = parseInt(m[3])
-    results.push({
-      bgg_id,
-      name,
-      year_published: isNaN(year) ? null : year,
-      is_expansion: parseInt(m[4]) === 1 ? 1 : 0,
-    })
-  }
-  return results
-}
-
 // BGG routes — proxy geekdo.com JSON API côté backend, retourne JSON
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
   const query = req.query.q as string;
   if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
-  if (db.getBggCatalogCount() > 0) {
+  if (db.hasBggCatalog()) {
     const rows = db.searchBggCatalog(query);
     return res.json(rows.map(r => ({
       id: r.bgg_id,

@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import DatabaseManager from '../database/DatabaseManager'
+import { parseBggCsv } from '../database/parseBggCsv'
 
 const filePath = process.argv[2]
 if (!filePath) {
@@ -20,24 +21,7 @@ const csv = fs.readFileSync(resolved, 'utf-8')
 const lines = csv.split('\n')
 console.log(`${lines.length - 1} lignes à parser…`)
 
-const rows: { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] = []
-for (let i = 1; i < lines.length; i++) {
-  const line = lines[i].trim()
-  if (!line) continue
-  const m = line.match(/^(\d+),"?([^",]*(?:"[^"]*"[^",]*)*)"?,(\d*),(?:[^,]*,){4}(\d)/)
-  if (!m) continue
-  const bgg_id = parseInt(m[1])
-  if (isNaN(bgg_id) || bgg_id <= 0) continue
-  const name = m[2].trim()
-  if (!name) continue
-  const year = parseInt(m[3])
-  rows.push({
-    bgg_id,
-    name,
-    year_published: isNaN(year) ? null : year,
-    is_expansion: parseInt(m[4]) === 1 ? 1 : 0,
-  })
-}
+const rows = parseBggCsv(csv)
 
 console.log(`${rows.length} entrées valides, import en base…`)
 const db = new DatabaseManager()
