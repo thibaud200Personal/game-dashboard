@@ -13,10 +13,12 @@ interface EditPlayerDialogProps {
   onUpdate: () => void;
   onCancel: () => void;
   darkMode: boolean;
+  serverError?: string | null;
 }
 
 interface ValidationErrors {
   player_name?: string;
+  pseudo?: string;
   avatar?: string;
   games_played?: string;
   wins?: string;
@@ -29,11 +31,19 @@ function validatePlayerForm(formData: PlayerFormData): ValidationErrors {
   const errors: ValidationErrors = {};
 
   if (!formData.player_name.trim()) {
-    errors.player_name = 'Player name is required';
+    errors.player_name = 'Le nom du joueur est requis';
   } else if (formData.player_name.trim().length < 2) {
-    errors.player_name = 'Player name must be at least 2 characters long';
+    errors.player_name = 'Le nom doit contenir au moins 2 caractères';
   } else if (formData.player_name.trim().length > 50) {
-    errors.player_name = 'Player name must be less than 50 characters';
+    errors.player_name = 'Le nom ne peut pas dépasser 50 caractères';
+  }
+
+  if (!formData.pseudo.trim()) {
+    errors.pseudo = 'Le pseudo est requis';
+  } else if (formData.pseudo.trim().length < 2) {
+    errors.pseudo = 'Le pseudo doit contenir au moins 2 caractères';
+  } else if (formData.pseudo.trim().length > 50) {
+    errors.pseudo = 'Le pseudo ne peut pas dépasser 50 caractères';
   }
 
   if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
@@ -72,7 +82,8 @@ export function EditPlayerDialog({
   setFormData,
   onUpdate,
   onCancel,
-  darkMode = true
+  darkMode = true,
+  serverError
 }: EditPlayerDialogProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -102,16 +113,28 @@ export function EditPlayerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="edit_player_name" className={darkMode ? "text-white" : "text-blue-700"}>Player Name *</Label>
+            <Label htmlFor="edit_player_name" className={darkMode ? "text-white" : "text-blue-700"}>Nom *</Label>
             <Input
               id="edit_player_name"
               name="edit_player_name"
               value={formData.player_name}
               onChange={(e) => handleInputChange('player_name', e.target.value)}
               className={getInputClass('player_name', errors, darkMode)}
-              placeholder="Enter player name"
+              placeholder="Prénom ou nom complet"
             />
             {errors.player_name && <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>}
+          </div>
+          <div>
+            <Label htmlFor="edit_pseudo" className={darkMode ? "text-white" : "text-blue-700"}>Pseudo *</Label>
+            <Input
+              id="edit_pseudo"
+              name="edit_pseudo"
+              value={formData.pseudo}
+              onChange={(e) => handleInputChange('pseudo', e.target.value)}
+              className={getInputClass('pseudo', errors, darkMode)}
+              placeholder="Identifiant unique"
+            />
+            {errors.pseudo && <p className="text-red-400 text-sm mt-1">{errors.pseudo}</p>}
           </div>
           <div>
             <Label htmlFor="edit_avatar" className={darkMode ? "text-white" : "text-blue-700"}>Avatar URL</Label>
@@ -174,13 +197,12 @@ export function EditPlayerDialog({
             />
             {errors.total_score && <p className="text-red-400 text-sm mt-1">{errors.total_score}</p>}
           </div>
+          {serverError && (
+            <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
+          )}
           <div className="flex gap-4">
-            <Button onClick={handleUpdate} className="flex-1">
-              Update Player
-            </Button>
-            <Button variant="outline" onClick={onCancel} className="flex-1">
-              Cancel
-            </Button>
+            <Button onClick={handleUpdate} className="flex-1">Mettre à jour</Button>
+            <Button variant="outline" onClick={onCancel} className="flex-1">Annuler</Button>
           </div>
         </div>
       </DialogContent>

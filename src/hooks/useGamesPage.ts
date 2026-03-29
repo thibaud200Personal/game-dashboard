@@ -4,7 +4,7 @@ import { Game, NavigationHandler, GameFormData, GameExpansion, GameCharacter, BG
 export interface GamesPageData {
   games: Game[];
   onNavigation: NavigationHandler;
-  onAddGame: (game: Partial<Game>) => void;
+  onAddGame: (game: Partial<Game>) => void | Promise<void>;
   onUpdateGame: (gameId: number, game: Partial<Game>) => void;
   onDeleteGame: (gameId: number) => void;
   onAddExpansion: (gameId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
@@ -37,6 +37,7 @@ export const useGamesPage = (data: GamesPageData) => {
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [addGameError, setAddGameError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -189,6 +190,7 @@ export const useGamesPage = (data: GamesPageData) => {
     setIsAddDialogOpen(open);
     if (!open) {
       resetForm();
+      setAddGameError(null);
     }
   };
 
@@ -201,8 +203,10 @@ export const useGamesPage = (data: GamesPageData) => {
   };
 
   // Game actions
-  const handleAddGame = () => {
-    if (formData.name.trim()) {
+  const handleAddGame = async () => {
+    if (!formData.name.trim()) return;
+    setAddGameError(null);
+    try {
       const now = new Date();
       const gameData = {
         ...formData,
@@ -211,9 +215,16 @@ export const useGamesPage = (data: GamesPageData) => {
         expansions: [],
         characters: []
       };
-      onAddGame(gameData);
+      await onAddGame(gameData);
       resetForm();
       setIsAddDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown';
+      setAddGameError(
+        msg === 'duplicate_game'
+          ? 'Ce jeu est déjà dans votre collection.'
+          : 'Une erreur est survenue. Veuillez réessayer.'
+      );
     }
   };
 
@@ -291,6 +302,11 @@ export const useGamesPage = (data: GamesPageData) => {
 
   // BGG Search
   const handleBGGSearch = (bggGame: BGGGame) => {
+    if (bggGame.id && games.some(g => g.bgg_id === bggGame.id)) {
+      setAddGameError('Ce jeu est déjà dans votre collection.');
+    } else {
+      setAddGameError(null);
+    }
     setFormData(prev => ({
       ...prev,
       name: bggGame.name,
@@ -346,6 +362,7 @@ export const useGamesPage = (data: GamesPageData) => {
     // Dialog state
     isAddDialogOpen,
     isEditDialogOpen,
+    addGameError,
     
     // Filters and search
     searchQuery,

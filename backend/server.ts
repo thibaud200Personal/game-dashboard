@@ -117,6 +117,16 @@ function parseBggCsv(csv: string): { bgg_id: number; name: string; year_publishe
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
   const query = req.query.q as string;
   if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
+  if (db.getBggCatalogCount() > 0) {
+    const rows = db.searchBggCatalog(query);
+    return res.json(rows.map(r => ({
+      id: r.bgg_id,
+      name: r.name,
+      year_published: r.year_published ?? 0,
+      type: r.is_expansion ? 'boardgameexpansion' : 'boardgame',
+      thumbnail: '',
+    })));
+  }
   const results = await bggService.searchGames(query);
   return res.json(results);
 }));
@@ -179,7 +189,7 @@ app.post('/api/players', validateBody(CreatePlayerSchema), asyncHandler(async (r
     return res.status(201).json(newPlayer);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
   }
@@ -195,7 +205,7 @@ app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async
     return res.json(updatedPlayer);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
   }
@@ -232,8 +242,15 @@ app.get('/api/games/:id', asyncHandler(async (req: express.Request, res: express
 }));
 
 app.post('/api/games', validateBody(CreateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
-  const newGame = db.createGame(req.body);
-  return res.status(201).json(newGame);
+  try {
+    const newGame = db.createGame(req.body);
+    return res.status(201).json(newGame);
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ error: 'duplicate_game', message: 'Ce jeu est déjà dans votre collection' });
+    }
+    throw error;
+  }
 }));
 
 app.put('/api/games/:id', validateBody(UpdateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {

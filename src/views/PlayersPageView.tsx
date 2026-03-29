@@ -80,6 +80,9 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
         />
         <div className="flex-1">
           <div className={nameClass}>{player.player_name}</div>
+          {player.pseudo && player.pseudo !== player.player_name && (
+            <div className={`text-xs ${darkMode ? 'text-white/40' : 'text-slate-400'}`}>@{player.pseudo}</div>
+          )}
           <div className={statsClass}>{player.stats || `${player.total_score} pts`}</div>
           <div className={metaClass}>
             {player.games_played} games • {player.wins} wins • Avg: {player.average_score}
@@ -174,6 +177,7 @@ export function PlayersPageView(props: PlayersPageViewProps) {
                 props.handleAddDialogOpen(false);
               }}
               darkMode={darkMode}
+              serverError={props.addPlayerError}
             />
           </div>
         </div>
@@ -261,6 +265,7 @@ export function PlayersPageView(props: PlayersPageViewProps) {
           props.handleEditDialogOpen(false);
         }}
         darkMode={darkMode}
+        serverError={props.updatePlayerError}
       />
     </div>
   );

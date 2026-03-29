@@ -101,14 +101,21 @@ class DatabaseManager {
       ['families',      'ALTER TABLE games ADD COLUMN families TEXT'],
     ];
     const pending = gameMigrations.filter(([col]) => !columns.includes(col));
+    const playerColumns = (this.db.pragma('table_info(players)') as { name: string }[]).map(c => c.name);
+    const needsPseudo = !playerColumns.includes('pseudo');
     const tables = (this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]).map(t => t.name);
     const needsCatalog = !tables.includes('bgg_catalog');
     const needsLogImport = !tables.includes('log_import');
 
-    if (pending.length === 0 && !needsCatalog && !needsLogImport) return;
+    if (pending.length === 0 && !needsPseudo && !needsCatalog && !needsLogImport) return;
     this.db.transaction(() => {
       for (const [, sql] of pending) {
         this.db.exec(sql);
+      }
+      if (needsPseudo) {
+        this.db.exec('ALTER TABLE players ADD COLUMN pseudo TEXT');
+        this.db.exec('UPDATE players SET pseudo = player_name WHERE pseudo IS NULL');
+        this.db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_players_pseudo ON players(pseudo COLLATE NOCASE)');
       }
       if (needsCatalog) {
         this.db.exec(`
@@ -165,11 +172,12 @@ class DatabaseManager {
 
   createPlayer(playerData: CreatePlayerRequest) {
     const stmt = this.db.prepare(`
-      INSERT INTO players (player_name, avatar, favorite_game)
-      VALUES (?, ?, ?)
+      INSERT INTO players (player_name, pseudo, avatar, favorite_game)
+      VALUES (?, ?, ?, ?)
     `);
     const result = stmt.run(
       playerData.player_name,
+      playerData.pseudo || playerData.player_name,
       playerData.avatar || null,
       playerData.favorite_game || null
     );
@@ -178,14 +186,15 @@ class DatabaseManager {
 
   updatePlayer(playerId: number, playerData: UpdatePlayerRequest) {
     const stmt = this.db.prepare(`
-      UPDATE players 
-      SET player_name = ?, avatar = ?, favorite_game = ?, 
+      UPDATE players
+      SET player_name = ?, pseudo = ?, avatar = ?, favorite_game = ?,
           games_played = ?, wins = ?, total_score = ?, average_score = ?,
           updated_at = CURRENT_TIMESTAMP
       WHERE player_id = ?
     `);
     stmt.run(
       playerData.player_name,
+      playerData.pseudo || playerData.player_name,
       playerData.avatar || null,
       playerData.favorite_game || null,
       playerData.games_played || 0,
@@ -836,6 +845,12 @@ class DatabaseManager {
 
   updateImportLog(field: 'bgg_catalog_imported_at' | 'data_exported_at' | 'data_imported_at'): void {
     this.db.prepare(`UPDATE log_import SET ${field} = CURRENT_TIMESTAMP WHERE id = 1`).run()
+  }
+
+  searchBggCatalog(query: string): { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[] {
+    return this.db.prepare(
+      'SELECT bgg_id, name, year_published, is_expansion FROM bgg_catalog WHERE name LIKE ? ORDER BY is_expansion ASC, name ASC LIMIT 20'
+    ).all(`${query}%`) as { bgg_id: number; name: string; year_published: number | null; is_expansion: number }[]
   }
 
   getBggCatalogCount(): number {

@@ -61,6 +61,7 @@ export default function GamesPage({
     editingGame,
     isAddDialogOpen,
     isEditDialogOpen,
+    addGameError,
     searchQuery,
     setSearchQuery,
     handleAddDialogOpen,
@@ -114,6 +115,7 @@ export default function GamesPage({
       setExpandedGame={setExpandedGame}
       setEditDialogOpen={handleEditDialogOpen}
       darkMode={!!darkMode}
+      addGameError={addGameError}
     />
   );
 }

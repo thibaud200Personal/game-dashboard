@@ -41,9 +41,10 @@ export const createMockMobile = (isMobile = false): MockMobileHook => ({
 
 // Mock data communes
 export const mockPlayers = [
-  { 
-    player_id: 1, 
-    player_name: 'Alice', 
+  {
+    player_id: 1,
+    player_name: 'Alice',
+    pseudo: 'alice42',
     avatar: 'avatar1.jpg',
     stats: 'Advanced player',
     games_played: 10,
@@ -53,9 +54,10 @@ export const mockPlayers = [
     created_at: new Date('2024-01-01'),
     favorite_game: 'Wingspan'
   },
-  { 
-    player_id: 2, 
-    player_name: 'Bob', 
+  {
+    player_id: 2,
+    player_name: 'Bob',
+    pseudo: 'bob_gamer',
     avatar: 'avatar2.jpg',
     stats: 'Beginner player',
     games_played: 5,

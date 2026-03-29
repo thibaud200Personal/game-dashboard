@@ -7,12 +7,14 @@ export const SessionTypeSchema = z.enum(['competitive', 'cooperative', 'campaign
 // Player schemas
 export const CreatePlayerSchema = z.object({
   player_name: z.string().min(1, 'Le nom du joueur est requis').max(50, 'Le nom ne peut pas dépasser 50 caractères'),
+  pseudo: z.string().min(1, 'Le pseudo est requis').max(50, 'Le pseudo ne peut pas dépasser 50 caractères').optional(),
   avatar: z.string().url('URL d\'avatar invalide').optional(),
   favorite_game: z.string().max(100, 'Le nom du jeu favori ne peut pas dépasser 100 caractères').optional()
 });
 
 export const UpdatePlayerSchema = z.object({
   player_name: z.string().min(1, 'Le nom du joueur est requis').max(50, 'Le nom ne peut pas dépasser 50 caractères').optional(),
+  pseudo: z.string().min(1, 'Le pseudo est requis').max(50, 'Le pseudo ne peut pas dépasser 50 caractères').optional(),
   avatar: z.string().url('URL d\'avatar invalide').optional(),
   games_played: z.number().int().min(0, 'Le nombre de parties ne peut pas être négatif').optional(),
   wins: z.number().int().min(0, 'Le nombre de victoires ne peut pas être négatif').optional(),

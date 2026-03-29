@@ -61,6 +61,7 @@ interface GamesPageViewProps {
   setExpandedGame: (gameId: number | null) => void;
   setEditDialogOpen: (open: boolean) => void;
   darkMode: boolean;
+  addGameError?: string | null;
 }
 
 
@@ -416,6 +417,7 @@ export function GamesPageView(props: GamesPageViewProps) {
               isBGGSearchOpen={isBGGSearchOpen}
               onBGGSearchToggle={setBGGSearchOpen}
               darkMode={darkMode}
+              serverError={props.addGameError}
             />
             <EditGameDialog
               isOpen={props.isEditDialogOpen}

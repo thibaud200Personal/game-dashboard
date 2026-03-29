@@ -100,12 +100,14 @@ export interface SessionPlayer {
 // API Request/Response types
 export interface CreatePlayerRequest {
   player_name: string;
+  pseudo: string;
   avatar?: string;
   favorite_game?: string;
 }
 
 export interface UpdatePlayerRequest {
   player_name?: string;
+  pseudo?: string;
   avatar?: string;
   games_played?: number;
   wins?: number;

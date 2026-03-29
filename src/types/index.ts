@@ -3,6 +3,7 @@
 export interface Player {
   player_id: number;
   player_name: string;
+  pseudo: string;
   avatar?: string;
   stats?: string;
   games_played: number;
@@ -98,6 +99,7 @@ export type NavigationHandler = (view: string, id?: number, source?: string) => 
 // Form data types
 export interface PlayerFormData {
   player_name: string;
+  pseudo: string;
   avatar: string;
   favorite_game: string;
   total_score: number;

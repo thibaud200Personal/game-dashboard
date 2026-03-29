@@ -14,10 +14,12 @@ interface AddPlayerDialogProps {
   onAdd: () => void;
   onCancel: () => void;
   darkMode: boolean;
+  serverError?: string | null;
 }
 
 interface ValidationErrors {
   player_name?: string;
+  pseudo?: string;
   avatar?: string;
 }
 
@@ -27,15 +29,22 @@ function validateAddPlayerForm(formData: PlayerFormData): ValidationErrors {
   const errors: ValidationErrors = {};
 
   if (!formData.player_name.trim()) {
-    errors.player_name = 'Player name is required';
+    errors.player_name = 'Le nom du joueur est requis';
   } else if (formData.player_name.trim().length < 2) {
-    errors.player_name = 'Player name must be at least 2 characters long';
+    errors.player_name = 'Le nom doit contenir au moins 2 caractères';
   } else if (formData.player_name.trim().length > 50) {
-    errors.player_name = 'Player name must be less than 50 characters';
+    errors.player_name = 'Le nom ne peut pas dépasser 50 caractères';
+  }
+
+  const pseudoVal = formData.pseudo.trim();
+  if (pseudoVal.length > 0 && pseudoVal.length < 2) {
+    errors.pseudo = 'Le pseudo doit contenir au moins 2 caractères';
+  } else if (pseudoVal.length > 50) {
+    errors.pseudo = 'Le pseudo ne peut pas dépasser 50 caractères';
   }
 
   if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
-    errors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
+    errors.avatar = 'URL d\'image invalide (jpg, jpeg, png, gif, webp)';
   }
 
   return errors;
@@ -56,9 +65,16 @@ export function AddPlayerDialog({
   setFormData,
   onAdd,
   onCancel,
-  darkMode = true
+  darkMode = true,
+  serverError
 }: AddPlayerDialogProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [pseudoTouched, setPseudoTouched] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) setPseudoTouched(false);
+    onOpenChange(open);
+  };
 
   const handleAdd = () => {
     const newErrors = validateAddPlayerForm(formData);
@@ -66,6 +82,19 @@ export function AddPlayerDialog({
     if (Object.keys(newErrors).length === 0) {
       onAdd();
     }
+  };
+
+  const handleNameChange = (value: string) => {
+    const update: Partial<PlayerFormData> = { player_name: value };
+    if (!pseudoTouched) update.pseudo = value;
+    setFormData({ ...formData, ...update });
+    if (errors.player_name) setErrors({ ...errors, player_name: undefined });
+  };
+
+  const handlePseudoChange = (value: string) => {
+    setPseudoTouched(true);
+    setFormData({ ...formData, pseudo: value });
+    if (errors.pseudo) setErrors({ ...errors, pseudo: undefined });
   };
 
   const handleInputChange = (field: keyof PlayerFormData, value: string) => {
@@ -76,7 +105,7 @@ export function AddPlayerDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className={darkMode ? "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700" : "bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 text-blue-700"}>
           <Plus className="w-4 h-4" />
@@ -91,16 +120,28 @@ export function AddPlayerDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="player_name" className={darkMode ? "text-white" : "text-blue-700"}>Player Name *</Label>
+            <Label htmlFor="player_name" className={darkMode ? "text-white" : "text-blue-700"}>Nom *</Label>
             <Input
               id="player_name"
               name="player_name"
               value={formData.player_name}
-              onChange={(e) => handleInputChange('player_name', e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               className={getInputClass('player_name', errors, darkMode)}
-              placeholder="Enter player name"
+              placeholder="Prénom ou nom complet"
             />
             {errors.player_name && <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>}
+          </div>
+          <div>
+            <Label htmlFor="pseudo" className={darkMode ? "text-white" : "text-blue-700"}>Pseudo *</Label>
+            <Input
+              id="pseudo"
+              name="pseudo"
+              value={formData.pseudo}
+              onChange={(e) => handlePseudoChange(e.target.value)}
+              className={getInputClass('pseudo', errors, darkMode)}
+              placeholder="Identifiant unique"
+            />
+            {errors.pseudo && <p className="text-red-400 text-sm mt-1">{errors.pseudo}</p>}
           </div>
           <div>
             <Label htmlFor="avatar" className={darkMode ? "text-white" : "text-blue-700"}>Avatar URL</Label>
@@ -125,9 +166,12 @@ export function AddPlayerDialog({
               placeholder="Enter favorite game (optional)"
             />
           </div>
+          {serverError && (
+            <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
+          )}
           <div className="flex gap-4">
-            <Button onClick={handleAdd} className="flex-1">Add Player</Button>
-            <Button variant="outline" onClick={onCancel} className="flex-1">Cancel</Button>
+            <Button onClick={handleAdd} className="flex-1">Ajouter</Button>
+            <Button variant="outline" onClick={onCancel} className="flex-1">Annuler</Button>
           </div>
         </div>
       </DialogContent>
