@@ -52,24 +52,68 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+<details>
+<summary><b>PR #43 — Bugs page Jeux & Joueurs</b></summary>
+
+- ✅ **Suppression de jeux** : handler frontend + SQL `DELETE /api/games/:id` opérationnel
+- ✅ **`supports_hybrid` non persisté** : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts`
+- ✅ **Popup suppression joueur** : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop
+- ✅ **`NewGamePage.tsx` interfaces locales** : imports depuis `@/types`, 0 interface locale
+
+</details>
+
+<details>
+<summary><b>PR #59 — BGG catalog, doublons, pseudo joueur</b></summary>
+
+- ✅ **Index local BGG** : table `bgg_catalog`, script `npm run import-bgg-catalog`, `log_import`, UI Settings pour importer le CSV
+- ✅ **Détection doublons jeux** : check frontend `bgg_id` déjà en collection, 409 backend + `DuplicateGameError`, dialog reste ouverte avec message
+- ✅ **Pseudo joueur unique** : colonne `pseudo TEXT UNIQUE`, migration existants, Zod + 409, `AddPlayerDialog` miroir auto, `PlayersPageView` affiche pseudo sous le nom
+
+</details>
+
+<details>
+<summary><b>PR #60 — Bump dépendances low-risk</b></summary>
+
+- ✅ **`typescript-eslint` + `@typescript-eslint/parser`** : `^8.38/8.42` → `^8.57.2` (patch)
+- ✅ **`globals`** : 16 → 17 (ESLint config uniquement)
+- ✅ **`dotenv`** : 16 → 17 (drop-in, usage inchangé)
+- ✅ **`@types/node`** : 24 → 25 (types uniquement)
+
+</details>
+
+<details>
+<summary><b>PR #61 — Zod 3→4 + Express 4→5 (backend)</b></summary>
+
+- ✅ **`zod`** : 3 → 4 — `ZodError.errors` → `.issues`, suppression `any` dans `UpdateGameSchema.refine`
+- ✅ **`express` + `@types/express`** : 4 → 5 — casts `req.params.id as string`, types idiomatiques `Request['params']`/`Request['query']`
+- ✅ **`path-to-regexp`** : 0.1.13 → 8.4.0 (transitif) — corrige CVE-2024-45296 (ReDoS)
+
+</details>
+
+<details>
+<summary><b>PR #62 — Vite 7→8</b></summary>
+
+- ✅ **`vite`** : 7 → 8 — aucun changement `vite.config.ts` requis (config minimale)
+- ✅ **Rollup → Rolldown** : dépendances transitives remplacées par `@rolldown/binding-*`
+
+</details>
+
+<details>
+<summary><b>PR #63 — recharts 2→3 + lucide-react 0.x→1.x</b></summary>
+
+- ✅ **`recharts`** : 2 → 3 — aucun changement de code (usage isolé dans `chart.tsx`, placeholders "coming soon")
+- ✅ **`lucide-react`** : 0.577 → 1.x — aucun changement de code (icônes utilisées conservent le même nom)
+
+</details>
+
 </details>
 
 ---
 
-## 🐛 Bugs Connus & Polish
+## 🐛 Bugs Connus & À Faire
 
 <details open>
 <summary>Voir le détail</summary>
-
-<details>
-<summary><b>Page Jeux</b></summary>
-
-- **✅ CORRIGÉ Suppression de jeux non fonctionnelle** — PR #43 mars 2026 : handler frontend + SQL `DELETE /api/games/:id` opérationnel.
-- **✅ CORRIGÉ `supports_hybrid` non persisté** — PR #43 mars 2026 : champ ajouté aux SQL INSERT/UPDATE dans `DatabaseManager.ts` + interfaces backend mises à jour.
-- **✅ CORRIGÉ Popup de suppression joueur** — PR #43 mars 2026 : `DeletePlayerDialog` refactorisé avec `AlertDialog` + pattern `trigger` prop, aligné avec `DeleteGameDialog`.
-- **✅ CORRIGÉ `NewGamePage.tsx` — interfaces locales dupliquées** — PR #43 mars 2026 : imports depuis `@/types`, 0 interface locale.
-
-</details>
 
 <details open>
 <summary><b>BGG API — Évolutions futures</b></summary>
@@ -79,7 +123,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **🔀 `BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — `src/services/bggApi.ts` et `backend/bggService.ts` définissent chacun leur propre interface pour la même structure. À unifier dans `src/types/index.ts` (source de vérité partagée) pour éviter une désynchronisation silencieuse à l'avenir.
 - **🧪 Tests BGG backend non couverts** — `backend/bggService.ts` (cache, rate limiting, parsing geekdo) et les routes `/api/bgg/*` dans `server.ts` n'ont aucun test. Les tests existants dans `src/__tests__/services/bggApi.test.ts` échouent car fetch n'est pas mocké avec MSW. À corriger : mocker les appels geekdo.com avec MSW et ajouter des cas de test pour la recherche, les détails, le cache et les erreurs réseau.
 - **📅 Filtre par année dans la recherche BGG** — Permettre de restreindre la recherche à une année de publication (ex. "Cascadia 2021"). À étudier : l'API geekdo search (`/api/geekitems?search=...`) ne semble pas exposer de paramètre `yearpublished` côté serveur — le filtrage serait probablement à faire côté client sur les résultats retournés. Faible priorité.
-- **🗄️ Index local BGG — recherche à brancher** (PR #59 en cours) — Infrastructure en place : table `bgg_catalog` créée, script `npm run import-bgg-catalog` fonctionnel, `log_import` pour tracer les dates, UI Settings pour importer le CSV. **Reste à faire** : (1) importer le CSV `boardgames_ranks.csv` dans la table, (2) remplacer `searchGames()` dans `bggService.ts` pour interroger `bgg_catalog` en local au lieu de l'API geekdo — ce sera la vraie correction de la recherche (instantanée, sans rate limit, sans doublons multilingues). FTS5 à envisager pour la recherche full-text performante sur 175k entrées.
+- **🗄️ Index local BGG — recherche à brancher** — Infrastructure livrée (PR #59). Reste : brancher `searchGames()` sur `bgg_catalog` (local) au lieu de l'API geekdo — FTS5 à envisager pour 175k entrées.
   - **UI `BGGSearch`** : une fois le catalogue local branché, ajouter un champ année (filtre optionnel) et une case à cocher "inclure les extensions" (exploite `is_expansion` — impossible avec l'API geekdo actuelle).
 
 </details>
@@ -99,13 +143,14 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **HTTPS/HSTS** : Redirect HTTP→HTTPS + header `Strict-Transport-Security` en production
 - **Authentification Bearer token** : voir PR #57 dans Dette Technique ci-dessus
 
-### 📦 Dépendances majeures à mettre à jour
-- `express` 4 → 5 (breaking changes à valider)
-- `zod` 3 → 4 (breaking changes à valider)
-- `recharts` 2 → 3 (déjà en roadmap)
-- `vite` 7 → 8 (déjà en roadmap)
-- `typescript` 5 → 6
-- `lucide-react` 0.577 → 1.7
+### 📦 Dépendances majeures — état mars 2026
+- ✅ `express` 4 → 5 — PR #61
+- ✅ `zod` 3 → 4 — PR #61
+- ✅ `recharts` 2 → 3 — PR #63
+- ✅ `vite` 7 → 8 — PR #62
+- ✅ `lucide-react` 0.577 → 1.x — PR #63
+- ⏳ `typescript` 5 → 6 — différé (ts-node, vitest, plugins pas encore compatibles)
+- ⏳ `eslint` 9 → 10 — différé (eslint-plugin-react-hooks et sonarjs pas encore compatibles)
 
 ---
 
