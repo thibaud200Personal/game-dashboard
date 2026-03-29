@@ -76,6 +76,22 @@ Ce document recense les problèmes courants rencontrés durant le développement
 -   Gestion centralisée des erreurs API dans les services.
 -   Messages d'erreur clairs pour l'utilisateur.
 
+## ⏳ Problèmes Connus — En Attente d'Implémentation
+
+### Labels FR/EN incohérents dans les formulaires jeux
+
+**Symptôme** : Le formulaire de *création* d'un jeu (AddGameDialog) affiche les labels de difficulté en français (Débutant, Intermédiaire, Expert). Quand on *modifie* ce même jeu (EditGameDialog), le Select affiche les valeurs anglaises brutes de la BDD (Beginner, Intermediate, Expert).
+
+**Cause** : Les valeurs enum stockées en BDD sont en anglais (`Beginner`, `competitive`, etc.). AddGameDialog traduit les labels à l'affichage mais EditGameDialog affiche la valeur brute.
+
+**Champs concernés** : `difficulty` (visible), labels game modes (moindre impact).
+
+**Solution prévue** : Implémentation du système i18n lié au réglage **Langue** dans SettingsPage (`useSettingsPage` a déjà un state `language` stub). Créer une map centralisée `DIFFICULTY_LABELS` etc. consommée par tous les formulaires. **Ne pas patcher chaque dialog en dur avant cette phase.**
+
+**Référence** : Section "Localisation des labels" dans ROADMAP.md (Phase 3).
+
+---
+
 ## 🔧 Lignes Directrices pour la Maintenance
 
 ### Ajout de Nouvelles Fonctionnalités

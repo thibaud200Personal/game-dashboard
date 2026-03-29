@@ -335,6 +335,24 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+<details>
+<summary><b>🌍 Localisation des labels — DÉFÉRÉ (lié à Settings → Langue)</b></summary>
+
+**Problème connu (mars 2026)** : Les valeurs stockées en BDD pour les champs enum sont en **anglais** (`Beginner`, `Intermediate`, `Expert`, `competitive`…). Les formulaires de création (AddGameDialog) affichent des labels français mais enregistrent la valeur anglaise — ce qui est correct. Les formulaires de modification (EditGameDialog) affichent les valeurs anglaises brutes de la BDD, d'où une incohérence visuelle.
+
+**Champs concernés :**
+- `difficulty` dans EditGameDialog : affiche `Beginner` / `Intermediate` / `Expert` au lieu de Débutant / Intermédiaire / Expert
+- Labels des modes de jeu (checkboxes) : impact moindre
+
+**Approche à implémenter :**
+- `useSettingsPage` possède déjà un state `language` (stub non fonctionnel)
+- Quand l'implémentation i18n sera faite, créer une map centralisée `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS`, etc. consommée par tous les dialogs et vues
+- Ne pas patcher chaque dialog en dur — attendre la couche i18n globale
+
+**Dépendance :** Implémentation du réglage Langue dans SettingsPage
+
+</details>
+
 </details>
 
 ---
@@ -499,8 +517,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 #### ❌ **Non Pertinent pour ce Projet**
 - **Multi-utilisateurs** : Application locale par design
-- **Internationalisation** : Projet français focalisé
 - **PWA complète** : Pas de besoin offline identifié
+
+> ℹ️ L'internationalisation partielle (labels FR/EN) est déférée — voir section "Localisation des labels" en Phase 3.
 
 </details>
 
@@ -533,7 +552,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details>
 <summary><b>❌ À ne pas réimplémenter</b></summary>
 
-- Multi-utilisateurs, internationalisation, PWA complète
+- Multi-utilisateurs, PWA complète
+- *(Internationalisation : partielle déférée — voir Phase 3)*
 
 </details>
 

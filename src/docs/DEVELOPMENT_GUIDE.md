@@ -144,7 +144,13 @@ Les dialogs de suppression (`DeleteGameDialog`, `DeletePlayerDialog`) utilisent 
 
 > `onSelect={(e) => e.preventDefault()}` est requis sur `DropdownMenuItem` pour empêcher la fermeture du menu avant l'ouverture de l'AlertDialog.
 
-### 3.2. Validation des Formulaires
+### 3.2. Enums et Labels — Convention FR/EN
+
+> ⚠️ **Problème connu (mars 2026)** — Les valeurs enum stockées en BDD sont en **anglais** (`Beginner`, `Intermediate`, `Expert`, `competitive`, etc.). Les dialogs de création affichent des labels français mais enregistrent la valeur anglaise. Les dialogs de modification affichent actuellement la valeur anglaise brute.
+>
+> **Règle à respecter** : Ne pas ajouter de traductions en dur dans chaque dialog. La solution sera une map centralisée i18n (`DIFFICULTY_LABELS`, `GAME_TYPE_LABELS`) à implémenter avec le système de langue dans SettingsPage. Voir ROADMAP.md (Phase 3 — Localisation des labels) et TROUBLESHOOTING.md.
+
+### 3.3. Validation des Formulaires
 
 La validation est effectuée en temps réel côté client pour une meilleure expérience utilisateur.
 
