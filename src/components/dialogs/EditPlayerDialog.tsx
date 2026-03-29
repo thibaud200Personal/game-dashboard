@@ -25,7 +25,7 @@ interface ValidationErrors {
   total_score?: string;
 }
 
-const AVATAR_URL_PATTERN = /^https?:\/\/[^(]+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
 
 function validatePlayerForm(formData: PlayerFormData): ValidationErrors {
   const errors: ValidationErrors = {};

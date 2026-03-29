@@ -23,7 +23,7 @@ interface ValidationErrors {
   avatar?: string;
 }
 
-const AVATAR_URL_PATTERN = /^https?:\/\/[^(]+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
 
 function validateAddPlayerForm(formData: PlayerFormData): ValidationErrors {
   const errors: ValidationErrors = {};
