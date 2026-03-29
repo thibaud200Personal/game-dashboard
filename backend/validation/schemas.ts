@@ -84,7 +84,7 @@ export const CreateGameSchema = CreateGameBaseSchema.refine(data => data.min_pla
   path: ['min_players']
 });
 
-export const UpdateGameSchema = CreateGameBaseSchema.partial().refine((data: any) => Object.keys(data).length > 0, {
+export const UpdateGameSchema = CreateGameBaseSchema.partial().refine(data => Object.keys(data).length > 0, {
   message: 'Au moins un champ doit être fourni pour la mise à jour'
 });
 
