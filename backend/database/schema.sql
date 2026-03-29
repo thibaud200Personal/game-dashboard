@@ -104,8 +104,27 @@ CREATE TABLE session_players (
     FOREIGN KEY (character_id) REFERENCES game_characters(character_id) ON DELETE SET NULL
 );
 
+-- BGG Catalog table — local index of all BGG games (imported from monthly CSV dump)
+-- Used for fast full-text search + year/expansion filtering without hitting the BGG API
+CREATE TABLE IF NOT EXISTS bgg_catalog (
+    bgg_id         INTEGER PRIMARY KEY,
+    name           TEXT NOT NULL,
+    year_published INTEGER,
+    is_expansion   INTEGER NOT NULL DEFAULT 0
+);
+
+-- Import / Export log — single-row table tracking last date of each data operation
+CREATE TABLE IF NOT EXISTS log_import (
+    id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    bgg_catalog_imported_at TIMESTAMP,
+    data_exported_at        TIMESTAMP,
+    data_imported_at        TIMESTAMP
+);
+INSERT OR IGNORE INTO log_import (id) VALUES (1);
+
 -- Indexes for better performance
 CREATE INDEX idx_games_bgg_id ON games(bgg_id);
+CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
 CREATE INDEX idx_game_expansions_game_id ON game_expansions(game_id);
 CREATE INDEX idx_game_characters_game_id ON game_characters(game_id);
 CREATE INDEX idx_game_sessions_game_id ON game_sessions(game_id);

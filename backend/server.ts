@@ -6,6 +6,7 @@ import cors = require('cors');
 import path = require('path');
 import * as crypto from 'crypto';
 import DatabaseManager from './database/DatabaseManager';
+import { parseBggCsv } from './database/parseBggCsv';
 import { bggService } from './bggService';
 import { CreatePlayerSchema, UpdatePlayerSchema, CreateGameSchema, UpdateGameSchema, CreateSessionSchema } from './validation/schemas';
 import { ZodSchema } from 'zod';
@@ -91,6 +92,16 @@ app.use('/api', (req: express.Request, res: express.Response, next: express.Next
 app.get('/api/bgg/search', asyncHandler(async (req: express.Request, res: express.Response) => {
   const query = req.query.q as string;
   if (!query) return res.status(400).json({ error: 'Query parameter q is required' });
+  if (db.hasBggCatalog()) {
+    const rows = db.searchBggCatalog(query);
+    return res.json(rows.map(r => ({
+      id: r.bgg_id,
+      name: r.name,
+      year_published: r.year_published ?? 0,
+      type: r.is_expansion ? 'boardgameexpansion' : 'boardgame',
+      thumbnail: '',
+    })));
+  }
   const results = await bggService.searchGames(query);
   return res.json(results);
 }));
@@ -102,6 +113,31 @@ app.get('/api/bgg/game/:id', asyncHandler(async (req: express.Request, res: expr
   if (!game) return res.status(404).json({ error: 'Game not found on BGG' });
   return res.json(game);
 }));
+
+// Settings routes
+app.get('/api/settings/import-log', asyncHandler(async (req: express.Request, res: express.Response) => {
+  return res.json(db.getImportLog())
+}))
+
+// BGG Catalog routes
+app.get('/api/bgg/catalog/status', asyncHandler(async (req: express.Request, res: express.Response) => {
+  const count = db.getBggCatalogCount()
+  return res.json({ count })
+}))
+
+app.post('/api/bgg/catalog/import',
+  express.text({ limit: '20mb' }),
+  asyncHandler(async (req: express.Request, res: express.Response) => {
+    const csvText = req.body as string
+    if (!csvText || typeof csvText !== 'string') {
+      return res.status(400).json({ error: 'CSV text body required' })
+    }
+    const rows = parseBggCsv(csvText)
+    if (rows.length === 0) return res.status(400).json({ error: 'No valid rows parsed from CSV' })
+    const count = db.importBggCatalog(rows)
+    return res.json({ count })
+  })
+)
 
 // Player routes
 app.get('/api/players', asyncHandler(async (req: express.Request, res: express.Response) => {
@@ -128,7 +164,7 @@ app.post('/api/players', validateBody(CreatePlayerSchema), asyncHandler(async (r
     return res.status(201).json(newPlayer);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
   }
@@ -144,7 +180,7 @@ app.put('/api/players/:id', validateBody(UpdatePlayerSchema), asyncHandler(async
     return res.json(updatedPlayer);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(409).json({ error: 'duplicate_pseudo', message: 'Ce pseudo est déjà utilisé par un autre joueur' });
     }
     throw error;
   }
@@ -181,8 +217,15 @@ app.get('/api/games/:id', asyncHandler(async (req: express.Request, res: express
 }));
 
 app.post('/api/games', validateBody(CreateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {
-  const newGame = db.createGame(req.body);
-  return res.status(201).json(newGame);
+  try {
+    const newGame = db.createGame(req.body);
+    return res.status(201).json(newGame);
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ error: 'duplicate_game', message: 'Ce jeu est déjà dans votre collection' });
+    }
+    throw error;
+  }
 }));
 
 app.put('/api/games/:id', validateBody(UpdateGameSchema), asyncHandler(async (req: express.Request, res: express.Response) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { MagnifyingGlass, Link, Circle } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const enrichmentIdRef = useRef(0);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -34,9 +35,32 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
     setIsSearching(true);
     setSearchError('');
 
+    // Increment to invalidate any in-progress enrichment from a previous search
+    const searchId = ++enrichmentIdRef.current;
+
     try {
       const results = await bggApiService.searchGames(trimmed);
       setSearchResults(results);
+
+      // Enrich thumbnails + years sequentially; abort if a new search starts
+      for (const result of results) {
+        if (enrichmentIdRef.current !== searchId) break;
+        try {
+          const details = await bggApiService.getGameDetails(result.id);
+          if (enrichmentIdRef.current !== searchId) break;
+          if (details) {
+            setSearchResults(prev =>
+              prev.map(r =>
+                r.id === result.id
+                  ? { ...r, thumbnail: details.thumbnail || details.image || r.thumbnail, year_published: details.year_published || r.year_published }
+                  : r
+              )
+            );
+          }
+        } catch {
+          // Silently ignore enrichment failures for individual results
+        }
+      }
     } catch {
       setSearchError('Échec de la recherche sur BoardGameGeek. Veuillez réessayer.');
     } finally {
@@ -128,9 +152,20 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             onClick={() => handleGameSelect(result)}
           >
             <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className={darkMode ? "font-medium text-white" : "font-medium text-slate-900"}>{result.name}</h3>
+              <div className="flex items-center gap-3">
+                {result.thumbnail ? (
+                  <img
+                    src={result.thumbnail}
+                    alt={result.name}
+                    className="w-12 h-12 object-cover rounded flex-shrink-0"
+                  />
+                ) : (
+                  <div className={darkMode ? "w-12 h-12 rounded flex-shrink-0 bg-white/10 flex items-center justify-center" : "w-12 h-12 rounded flex-shrink-0 bg-slate-200 flex items-center justify-center"}>
+                    <MagnifyingGlass className={darkMode ? "w-5 h-5 text-white/30" : "w-5 h-5 text-slate-400"} />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className={darkMode ? "font-medium text-white truncate" : "font-medium text-slate-900 truncate"}>{result.name}</h3>
                   <div className="flex items-center space-x-2 mt-1">
                     {result.year_published > 0 && (
                       <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
@@ -142,7 +177,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
                     </Badge>
                   </div>
                 </div>
-                <Link className={darkMode ? "w-4 h-4 text-white/40" : "w-4 h-4 text-blue-400"} />
+                <Link className={darkMode ? "w-4 h-4 text-white/40 flex-shrink-0" : "w-4 h-4 text-blue-400 flex-shrink-0"} />
               </div>
             </CardContent>
           </Card>

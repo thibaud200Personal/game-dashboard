@@ -7,7 +7,8 @@
     "dev": "nodemon --exec ts-node server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "init-db": "ts-node scripts/init-database.ts"
+    "init-db": "ts-node scripts/init-database.ts",
+    "import-bgg-catalog": "ts-node scripts/import-bgg-catalog.ts"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",

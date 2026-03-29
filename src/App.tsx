@@ -101,7 +101,9 @@ export default function App() {
       const created = await ApiService.createGame(gameData);
       setGames(prev => [...prev, { ...created, expansions: [], characters: [], players: `${created.min_players}-${created.max_players}` }]);
       toast.success('Jeu ajouté avec succès');
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'duplicate_game') throw err;
       toast.error('Erreur lors de l\'ajout du jeu');
     }
   }, []);

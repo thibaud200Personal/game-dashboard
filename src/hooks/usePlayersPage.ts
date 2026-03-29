@@ -18,9 +18,12 @@ export const usePlayersPage = (data: PlayersPageData) => {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [addPlayerError, setAddPlayerError] = useState<string | null>(null);
+  const [updatePlayerError, setUpdatePlayerError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [formData, setFormData] = useState<PlayerFormData>({
     player_name: '',
+    pseudo: '',
     avatar: '',
     favorite_game: '',
     total_score: 0,
@@ -51,6 +54,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
   const resetForm = () => {
     setFormData({
       player_name: '',
+      pseudo: '',
       avatar: '',
       favorite_game: '',
       total_score: 0,
@@ -73,6 +77,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
     setIsAddDialogOpen(open);
     if (!open) {
       resetForm();
+      setAddPlayerError(null);
     }
   };
 
@@ -81,15 +86,19 @@ export const usePlayersPage = (data: PlayersPageData) => {
     if (!open) {
       resetForm();
       setEditingPlayer(null);
+      setUpdatePlayerError(null);
     }
   };
 
   // Player actions
-  const handleAddPlayer = () => {
-    if (formData.player_name.trim()) {
+  const handleAddPlayer = async () => {
+    if (!formData.player_name.trim()) return;
+    setAddPlayerError(null);
+    try {
       const now = new Date();
-      onAddPlayer({
+      await onAddPlayer({
         player_name: formData.player_name,
+        pseudo: formData.pseudo.trim() || formData.player_name,
         avatar: formData.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`,
         favorite_game: formData.favorite_game || 'None',
         total_score: formData.total_score || 0,
@@ -100,6 +109,13 @@ export const usePlayersPage = (data: PlayersPageData) => {
       } as any);
       resetForm();
       setIsAddDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown';
+      setAddPlayerError(
+        msg === 'duplicate_pseudo'
+          ? 'Ce pseudo est déjà utilisé par un autre joueur.'
+          : 'Une erreur est survenue. Veuillez réessayer.'
+      );
     }
   };
 
@@ -107,6 +123,7 @@ export const usePlayersPage = (data: PlayersPageData) => {
     setEditingPlayer(player);
     setFormData({
       player_name: player.player_name,
+      pseudo: player.pseudo || player.player_name,
       avatar: player.avatar || '',
       favorite_game: player.favorite_game,
       total_score: player.total_score,
@@ -116,11 +133,13 @@ export const usePlayersPage = (data: PlayersPageData) => {
     setIsEditDialogOpen(true);
   }, [setEditingPlayer, setFormData, setIsEditDialogOpen]);
 
-  const handleUpdatePlayer = () => {
-    if (editingPlayer && formData.player_name.trim()) {
+  const handleUpdatePlayer = async () => {
+    if (!editingPlayer || !formData.player_name.trim()) return;
+    setUpdatePlayerError(null);
+    try {
       const averageScore = formData.games_played > 0 ? formData.total_score / formData.games_played : 0;
       const now = new Date();
-      onUpdatePlayer(editingPlayer.player_id, {
+      await onUpdatePlayer(editingPlayer.player_id, {
         ...formData,
         average_score: averageScore,
         updated_at: now
@@ -128,6 +147,13 @@ export const usePlayersPage = (data: PlayersPageData) => {
       resetForm();
       setEditingPlayer(null);
       setIsEditDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown';
+      setUpdatePlayerError(
+        msg === 'duplicate_pseudo'
+          ? 'Ce pseudo est déjà utilisé par un autre joueur.'
+          : 'Une erreur est survenue. Veuillez réessayer.'
+      );
     }
   };
 
@@ -158,6 +184,8 @@ export const usePlayersPage = (data: PlayersPageData) => {
     // Dialog state
     isAddDialogOpen,
     isEditDialogOpen,
+    addPlayerError,
+    updatePlayerError,
     
     // Search
     searchQuery,

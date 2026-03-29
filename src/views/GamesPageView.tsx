@@ -61,6 +61,7 @@ interface GamesPageViewProps {
   setExpandedGame: (gameId: number | null) => void;
   setEditDialogOpen: (open: boolean) => void;
   darkMode: boolean;
+  addGameError?: string | null;
 }
 
 
@@ -170,11 +171,28 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
     <Card className={cardClass}>
       <CardContent className="p-0">
         <div className="flex">
-          <img
-            src={game.image}
-            alt={game.name}
-            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-l-lg flex-shrink-0"
-          />
+          <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 relative">
+            {(game.thumbnail || game.image) ? (
+              <>
+                <img
+                  src={game.thumbnail || game.image}
+                  alt={game.name}
+                  className="w-full h-full object-cover rounded-l-lg"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                  }}
+                />
+                <div style={{ display: 'none' }} className="absolute inset-0 rounded-l-lg bg-slate-700 items-center justify-center">
+                  <span className="text-white/40 text-2xl font-bold">{game.name.charAt(0).toUpperCase()}</span>
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full rounded-l-lg bg-slate-700 flex items-center justify-center">
+                <span className="text-white/40 text-2xl font-bold">{game.name.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+          </div>
           <div className="flex-1 p-3 sm:p-4 min-w-0">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0 pr-2">
@@ -200,10 +218,12 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                 </div>
 
                 <div className={metaClass}>
-                  <span className="flex items-center space-x-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{game.year_published}</span>
-                  </span>
+                  {(game.year_published ?? 0) > 0 && (
+                    <span className="flex items-center space-x-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>{game.year_published}</span>
+                    </span>
+                  )}
                   {game.bgg_rating > 0 && (
                     <span className="flex items-center space-x-1">
                       <Star className="w-3 h-3 text-yellow-400" />
@@ -397,6 +417,7 @@ export function GamesPageView(props: GamesPageViewProps) {
               isBGGSearchOpen={isBGGSearchOpen}
               onBGGSearchToggle={setBGGSearchOpen}
               darkMode={darkMode}
+              serverError={props.addGameError}
             />
             <EditGameDialog
               isOpen={props.isEditDialogOpen}

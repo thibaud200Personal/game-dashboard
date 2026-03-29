@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavigationHandler } from '@/types';
+import apiService from '@/services/ApiService';
 
 export interface SettingsPageData {
   onNavigation: NavigationHandler;
@@ -62,6 +63,38 @@ export const useSettingsPage = (data: SettingsPageData) => {
     // Implementation for data reset would go here
   };
 
+  // Import log
+  type ImportLog = { bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null };
+  const [importLog, setImportLog] = useState<ImportLog | null>(null);
+
+  // BGG Catalog
+  const [bggCatalogCount, setBggCatalogCount] = useState<number | null>(null);
+  const [isBggImporting, setIsBggImporting] = useState(false);
+  const [bggImportError, setBggImportError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiService.getBggCatalogStatus()
+      .then(s => setBggCatalogCount(s.count))
+      .catch(() => {});
+    apiService.getImportLog()
+      .then(setImportLog)
+      .catch(() => {});
+  }, []);
+
+  const handleImportBggCatalog = async (file: File) => {
+    setIsBggImporting(true);
+    setBggImportError(null);
+    try {
+      const result = await apiService.importBggCatalog(file);
+      setBggCatalogCount(result.count);
+      apiService.getImportLog().then(setImportLog).catch(() => {});
+    } catch (err) {
+      setBggImportError(err instanceof Error ? err.message : 'Erreur lors de l\'import');
+    } finally {
+      setIsBggImporting(false);
+    }
+  };
+
   return {
     // Data
     currentView,
@@ -86,6 +119,16 @@ export const useSettingsPage = (data: SettingsPageData) => {
     handleExportData,
     handleImportData,
     handleResetData,
+
+    // Import log
+    importLog,
+
+    // BGG Catalog
+    bggCatalogCount,
+    isBggImporting,
+    bggImportError,
+    handleImportBggCatalog,
+
     onLogout
   };
 };
