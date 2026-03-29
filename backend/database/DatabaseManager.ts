@@ -158,6 +158,13 @@ class DatabaseManager {
       ...game,
       categories: this.parseJSONField<string[]>(game.categories, []),
       mechanics: this.parseJSONField<string[]>(game.mechanics, []),
+      supports_cooperative: !!game.supports_cooperative,
+      supports_competitive: !!game.supports_competitive,
+      supports_campaign: !!game.supports_campaign,
+      supports_hybrid: !!game.supports_hybrid,
+      has_expansion: !!game.has_expansion,
+      has_characters: !!game.has_characters,
+      is_expansion: !!game.is_expansion,
     };
   }
 

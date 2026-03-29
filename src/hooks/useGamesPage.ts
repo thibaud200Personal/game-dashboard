@@ -38,6 +38,7 @@ export const useGamesPage = (data: GamesPageData) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [addGameError, setAddGameError] = useState<string | null>(null);
+  const [updateGameError, setUpdateGameError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -199,6 +200,7 @@ export const useGamesPage = (data: GamesPageData) => {
     if (!open) {
       resetForm();
       setEditingGame(null);
+      setUpdateGameError(null);
     }
   };
 
@@ -265,18 +267,22 @@ export const useGamesPage = (data: GamesPageData) => {
     setIsEditDialogOpen(true);
   }, [setEditingGame, setFormData, setIsEditDialogOpen]);
 
-  const handleUpdateGame = () => {
-    if (editingGame && formData.name.trim()) {
+  const handleUpdateGame = async () => {
+    if (!editingGame || !formData.name.trim()) return;
+    setUpdateGameError(null);
+    try {
       const now = new Date();
       const gameData = {
         ...formData,
         players: `${formData.min_players}-${formData.max_players}`,
         updated_at: now
       };
-      onUpdateGame(editingGame.game_id, gameData);
+      await onUpdateGame(editingGame.game_id, gameData);
       resetForm();
       setEditingGame(null);
       setIsEditDialogOpen(false);
+    } catch {
+      setUpdateGameError('Une erreur est survenue. Veuillez réessayer.');
     }
   };
 
@@ -363,6 +369,7 @@ export const useGamesPage = (data: GamesPageData) => {
     isAddDialogOpen,
     isEditDialogOpen,
     addGameError,
+    updateGameError,
     
     // Filters and search
     searchQuery,

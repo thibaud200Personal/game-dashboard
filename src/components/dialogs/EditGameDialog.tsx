@@ -60,6 +60,7 @@ interface EditGameDialogProps {
   onUpdateGame: () => void
   onResetForm: () => void
   darkMode: boolean
+  serverError?: string | null
 }
 
 export default function EditGameDialog({
@@ -69,7 +70,8 @@ export default function EditGameDialog({
   onFormDataChange,
   onUpdateGame,
   onResetForm,
-  darkMode
+  darkMode,
+  serverError
 }: EditGameDialogProps) {
   const setFormData = (updater: (prev: FormData) => FormData) => {
     const newData = updater(formData);
@@ -588,6 +590,9 @@ export default function EditGameDialog({
               </div>
             )}
           </div>
+          {serverError && (
+            <p className="text-red-400 text-sm text-center">{serverError}</p>
+          )}
           <Button onClick={onUpdateGame} className="w-full bg-emerald-600 hover:bg-emerald-700">
             Update Game
           </Button>

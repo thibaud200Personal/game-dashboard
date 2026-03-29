@@ -45,6 +45,7 @@ export interface Game {
   supports_hybrid: boolean;
   has_expansion: boolean;
   has_characters: boolean;
+  is_expansion: boolean;
   created_at: Date;
   updated_at?: Date;
   expansions: GameExpansion[];

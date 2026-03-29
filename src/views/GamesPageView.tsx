@@ -62,6 +62,7 @@ interface GamesPageViewProps {
   setEditDialogOpen: (open: boolean) => void;
   darkMode: boolean;
   addGameError?: string | null;
+  updateGameError?: string | null;
 }
 
 
@@ -200,6 +201,11 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                 <p className={descClass + " mb-2 line-clamp-2"}>{game.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-2">
+                  {game.is_expansion && (
+                    <Badge variant="outline" className="border-amber-500/40 text-amber-400 text-xs">
+                      Extension
+                    </Badge>
+                  )}
                   <Badge variant="secondary" className={darkMode ? "bg-teal-600/20 text-teal-300 text-xs" : "bg-teal-100 text-teal-700 text-xs"}>
                     {game.category}
                   </Badge>
@@ -428,6 +434,7 @@ export function GamesPageView(props: GamesPageViewProps) {
               onResetForm={onResetForm}
               editingGame={props.editingGame}
               darkMode={darkMode}
+              serverError={props.updateGameError}
             />
           </div>
         </div>
