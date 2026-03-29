@@ -56,7 +56,7 @@ backend/
     -   **Description**: Récupère un joueur par son ID.
 -   `POST /api/players`
     -   **Description**: Crée un nouveau joueur.
-    -   **Body**: `{ "player_name": "string", "avatar": "string" (optionnel), "favorite_game": "string" (optionnel) }`
+    -   **Body**: `{ "player_name": "string", "pseudo": "string" (optionnel, unique), "avatar": "string" (optionnel), "favorite_game": "string" (optionnel) }`
 -   `PUT /api/players/:id`
     -   **Description**: Met à jour un joueur existant.
     -   **Body**: `{ "player_name": "string", ... (tous les champs de la table player) }`
