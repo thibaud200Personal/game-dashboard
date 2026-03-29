@@ -48,7 +48,7 @@ export const usePlayerStatsPage = (
     const totalGames = games?.length || 0;
     const totalSessions = displaySessions?.length || 0;
     const avgScore = displayPlayers?.length ? 
-      displayPlayers.reduce((sum, p) => sum + p.average_score, 0) / displayPlayers.length : 0;
+      displayPlayers.reduce((sum, p) => sum + (p.average_score ?? 0), 0) / displayPlayers.length : 0;
 
     return {
       totalPlayers,

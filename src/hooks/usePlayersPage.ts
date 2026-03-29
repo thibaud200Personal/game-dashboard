@@ -47,8 +47,8 @@ export const usePlayersPage = (data: PlayersPageData) => {
     player.player_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalGamesPlayed = players.reduce((sum, p) => sum + p.games_played, 0);
-  const totalWins = players.reduce((sum, p) => sum + p.wins, 0);
+  const totalGamesPlayed = players.reduce((sum, p) => sum + (p.games_played ?? 0), 0);
+  const totalWins = players.reduce((sum, p) => sum + (p.wins ?? 0), 0);
 
   // Form management
   const resetForm = () => {
