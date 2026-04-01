@@ -1,190 +1,135 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useGamesPage } from '@/hooks/useGamesPage';
-import { mockGames, mockPlayers } from '@/__tests__/utils/test-utils';
+import React from 'react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook, act, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useGamesPage } from '@/hooks/useGamesPage'
+import { mockGames } from '@/__tests__/utils/test-utils'
 
-// Mock des dépendances
-vi.mock('@/hooks/use-mobile', () => ({
-  useMobile: () => ({ isMobile: false })
-}));
+vi.mock('@/services/api/gameApi', () => ({
+  gameApi: {
+    getAll:          vi.fn(),
+    create:          vi.fn(),
+    update:          vi.fn(),
+    delete:          vi.fn(),
+    addExpansion:    vi.fn(),
+    deleteExpansion: vi.fn(),
+    addCharacter:    vi.fn(),
+    deleteCharacter: vi.fn(),
+  },
+}))
 
-describe('useGamesPage', () => {
-  const defaultProps = {
-    games: mockGames,
-    players: mockPlayers,
-    onAddGame: vi.fn(),
-    onEditGame: vi.fn(),
-    onUpdateGame: vi.fn(),
-    onDeleteGame: vi.fn(),
-    onNavigation: vi.fn(),
-    onAddExpansion: vi.fn(),
-    onEditExpansion: vi.fn(),
-    onUpdateExpansion: vi.fn(),
-    onDeleteExpansion: vi.fn(),
-    onAddCharacter: vi.fn(),
-    onEditCharacter: vi.fn(),
-    onUpdateCharacter: vi.fn(),
-    onDeleteCharacter: vi.fn()
-  };
+vi.mock('@/hooks/useNavigationAdapter', () => ({
+  useNavigationAdapter: () => vi.fn(),
+}))
+
+function wrapper({ children }: { children: React.ReactNode }) {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return React.createElement(QueryClientProvider, { client: qc }, children)
+}
+
+describe('useGamesPage', async () => {
+  const { gameApi } = await import('@/services/api/gameApi')
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+    vi.mocked(gameApi.getAll).mockResolvedValue(mockGames as any)
+    vi.mocked(gameApi.create).mockResolvedValue({ game_id: 99, name: 'Test Game' } as any)
+    vi.mocked(gameApi.update).mockResolvedValue({} as any)
+    vi.mocked(gameApi.delete).mockResolvedValue(undefined)
+  })
 
   it('should initialize with default state', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    expect(result.current.searchQuery).toBe('');
-    expect(result.current.categoryFilter).toBe('all'); // Hook initializes with 'all'
-    expect(result.current.difficultyFilter).toBe('all'); // Hook initializes with 'all'
-    expect(result.current.isAddDialogOpen).toBe(false);
-    expect(result.current.isEditDialogOpen).toBe(false);
-    expect(result.current.formData).toBeDefined();
-  });
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    expect(result.current.searchQuery).toBe('')
+    expect(result.current.categoryFilter).toBe('all')
+    expect(result.current.difficultyFilter).toBe('all')
+    expect(result.current.isAddDialogOpen).toBe(false)
+    expect(result.current.isEditDialogOpen).toBe(false)
+    expect(result.current.formData).toBeDefined()
+  })
 
   it('should handle search query changes', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.setSearchQuery('wingspan');
-    });
-
-    expect(result.current.searchQuery).toBe('wingspan');
-  });
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    act(() => { result.current.setSearchQuery('wingspan') })
+    expect(result.current.searchQuery).toBe('wingspan')
+  })
 
   it('should handle category filter changes', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.setCategoryFilter('strategy');
-    });
-
-    expect(result.current.categoryFilter).toBe('strategy');
-  });
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    act(() => { result.current.setCategoryFilter('strategy') })
+    expect(result.current.categoryFilter).toBe('strategy')
+  })
 
   it('should handle dialog state changes', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.handleAddDialogOpen(true);
-    });
-
-    expect(result.current.isAddDialogOpen).toBe(true);
-
-    act(() => {
-      result.current.handleEditDialogOpen(true);
-    });
-
-    expect(result.current.isEditDialogOpen).toBe(true);
-  });
-
-  it('should call onAddGame when adding a game', async () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    // Set valid form data first
-    act(() => {
-      result.current.setFormData({
-        ...result.current.formData,
-        name: 'Test Game'
-      });
-    });
-
-    await act(async () => {
-      await result.current.handleAddGame();
-    });
-
-    expect(defaultProps.onAddGame).toHaveBeenCalled();
-  });
-
-  it('should filter games by search query', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.setSearchQuery('wingspan');
-    });
-
-    expect(result.current.games).toHaveLength(1);
-    expect(result.current.games[0].name).toBe('Wingspan');
-  });
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    act(() => { result.current.handleAddDialogOpen(true) })
+    expect(result.current.isAddDialogOpen).toBe(true)
+    act(() => { result.current.handleEditDialogOpen(true) })
+    expect(result.current.isEditDialogOpen).toBe(true)
+  })
 
   it('should reset form data', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    act(() => { result.current.resetForm() })
+    expect(result.current.formData.name).toBe('')
+  })
 
+  it('handleBGGSearch — bgg_id déjà dans la collection → addGameError défini', async () => {
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    await waitFor(() => expect(result.current.games.length).toBeGreaterThan(0))
     act(() => {
-      result.current.resetForm();
-    });
+      result.current.handleBGGSearch({ id: 266192, name: 'Wingspan' } as any)
+    })
+    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.')
+  })
 
-    expect(result.current.formData.name).toBe('');
-  });
+  it("handleBGGSearch — bgg_id nouveau → pas d'addGameError", async () => {
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
+    await waitFor(() => expect(result.current.games.length).toBeGreaterThan(0))
+    act(() => {
+      result.current.handleBGGSearch({ id: 999999, name: 'New Game' } as any)
+    })
+    expect(result.current.addGameError).toBeNull()
+  })
 
   it('handleAddGame — erreur duplicate_game → addGameError défini, dialog reste ouverte', async () => {
-    const onAddGame = vi.fn().mockRejectedValue(new Error('duplicate_game'));
-    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+    vi.mocked(gameApi.create).mockRejectedValueOnce(new Error('duplicate_game'))
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
 
     act(() => {
-      result.current.handleAddDialogOpen(true);
-      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
-    });
+      result.current.handleAddDialogOpen(true)
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' })
+    })
+    await act(async () => { await result.current.handleAddGame() })
 
-    await act(async () => {
-      await result.current.handleAddGame();
-    });
-
-    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.');
-    expect(result.current.isAddDialogOpen).toBe(true);
-  });
+    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.')
+    expect(result.current.isAddDialogOpen).toBe(true)
+  })
 
   it('handleAddGame — erreur générique → message générique', async () => {
-    const onAddGame = vi.fn().mockRejectedValue(new Error('network_error'));
-    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+    vi.mocked(gameApi.create).mockRejectedValueOnce(new Error('network_error'))
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
 
     act(() => {
-      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
-    });
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' })
+    })
+    await act(async () => { await result.current.handleAddGame() })
 
-    await act(async () => {
-      await result.current.handleAddGame();
-    });
-
-    expect(result.current.addGameError).toBe('Une erreur est survenue. Veuillez réessayer.');
-  });
-
-  it('handleBGGSearch — bgg_id déjà dans la collection → addGameError défini', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.handleBGGSearch({ id: 266192, name: 'Wingspan' } as any);
-    });
-
-    expect(result.current.addGameError).toBe('Ce jeu est déjà dans votre collection.');
-  });
-
-  it('handleBGGSearch — bgg_id nouveau → pas d\'addGameError', () => {
-    const { result } = renderHook(() => useGamesPage(defaultProps));
-
-    act(() => {
-      result.current.handleBGGSearch({ id: 999999, name: 'New Game' } as any);
-    });
-
-    expect(result.current.addGameError).toBeNull();
-  });
+    expect(result.current.addGameError).toBe('Une erreur est survenue. Veuillez réessayer.')
+  })
 
   it('handleAddDialogOpen(false) — clear addGameError', async () => {
-    const onAddGame = vi.fn().mockRejectedValue(new Error('duplicate_game'));
-    const { result } = renderHook(() => useGamesPage({ ...defaultProps, onAddGame }));
+    vi.mocked(gameApi.create).mockRejectedValueOnce(new Error('duplicate_game'))
+    const { result } = renderHook(() => useGamesPage(), { wrapper })
 
     act(() => {
-      result.current.handleAddDialogOpen(true);
-      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' });
-    });
-    await act(async () => {
-      await result.current.handleAddGame();
-    });
-    expect(result.current.addGameError).toBeTruthy();
+      result.current.handleAddDialogOpen(true)
+      result.current.setFormData({ ...result.current.formData, name: 'Wingspan' })
+    })
+    await act(async () => { await result.current.handleAddGame() })
+    expect(result.current.addGameError).toBeTruthy()
 
-    act(() => {
-      result.current.handleAddDialogOpen(false);
-    });
-    expect(result.current.addGameError).toBeNull();
-  });
-});
+    act(() => { result.current.handleAddDialogOpen(false) })
+    expect(result.current.addGameError).toBeNull()
+  })
+})

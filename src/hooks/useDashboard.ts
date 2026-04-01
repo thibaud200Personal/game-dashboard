@@ -1,82 +1,60 @@
-import { useMemo } from 'react';
-import { Player, Game, NavigationHandler } from '@/types';
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { playerApi } from '../services/api/playerApi'
+import { gameApi } from '../services/api/gameApi'
+import { statsApi } from '../services/api/statsApi'
+import { queryKeys } from '../services/api/queryKeys'
+import { useNavigationAdapter } from './useNavigationAdapter'
 
-export interface DashboardStats {
-  playersCount: number;
-  gamesCount: number;
-  loading: boolean;
-  error: null | string;
-}
+export const useDashboard = () => {
+  const onNavigation = useNavigationAdapter()
 
-export interface DashboardData {
-  stats: DashboardStats;
-  recentPlayers: Player[];
-  recentGames: Game[];
-  darkMode: boolean;
-  currentView: string;
-  onNavigation: NavigationHandler;
-}
+  const { data: players = [], isLoading: playersLoading } = useQuery({
+    queryKey: queryKeys.players.all,
+    queryFn: playerApi.getAll,
+  })
 
-export const useDashboard = (data: DashboardData) => {
-  const { stats, recentPlayers, recentGames, currentView, onNavigation } = data;
+  const { data: games = [], isLoading: gamesLoading } = useQuery({
+    queryKey: queryKeys.games.all,
+    queryFn: gameApi.getAll,
+  })
 
-  // Navigation handlers
-  const handleBackClick = () => {
-    onNavigation('back');
-  };
+  const { data: dashboard, isLoading: dashLoading, isError } = useQuery({
+    queryKey: queryKeys.stats.dashboard,
+    queryFn: statsApi.getDashboard,
+  })
 
-  const handleSettingsClick = () => {
-    onNavigation('settings');
-  };
+  const loading = playersLoading || gamesLoading || dashLoading
+  const stats = {
+    playersCount: players.length,
+    gamesCount: games.length,
+    loading,
+    error: isError ? 'Failed to load stats' : null,
+  }
 
-  const handlePlayersClick = () => {
-    onNavigation('players');
-  };
-
-  const handleGamesClick = () => {
-    onNavigation('games');
-  };
-
-  const handlePlayerStatsClick = (playerId: number) => {
-    onNavigation('stats', playerId, 'players');
-  };
-
-  const handleGameStatsClick = (gameId: number) => {
-    onNavigation('stats', gameId, 'games');
-  };
-
-  const handleNewGameClick = () => {
-    onNavigation('new-game');
-  };
-
-  const handleActivityClick = () => {
-    onNavigation('activity');
-  };
-
-  // Computed values
-  const hasPlayers = useMemo(() => recentPlayers?.length > 0, [recentPlayers]);
-  const hasGames = useMemo(() => recentGames?.length > 0, [recentGames]);
+  const recentPlayers = useMemo(() => players.slice(0, 3), [players])
+  const recentGames   = useMemo(() => games.slice(0, 3), [games])
+  const hasPlayers    = recentPlayers.length > 0
+  const hasGames      = recentGames.length > 0
 
   return {
-    // Data
     stats,
     recentPlayers,
     recentGames,
-    currentView,
-    
-    // Computed
     hasPlayers,
     hasGames,
-    
-    // Handlers
-    handleBackClick,
-    handleSettingsClick,
-    handlePlayersClick,
-    handleGamesClick,
-    handlePlayerStatsClick,
-    handleGameStatsClick,
-    handleNewGameClick,
-    handleActivityClick,
-    onNavigation
-  };
-};
+    dashboard,
+    onNavigation,
+    handleBackClick:       () => onNavigation('back'),
+    handleSettingsClick:   () => onNavigation('settings'),
+    handlePlayersClick:    () => onNavigation('players'),
+    handleGamesClick:      () => onNavigation('games'),
+    handlePlayerStatsClick: (id: number) => onNavigation('stats', id, 'players'),
+    handleGameStatsClick:   (id: number) => onNavigation('stats', id, 'games'),
+    handleNewGameClick:    () => onNavigation('new-game'),
+    handleActivityClick:   () => {},
+  }
+}
+
+// Legacy type alias kept for views that reference it
+export type DashboardStats = ReturnType<typeof useDashboard>['stats']
