@@ -1,5 +1,8 @@
 import type Database from 'better-sqlite3'
 import type { BggGame } from '@shared/types'
+import type { BggCatalogRow } from '../database/parseBggCsv'
+
+type BggRow = { bgg_id: number; name: string; year_published: number | null; is_expansion: number }
 
 export class BGGRepository {
   constructor(private db: Database.Database) {}
@@ -13,8 +16,8 @@ export class BGGRepository {
         CASE WHEN name LIKE ? THEN 0 ELSE 1 END,
         name
       LIMIT ?
-    `).all(`%${query}%`, `${query}%`, limit) as (BggGame & { is_expansion: number })[]
-    return rows.map(r => ({ ...r, is_expansion: !!r.is_expansion }))
+    `).all(`%${query}%`, `${query}%`, limit) as BggRow[]
+    return rows.map(r => ({ ...r, is_expansion: !!r.is_expansion, year_published: r.year_published ?? undefined }))
   }
 
   getImportLog(): { bgg_catalog_imported_at: string | null } {
@@ -29,7 +32,7 @@ export class BGGRepository {
     ).run()
   }
 
-  upsertCatalogBatch(rows: BggGame[]): void {
+  upsertCatalogBatch(rows: BggCatalogRow[]): void {
     const stmt = this.db.prepare(`
       INSERT INTO bgg_catalog (bgg_id, name, year_published, is_expansion)
       VALUES (?, ?, ?, ?)
@@ -38,9 +41,9 @@ export class BGGRepository {
         year_published = excluded.year_published,
         is_expansion = excluded.is_expansion
     `)
-    const insert = this.db.transaction((batch: BggGame[]) => {
+    const insert = this.db.transaction((batch: BggCatalogRow[]) => {
       for (const row of batch) {
-        stmt.run(row.bgg_id, row.name, row.year_published ?? null, row.is_expansion ? 1 : 0)
+        stmt.run(row.bgg_id, row.name, row.year_published, row.is_expansion)
       }
     })
     insert(rows)

@@ -34,10 +34,11 @@ export class SessionRepository {
       .get(id) as GameSession | undefined
   }
 
-  findSessionPlayers(sessionId: number): (SessionPlayer & { is_winner: boolean })[] {
+  findSessionPlayers(sessionId: number): SessionPlayer[] {
+    type RawRow = Omit<SessionPlayer, 'is_winner'> & { is_winner: number }
     const rows = this.db
       .prepare('SELECT * FROM session_players WHERE session_id = ?')
-      .all(sessionId) as (SessionPlayer & { is_winner: number })[]
+      .all(sessionId) as RawRow[]
     return rows.map(r => ({ ...r, is_winner: !!r.is_winner }))
   }
 
