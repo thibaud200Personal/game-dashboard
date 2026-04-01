@@ -46,12 +46,12 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       for (const result of results) {
         if (enrichmentIdRef.current !== searchId) break;
         try {
-          const details = await bggApiService.getGameDetails(result.id);
+          const details = await bggApiService.getGameDetails(result.bgg_id);
           if (enrichmentIdRef.current !== searchId) break;
           if (details) {
             setSearchResults(prev =>
               prev.map(r =>
-                r.id === result.id
+                r.bgg_id === result.bgg_id
                   ? { ...r, thumbnail: details.thumbnail || details.image || r.thumbnail, year_published: details.year_published || r.year_published }
                   : r
               )
@@ -86,7 +86,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
     setIsLoadingDetails(true);
 
     try {
-      const gameDetails = await bggApiService.getGameDetails(result.id);
+      const gameDetails = await bggApiService.getGameDetails(result.bgg_id);
       onGameSelect(gameDetails);
       onClose();
     } catch {
@@ -147,7 +147,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {searchResults.map((result, index) => (
           <Card
-            key={`${result.id}-${index}`} 
+            key={`${result.bgg_id}-${index}`}
             className={darkMode ? "bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all cursor-pointer" : "bg-white border-slate-200 hover:bg-slate-100 transition-all cursor-pointer"}
             onClick={() => handleGameSelect(result)}
           >
@@ -173,7 +173,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
                       </Badge>
                     )}
                     <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
-                      {result.type}
+                      {result.is_expansion ? 'Extension' : 'Jeu de base'}
                     </Badge>
                   </div>
                 </div>

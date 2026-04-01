@@ -1,54 +1,54 @@
-import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Users, TrendUp } from '@phosphor-icons/react'
-import { useQuery } from '@tanstack/react-query'
-import { playerApi } from '@/services/api/playerApi'
-import { gameApi } from '@/services/api/gameApi'
-import { queryKeys } from '@/services/api/queryKeys'
-import { useNavigationAdapter } from '@/hooks/useNavigationAdapter'
-import PlayerStatsPage from './PlayerStatsPage'
-import GameStatsPage from './GameStatsPage'
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Users, TrendUp } from '@phosphor-icons/react';
+import { useQuery } from '@tanstack/react-query';
+import { playerApi } from '@/services/api/playerApi';
+import { gameApi } from '@/services/api/gameApi';
+import { queryKeys } from '@/services/api/queryKeys';
+import { useNavigationAdapter } from '@/hooks/useNavigationAdapter';
+import PlayerStatsPage from './PlayerStatsPage';
+import GameStatsPage from './GameStatsPage';
 
 export default function StatsPage() {
-  const [searchParams] = useSearchParams()
-  const onNavigation = useNavigationAdapter()
+  const [searchParams] = useSearchParams();
+  const onNavigation = useNavigationAdapter();
 
-  const idParam  = searchParams.get('id')
-  const srcParam = searchParams.get('src') as 'players' | 'games' | null
+  const idParam  = searchParams.get('id');
+  const srcParam = searchParams.get('src') as 'players' | 'games' | null;
 
-  const selectedId = idParam ? parseInt(idParam) : undefined
-  const selectedPlayerId = srcParam === 'players' ? selectedId : undefined
-  const selectedGameId   = srcParam === 'games'   ? selectedId : undefined
+  const selectedId = idParam ? parseInt(idParam) : undefined;
+  const selectedPlayerId = srcParam === 'players' ? selectedId : undefined;
+  const selectedGameId   = srcParam === 'games'   ? selectedId : undefined;
 
   const { data: players = [] } = useQuery({
     queryKey: queryKeys.players.all,
     queryFn: playerApi.getAll,
-  })
+  });
 
   const { data: games = [] } = useQuery({
     queryKey: queryKeys.games.all,
     queryFn: gameApi.getAll,
-  })
+  });
 
   const resolveTab = (): 'players' | 'games' => {
-    if (srcParam === 'games' || selectedGameId != null) return 'games'
-    return 'players'
-  }
+    if (srcParam === 'games' || selectedGameId != null) return 'games';
+    return 'players';
+  };
 
-  const [activeTab, setActiveTab] = useState<'players' | 'games'>(resolveTab)
+  const [activeTab, setActiveTab] = useState<'players' | 'games'>(resolveTab);
 
   useEffect(() => {
-    setActiveTab(resolveTab())
+    setActiveTab(resolveTab());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [srcParam, selectedGameId, selectedPlayerId])
+  }, [srcParam, selectedGameId, selectedPlayerId]);
 
   const handleBackNavigation = () => {
-    if (srcParam === 'players') onNavigation('players')
-    else if (srcParam === 'games') onNavigation('games')
-    else if (selectedPlayerId != null) onNavigation('players')
-    else if (selectedGameId != null) onNavigation('games')
-    else onNavigation('dashboard')
-  }
+    if (srcParam === 'players') onNavigation('players');
+    else if (srcParam === 'games') onNavigation('games');
+    else if (selectedPlayerId != null) onNavigation('players');
+    else if (selectedGameId != null) onNavigation('games');
+    else onNavigation('dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
@@ -112,5 +112,5 @@ export default function StatsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

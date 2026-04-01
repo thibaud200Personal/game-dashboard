@@ -1,64 +1,64 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { gameApi } from '../services/api/gameApi'
-import { playerApi } from '../services/api/playerApi'
-import { sessionApi } from '../services/api/sessionApi'
-import { queryKeys } from '../services/api/queryKeys'
-import { useNavigationAdapter } from './useNavigationAdapter'
-import type { CreateSessionPayload } from '@/types'
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { gameApi } from '../services/api/gameApi';
+import { playerApi } from '../services/api/playerApi';
+import { sessionApi } from '../services/api/sessionApi';
+import { queryKeys } from '../services/api/queryKeys';
+import { useNavigationAdapter } from './useNavigationAdapter';
+import type { CreateSessionPayload } from '@/types';
 
 export const useNewGamePage = () => {
-  const onNavigation = useNavigationAdapter()
-  const queryClient = useQueryClient()
+  const onNavigation = useNavigationAdapter();
+  const queryClient = useQueryClient();
 
   const { data: games = [] } = useQuery({
     queryKey: queryKeys.games.all,
     queryFn: gameApi.getAll,
-  })
+  });
 
   const { data: players = [] } = useQuery({
     queryKey: queryKeys.players.all,
     queryFn: playerApi.getAll,
-  })
+  });
 
   const createSession = useMutation({
     mutationFn: sessionApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.stats.dashboard })
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats.dashboard });
     },
-  })
+  });
 
-  const [selectedGameId, setSelectedGameId] = useState<string>('')
-  const [sessionType, setSessionType] = useState<'competitive' | 'cooperative' | 'campaign' | 'hybrid'>('competitive')
-  const [selectedPlayers, setSelectedPlayers] = useState<number[]>([])
-  const [playerScores, setPlayerScores] = useState<Record<number, number>>({})
-  const [winnerId, setWinnerId] = useState<string>('')
-  const [duration, setDuration] = useState<string>('')
-  const [notes, setNotes] = useState<string>('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedGameId, setSelectedGameId] = useState<string>('');
+  const [sessionType, setSessionType] = useState<'competitive' | 'cooperative' | 'campaign' | 'hybrid'>('competitive');
+  const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
+  const [playerScores, setPlayerScores] = useState<Record<number, number>>({});
+  const [winnerId, setWinnerId] = useState<string>('');
+  const [duration, setDuration] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [objectives, setObjectives] = useState<Array<{ id: string; text: string; completed: boolean; points: number }>>([])
-  const [teamScore, setTeamScore] = useState<number>(0)
-  const [difficultyLevel, setDifficultyLevel] = useState<string>('normal')
-  const [teamSuccess, setTeamSuccess] = useState<boolean>(false)
+  const [objectives, setObjectives] = useState<Array<{ id: string; text: string; completed: boolean; points: number }>>([]);
+  const [teamScore, setTeamScore] = useState<number>(0);
+  const [difficultyLevel, setDifficultyLevel] = useState<string>('normal');
+  const [teamSuccess, setTeamSuccess] = useState<boolean>(false);
 
-  const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null
+  const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null;
 
   const handlePlayerToggle = (playerId: number) => {
     setSelectedPlayers(prev =>
       prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-    )
-  }
+    );
+  };
 
   const handleScoreChange = (playerId: number, value: string) => {
-    setPlayerScores(prev => ({ ...prev, [playerId]: parseInt(value) || 0 }))
-  }
+    setPlayerScores(prev => ({ ...prev, [playerId]: parseInt(value) || 0 }));
+  };
 
   const addObjective = () => {
-    setObjectives(prev => [...prev, { id: Date.now().toString(), text: '', completed: false, points: 0 }])
-  }
+    setObjectives(prev => [...prev, { id: Date.now().toString(), text: '', completed: false, points: 0 }]);
+  };
 
   const addPresetObjectives = () => {
     const presets = [
@@ -66,52 +66,52 @@ export const useNewGamePage = () => {
       { id: (Date.now() + 1).toString(), text: 'No player eliminated',     completed: false, points: 20 },
       { id: (Date.now() + 2).toString(), text: 'Finish within time limit', completed: false, points: 30 },
       { id: (Date.now() + 3).toString(), text: 'Collect all bonus items',  completed: false, points: 25 },
-    ]
-    setObjectives(prev => [...prev, ...presets])
-  }
+    ];
+    setObjectives(prev => [...prev, ...presets]);
+  };
 
   const updateObjective = (id: string, field: string, value: string | number | boolean) => {
-    setObjectives(prev => prev.map(obj => obj.id === id ? { ...obj, [field]: value } : obj))
-  }
+    setObjectives(prev => prev.map(obj => obj.id === id ? { ...obj, [field]: value } : obj));
+  };
 
   const removeObjective = (id: string) => {
-    setObjectives(prev => prev.filter(obj => obj.id !== id))
-  }
+    setObjectives(prev => prev.filter(obj => obj.id !== id));
+  };
 
   const calculateTeamScore = () => {
-    const total = objectives.filter(o => o.completed).reduce((sum, o) => sum + o.points, 0)
-    setTeamScore(total)
-    return total
-  }
+    const total = objectives.filter(o => o.completed).reduce((sum, o) => sum + o.points, 0);
+    setTeamScore(total);
+    return total;
+  };
 
   const canSubmit = (): boolean => {
     const hasValidGame = Boolean(
       selectedGameId &&
       selectedPlayers.length >= (selectedGame?.min_players || 1) &&
       selectedPlayers.length <= (selectedGame?.max_players || 8)
-    )
-    if (!hasValidGame) return false
-    if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0
-    return true
-  }
+    );
+    if (!hasValidGame) return false;
+    if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
+    return true;
+  };
 
   const resetForm = () => {
-    setSelectedGameId('')
-    setSessionType('competitive')
-    setSelectedPlayers([])
-    setPlayerScores({})
-    setWinnerId('')
-    setDuration('')
-    setNotes('')
-    setObjectives([])
-    setTeamScore(0)
-    setDifficultyLevel('normal')
-    setTeamSuccess(false)
-  }
+    setSelectedGameId('');
+    setSessionType('competitive');
+    setSelectedPlayers([]);
+    setPlayerScores({});
+    setWinnerId('');
+    setDuration('');
+    setNotes('');
+    setObjectives([]);
+    setTeamScore(0);
+    setDifficultyLevel('normal');
+    setTeamSuccess(false);
+  };
 
   const handleSubmit = async (): Promise<{ success: boolean }> => {
-    if (!selectedGame) return { success: false }
-    setIsSubmitting(true)
+    if (!selectedGame) return { success: false };
+    setIsSubmitting(true);
     try {
       const payload: CreateSessionPayload = {
         game_id: parseInt(selectedGameId),
@@ -125,7 +125,7 @@ export const useNewGamePage = () => {
           score: playerScores[playerId] || 0,
           is_winner: winnerId === playerId.toString(),
         })),
-      }
+      };
       await createSession.mutateAsync({
         game_id: payload.game_id,
         session_date: payload.session_date?.toISOString(),
@@ -134,18 +134,18 @@ export const useNewGamePage = () => {
         session_type: payload.session_type,
         notes: payload.notes ?? undefined,
         players: payload.players,
-      })
-      toast.success('Game session created successfully!')
-      resetForm()
-      onNavigation('dashboard')
-      return { success: true }
+      });
+      toast.success('Game session created successfully!');
+      resetForm();
+      onNavigation('dashboard');
+      return { success: true };
     } catch {
-      toast.error('Failed to create game session')
-      return { success: false }
+      toast.error('Failed to create game session');
+      return { success: false };
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return {
     games,
@@ -185,5 +185,5 @@ export const useNewGamePage = () => {
     removeObjective,
     calculateTeamScore,
     onNavigation,
-  }
-}
+  };
+};

@@ -84,6 +84,8 @@ export default [
         varsIgnorePattern: '^_' 
       }],
       'no-unused-vars': 'off',
+      // TypeScript handles undefined references; no-undef causes false positives on TS types
+      'no-undef': 'off',
     },
   },
 ];

@@ -1,9 +1,9 @@
-import { Outlet } from 'react-router-dom'
-import BottomNavigation from './BottomNavigation'
-import { useIsMobile } from '../hooks/use-mobile'
+import { Outlet } from 'react-router-dom';
+import BottomNavigation from './BottomNavigation';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export default function Layout() {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background">
@@ -12,5 +12,5 @@ export default function Layout() {
       </main>
       {isMobile && <BottomNavigation />}
     </div>
-  )
+  );
 }

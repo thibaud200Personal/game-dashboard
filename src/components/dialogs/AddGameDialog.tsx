@@ -82,6 +82,7 @@ interface AddGameDialogProps {
   onBGGSearchToggle: (open: boolean) => void
   darkMode: boolean
   serverError?: string | null
+  disabled?: boolean
 }
 
 export default function AddGameDialog({
@@ -95,7 +96,8 @@ export default function AddGameDialog({
   isBGGSearchOpen,
   onBGGSearchToggle,
   darkMode,
-  serverError
+  serverError,
+  disabled
 }: AddGameDialogProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
@@ -759,7 +761,7 @@ export default function AddGameDialog({
           {serverError && (
             <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
           )}
-          <Button onClick={handleAddGame} className="w-full bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handleAddGame} disabled={!!disabled} className="w-full bg-emerald-600 hover:bg-emerald-700">
             Add Game
           </Button>
         </div>

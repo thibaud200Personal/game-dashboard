@@ -15,7 +15,7 @@ export type {
   DashboardStats,
   GameStatistics,
   BggGame,
-} from '../../shared/types'
+} from '../../shared/types';
 
 // ── Frontend-only types ──────────────────────────────────────────────────────
 
@@ -121,6 +121,15 @@ export interface BGGCharacter {
   avatar?: string
 }
 
+// Search result from the local BGG catalog (bgg_catalog table)
+export interface BGGSearchResult {
+  bgg_id: number
+  name: string
+  year_published?: number
+  is_expansion: boolean
+  thumbnail?: string
+}
+
 // Session creation (frontend-side extended payload with cooperative fields)
 export interface CreateSessionPayload {
   game_id: number
@@ -137,7 +146,7 @@ export interface CreateSessionPayload {
 }
 
 // Hook return utilities
-import React from 'react'
+import React from 'react';
 
 export interface UseFormReturn<T> {
   formData: T
@@ -153,4 +162,4 @@ export interface UseDialogReturn {
   toggle: () => void
 }
 
-export default {}
+export default {};

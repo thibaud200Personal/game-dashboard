@@ -1,32 +1,32 @@
-import React, { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Lock } from '@phosphor-icons/react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { useAuth } from '@/contexts/AuthContext'
+import React, { useState, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Lock } from '@phosphor-icons/react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
-      await login(password)
-      navigate('/', { replace: true })
+      await login(password);
+      navigate('/', { replace: true });
     } catch {
-      setError('Mot de passe incorrect. Veuillez réessayer.')
+      setError('Mot de passe incorrect. Veuillez réessayer.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
@@ -70,5 +70,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

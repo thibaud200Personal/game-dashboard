@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import { useGamesPage } from '@/hooks/useGamesPage'
-import { GamesPageView } from '@/views/GamesPageView'
-import type { BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types'
+import React, { useState } from 'react';
+import { useGamesPage } from '@/hooks/useGamesPage';
+import { GamesPageView } from '@/views/GamesPageView';
+import type { BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 
 export default function GamesPage() {
-  const [expandedGame, setExpandedGame] = useState<number | null>(null)
-  const [isBGGSearchOpen, setIsBGGSearchOpen] = useState(false)
+  const [expandedGame, setExpandedGame] = useState<number | null>(null);
+  const [isBGGSearchOpen, setIsBGGSearchOpen] = useState(false);
 
   const {
     games,
@@ -16,6 +16,7 @@ export default function GamesPage() {
     isAddDialogOpen,
     isEditDialogOpen,
     addGameError,
+    isAddDuplicate,
     updateGameError,
     searchQuery,
     setSearchQuery,
@@ -29,18 +30,18 @@ export default function GamesPage() {
     resetForm,
     setFormData,
     onNavigation,
-  } = useGamesPage()
+  } = useGamesPage();
 
   const handleFormDataChange = (
     newData: Partial<GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }>
   ) => {
-    setFormData(prev => ({ ...prev, ...newData }))
-  }
+    setFormData(prev => ({ ...prev, ...newData }));
+  };
 
   const handleBGGGameSelect = (bggGame: BGGGame) => {
-    handleBGGSearch(bggGame)
-    setIsBGGSearchOpen(false)
-  }
+    handleBGGSearch(bggGame);
+    setIsBGGSearchOpen(false);
+  };
 
   return (
     <GamesPageView
@@ -70,7 +71,8 @@ export default function GamesPage() {
       setEditDialogOpen={handleEditDialogOpen}
       darkMode={true}
       addGameError={addGameError}
+      isAddDuplicate={isAddDuplicate}
       updateGameError={updateGameError}
     />
-  )
+  );
 }

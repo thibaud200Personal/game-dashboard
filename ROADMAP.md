@@ -400,17 +400,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details>
 <summary><b>🚀 Enrichissement Données (Impact ⭐⭐⭐)</b></summary>
 
-#### 🎮 **Service UltraBoardGames** - 1-2 jours
-- **État** : Service placeholder non fonctionnel
-- **Référence** : boardGameScore a le service **COMPLET et FONCTIONNEL**
-- **Action** : Copier `backend/src/services/externalGameDataService.ts` avec mapping BGG→UltraBoardGames
-- **Avantage** : Mapping déjà fait (Citadels: 478→'citadels', Dark Souls: 197831→'dark-souls', etc.)
-
 #### 🔄 **Service Personnages UltraBoardGames** - 1 semaine
-- **État** : Génération temporaire en place, scraping UBG à implémenter
+- **État** : Génération temporaire en place
 - **Reste à faire** : Scraping HTML UltraBoardGames.com (pas d'API disponible)
-- **Impact** : Données authentiques vs génération artificielle
-- **Approche** : Scraping direct plus simple qu'une BDD séparée
+- **Impact** : Données de personnages authentiques (BGG ne les fournit pas)
+- **⚠️ Risques** : scraping fragile (casse à chaque redesign du site), légalement ambigu. À aborder uniquement quand les autres fonctionnalités sont stables.
 
 #### **Export/Import Données** - 3-4 jours
 - **État** : Placeholders existants dans useSettingsPage, implémentation manquante
@@ -426,14 +420,6 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Objectif** : Cache persistant résultats BGG, sync périodique métadonnées
 - **Impact** : Performance optimisée et réduction calls API
 - **Inspiration** : Système cache de board-game-scorekeep
-
-#### **Système de Migration BDD** - 3-4 jours
-- **Objectif** : Versioning schéma avec outils dédiés (knex.js)
-- **Impact** : Déploiements sécurisés et reproductibles
-
-#### **Pagination API** - 2-3 jours
-- **Objectif** : Support grandes datasets sur `/api/games` et `/api/players`
-- **Impact** : Évolutivité avec collections importantes
 
 #### **Gestion d'Erreurs Globale** - 2-3 jours
 - **Objectif** : Error boundaries et toasts cohérents
@@ -463,15 +449,6 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Scope** : Évolution scores, tendances, comparaisons temporelles
 - **Impact** : Insights utilisateur puissants
 
-#### **Intelligence Artificielle** - 1-2 mois
-- **Objectif** : Détection patterns, optimisation groupes, auto-catégorisation jeux
-- **Impact** : Personnalisation intelligente
-- **Inspiration** : Système IA de board-game-scorekeep
-
-#### **Système de Recommandations** - 2-3 semaines
-- **État** : Données historique disponibles, algorithme à implémenter
-- **Reste à faire** : ML basique basé sur historique parties, préférences joueurs, catégories
-- **Impact** : Découverte personnalisée et engagement utilisateur
 
 </details>
 
@@ -484,34 +461,12 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Impact** : Support jeux narratifs complexes (Gloomhaven, Legacy games)
 - **Inspiration** : Système campagne complet de board-game-scorekeep
 
-#### **Mode Tournoi** - 2-3 semaines
-- **Objectif** : Organisation compétitions avec brackets
-- **Impact** : Nouvelles possibilités de jeu
-- **Effort** : Élevé
-
 #### **Gestion Images Avancée** - 1 semaine
 - **Objectif** : Upload images sessions, galeries, images HD BGG
 - **Impact** : Valeur émotionnelle et partage
 
-#### **Système d'Achievements** - 1 semaine
-- **État** : Aucune implémentation existante
-- **Reste à faire** : Interface badges, conditions accomplissements, système récompenses
-- **Impact** : Gamification et engagement utilisateur
-
 </details>
 
-<details>
-<summary><b>🏆 Gamification & Social</b></summary>
-
-#### **Profils & Comparaisons** - 2-3 semaines
-- **Objectif** : Head-to-head, rivalités, statistiques sociales
-- **Impact** : Aspect social et compétitif
-
-#### **Partage & Export** - 1 semaine
-- **Objectif** : Génération résumés parties
-- **Impact** : Partage social externe
-
-</details>
 
 <details>
 <summary><b>⚛️ Qualité & Testing</b></summary>
@@ -521,13 +476,13 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - **Impact** : Prévention régressions
 - **Effort** : Élevé mais critique
 
-#### **Progressive Web App** - 1 semaine
-- **Objectif** : Installation et offline basique
-- **Impact** : Expérience native mobile
-
 #### ❌ **Non Pertinent pour ce Projet**
-- **Multi-utilisateurs** : Application locale par design
-- **PWA complète** : Pas de besoin offline identifié
+- **Multi-utilisateurs** : pas de gestion de profils, usage personnel/amis
+- **PWA / offline** : pas de besoin offline identifié
+- **Mode Tournoi** : hors périmètre (usage club/événement)
+- **Système d'Achievements** : gamification non prioritaire
+- **IA / ML / Recommandations** : volume de données insuffisant pour justifier l'investissement
+- **Partage social** : pas de contexte social multi-utilisateurs
 
 > ℹ️ L'internationalisation partielle (labels FR/EN) est déférée — voir section "Localisation des labels" en Phase 3.
 
@@ -537,7 +492,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
-## 📋 RÉFÉRENCES PROJETS — NE PAS RÉINVENTER
+## 📋 RÉFÉRENCES PROJETS
+
+> Ces projets sont des sources d'**inspiration technique**, pas de copier-coller. Évaluer chaque pattern avant de l'importer.
 
 <details>
 <summary>Voir le détail</summary>
@@ -545,25 +502,16 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <details>
 <summary><b>🎮 boardGameScore</b></summary>
 
-- **Service UltraBoardGames complet** : `backend/src/services/externalGameDataService.ts` — copier directement
-- **Mapping BGG ID → slug** déjà fait : Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror, This War of Mine
+- **Mapping BGG ID → slug UltraBoardGames** : Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror, This War of Mine
+- Utile si/quand le scraping UBG est implémenté (Phase 4)
 
 </details>
 
 <details>
 <summary><b>🧪 board-game-scorekeep</b></summary>
 
-- **Formulaire BGG pré-import** : édition complète avant sauvegarde (pas encore implémenté ici)
-- **Cache BGG intelligent** : localStorage + expiration
-- **Architecture tests** : 52/52 Jest + RTL (référence pour structuration unit/integration)
-
-</details>
-
-<details>
-<summary><b>❌ À ne pas réimplémenter</b></summary>
-
-- Multi-utilisateurs, PWA complète
-- *(Internationalisation : partielle déférée — voir Phase 3)*
+- **Formulaire BGG pré-import** : pattern d'édition avant sauvegarde (Sprint 1)
+- **Architecture tests** : structuration unit/integration (Sprint 0-D)
 
 </details>
 
@@ -573,8 +521,45 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ## 🎯 PROCHAINES ACTIONS — DÉCOUPAGE EN SPRINTS
 
+> **Principe transverse** : tests écrits avant le code (TDD), types stricts (zéro `any`), migrations BDD numérotées.
+
 <details open>
 <summary>Voir le détail</summary>
+
+<details open>
+<summary><b>Sprint 0 — Refactoring Architecture (priorité absolue)</b></summary>
+
+Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-redesign.md`
+
+**A — Fondations partagées**
+1. Créer `shared/types/index.ts` + configurer path aliases frontend ET backend
+2. Supprimer `backend/models/interfaces.ts`
+3. Migrations SQL numérotées + runner (remplace `runMigrations()`)
+4. Nettoyage BDD : supprimer 4 colonnes mortes `players`, supprimer `game_type`, ajouter `'hybrid'` au CHECK `session_type`
+
+**B — Backend en couches**
+1. Éclater `DatabaseManager` → repositories (`PlayerRepository`, `GameRepository`, `SessionRepository`, `StatsRepository`, `BGGRepository`)
+2. Créer les services (`SessionService` en premier — le plus complexe, gère les transactions)
+3. Éclater `server.ts` → `routes/`
+4. JWT signé + rôles admin/user (remplace token statique en mémoire)
+5. Cookie HttpOnly pour web (remplace `localStorage`)
+6. Rate limiting sur `/auth/login` + Helmet + validation params GET
+7. Logging pino (backend) + error handler frontend
+
+**C — Frontend**
+1. React Router v7 — migration navigation (inclut analyse cas contextuels mobile)
+2. Supprimer état serveur de `App.tsx` (React Query seule source de vérité)
+3. Éclater `ApiService.ts` → `services/api/` + `queryKeys.ts`
+4. Standardiser tous les hooks sur React Query
+5. Supprimer code mort (`SimpleDashboard.tsx`, `utils/testBGG.ts`)
+
+**D — Documentation et qualité**
+1. Restructurer tests : `unit/technical/`, `unit/functional/`, `integration/`
+2. Écrire tests backend manquants (repositories + services)
+3. API versioning `/api/v1/` + OpenAPI/Swagger
+4. `CONTRIBUTING.md`, `DEPLOYMENT.md`, `.env.example` ✅ (déjà créés)
+
+</details>
 
 <details open>
 <summary><b>Sprint 1 — Complétude BGG (1-2 semaines)</b></summary>

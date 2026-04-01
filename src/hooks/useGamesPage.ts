@@ -1,10 +1,10 @@
-import { useState, useMemo, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { gameApi } from '../services/api/gameApi'
-import { queryKeys } from '../services/api/queryKeys'
-import { useNavigationAdapter } from './useNavigationAdapter'
-import type { Game, GameExpansion, GameCharacter } from '@/types'
-import type { GameFormData, BGGGame } from '@/types'
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { gameApi } from '../services/api/gameApi';
+import { queryKeys } from '../services/api/queryKeys';
+import { useNavigationAdapter } from './useNavigationAdapter';
+import type { Game, GameExpansion, GameCharacter } from '@/types';
+import type { GameFormData, BGGGame } from '@/types';
 
 type FormState = GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }
 
@@ -39,115 +39,116 @@ const emptyForm: FormState = {
   bgg_id: undefined,
   expansions: [],
   characters: [],
-}
+};
 
 export const useGamesPage = () => {
-  const onNavigation = useNavigationAdapter()
-  const queryClient = useQueryClient()
+  const onNavigation = useNavigationAdapter();
+  const queryClient = useQueryClient();
 
   const { data: games = [], isLoading } = useQuery<Game[]>({
     queryKey: queryKeys.games.all,
     queryFn: gameApi.getAll,
-  })
+  });
 
   const createMutation = useMutation({
     mutationFn: gameApi.create,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-  })
+  });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Parameters<typeof gameApi.update>[1] }) =>
       gameApi.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-  })
+  });
 
   const deleteMutation = useMutation({
     mutationFn: gameApi.delete,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
-  })
+  });
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [editingGame, setEditingGame] = useState<Game | null>(null)
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [addGameError, setAddGameError] = useState<string | null>(null)
-  const [updateGameError, setUpdateGameError] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
-  const [formData, setFormData] = useState<FormState>(emptyForm)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [editingGame, setEditingGame] = useState<Game | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [addGameError, setAddGameError] = useState<string | null>(null);
+  const [updateGameError, setUpdateGameError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  const [formData, setFormData] = useState<FormState>(emptyForm);
 
   const filteredAndSortedGames = useMemo(() => {
     const filtered = games.filter(game => {
       const matchesSearch =
         (game.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (game.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === 'all' || game.category === categoryFilter
-      const matchesDifficulty = difficultyFilter === 'all' || game.difficulty === difficultyFilter
-      return matchesSearch && matchesCategory && matchesDifficulty
-    })
+        (game.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || game.category === categoryFilter;
+      const matchesDifficulty = difficultyFilter === 'all' || game.difficulty === difficultyFilter;
+      return matchesSearch && matchesCategory && matchesDifficulty;
+    });
 
     filtered.sort((a, b) => {
-      let cmp = 0
-      if (sortBy === 'name') cmp = a.name.localeCompare(b.name)
-      else if (sortBy === 'year') cmp = (a.year_published || 0) - (b.year_published || 0)
-      else if (sortBy === 'rating') cmp = (a.bgg_rating || 0) - (b.bgg_rating || 0)
-      return sortOrder === 'asc' ? cmp : -cmp
-    })
+      let cmp = 0;
+      if (sortBy === 'name') cmp = a.name.localeCompare(b.name);
+      else if (sortBy === 'year') cmp = (a.year_published || 0) - (b.year_published || 0);
+      else if (sortBy === 'rating') cmp = (a.bgg_rating || 0) - (b.bgg_rating || 0);
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
 
-    return filtered
-  }, [games, searchQuery, categoryFilter, difficultyFilter, sortBy, sortOrder])
+    return filtered;
+  }, [games, searchQuery, categoryFilter, difficultyFilter, sortBy, sortOrder]);
 
   const categories = useMemo(
     () => [...new Set(games.map(g => g.category).filter(Boolean))].sort() as string[],
     [games]
-  )
+  );
 
   const difficulties = useMemo(
     () => [...new Set(games.map(g => g.difficulty).filter(Boolean))].sort() as string[],
     [games]
-  )
+  );
 
   const averageRating =
     games.length > 0
       ? games.reduce((sum, g) => sum + (g.bgg_rating || 0), 0) / games.length
-      : 0
+      : 0;
 
-  const resetForm = () => setFormData(emptyForm)
+  const resetForm = () => setFormData(emptyForm);
 
   const handleAddDialogOpen = (open: boolean) => {
-    setIsAddDialogOpen(open)
-    if (!open) { resetForm(); setAddGameError(null) }
-  }
+    setIsAddDialogOpen(open);
+    if (!open) { resetForm(); setAddGameError(null); }
+  };
 
   const handleEditDialogOpen = (open: boolean) => {
-    setIsEditDialogOpen(open)
-    if (!open) { resetForm(); setEditingGame(null); setUpdateGameError(null) }
-  }
+    setIsEditDialogOpen(open);
+    if (!open) { resetForm(); setEditingGame(null); setUpdateGameError(null); }
+  };
 
   const handleAddGame = async () => {
-    if (!formData.name.trim()) return
-    setAddGameError(null)
+    if (!formData.name.trim()) return;
+    setAddGameError(null);
     try {
       await createMutation.mutateAsync({
         ...formData,
-        players: `${formData.min_players}-${formData.max_players}`,
-      } as Parameters<typeof gameApi.create>[0])
-      resetForm()
-      setIsAddDialogOpen(false)
+        image: formData.image || undefined,
+        thumbnail: formData.thumbnail || undefined,
+      } as Parameters<typeof gameApi.create>[0]);
+      resetForm();
+      setIsAddDialogOpen(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'unknown'
+      const msg = err instanceof Error ? err.message : 'unknown';
       setAddGameError(
         msg === 'duplicate_game'
-          ? 'Ce jeu est déjà dans votre collection.'
-          : 'Une erreur est survenue. Veuillez réessayer.'
-      )
+          ? 'duplicate_game'
+          : 'error'
+      );
     }
-  }
+  };
 
   const handleEditGame = useCallback((game: Game) => {
-    setEditingGame(game)
+    setEditingGame(game);
     setFormData({
       name: game.name,
       description: game.description || '',
@@ -179,13 +180,13 @@ export const useGamesPage = () => {
       bgg_id: game.bgg_id,
       expansions: game.expansions || [],
       characters: game.characters || [],
-    })
-    setIsEditDialogOpen(true)
-  }, [])
+    });
+    setIsEditDialogOpen(true);
+  }, []);
 
   const handleUpdateGame = async () => {
-    if (!editingGame || !formData.name.trim()) return
-    setUpdateGameError(null)
+    if (!editingGame || !formData.name.trim()) return;
+    setUpdateGameError(null);
     try {
       await updateMutation.mutateAsync({
         id: editingGame.game_id,
@@ -193,24 +194,24 @@ export const useGamesPage = () => {
           ...formData,
           players: `${formData.min_players}-${formData.max_players}`,
         },
-      })
-      resetForm()
-      setEditingGame(null)
-      setIsEditDialogOpen(false)
+      });
+      resetForm();
+      setEditingGame(null);
+      setIsEditDialogOpen(false);
     } catch {
-      setUpdateGameError('Une erreur est survenue. Veuillez réessayer.')
+      setUpdateGameError('Une erreur est survenue. Veuillez réessayer.');
     }
-  }
+  };
 
   const handleDeleteGame = useCallback((gameId: number) => {
-    deleteMutation.mutate(gameId)
-  }, [deleteMutation])
+    deleteMutation.mutate(gameId);
+  }, [deleteMutation]);
 
   const handleBGGSearch = (bggGame: BGGGame) => {
     if (bggGame.id && games.some(g => g.bgg_id === bggGame.id)) {
-      setAddGameError('Ce jeu est déjà dans votre collection.')
+      setAddGameError('duplicate_game');
     } else {
-      setAddGameError(null)
+      setAddGameError(null);
     }
     setFormData(prev => ({
       ...prev,
@@ -244,8 +245,13 @@ export const useGamesPage = () => {
       supports_cooperative: bggGame.supports_cooperative ?? false,
       supports_campaign: bggGame.supports_campaign ?? false,
       supports_hybrid: bggGame.supports_hybrid ?? false,
-    }))
-  }
+    }));
+  };
+
+  const addGameErrorMessage =
+    addGameError === 'duplicate_game' ? 'Ce jeu est déjà dans votre collection.' :
+    addGameError === 'error' ? 'Une erreur est survenue. Veuillez réessayer.' :
+    null;
 
   return {
     games: filteredAndSortedGames,
@@ -259,7 +265,8 @@ export const useGamesPage = () => {
     editingGame,
     isAddDialogOpen,
     isEditDialogOpen,
-    addGameError,
+    addGameError: addGameErrorMessage,
+    isAddDuplicate: addGameError === 'duplicate_game',
     updateGameError,
     searchQuery,
     setSearchQuery,
@@ -281,5 +288,5 @@ export const useGamesPage = () => {
     handleBGGSearch,
     resetForm,
     onNavigation,
-  }
-}
+  };
+};

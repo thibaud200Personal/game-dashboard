@@ -1,15 +1,15 @@
-import type { Game, GameExpansion, GameCharacter, CreateGameRequest, UpdateGameRequest } from '@shared/types'
+import type { Game, GameExpansion, GameCharacter, CreateGameRequest, UpdateGameRequest } from '@shared/types';
 
-const BASE = '/api/v1/games'
+const BASE = '/api/v1/games';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, { credentials: 'include', ...options })
+  const res = await fetch(url, { credentials: 'include', ...options });
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string }
-    throw new Error(body.error ?? `HTTP ${res.status}`)
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
   }
-  if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
 }
 
 export const gameApi = {
@@ -30,4 +30,4 @@ export const gameApi = {
     request<GameCharacter>(`${BASE}/${gameId}/characters`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }),
   deleteCharacter: (gameId: number, characterId: number): Promise<void> =>
     request<void>(`${BASE}/${gameId}/characters/${characterId}`, { method: 'DELETE' }),
-}
+};

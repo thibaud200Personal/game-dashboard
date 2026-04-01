@@ -21,4 +21,4 @@ export const queryKeys = {
     search: (q: string) => ['bgg', 'search', q] as const,
     importStatus: ['bgg', 'import-status'] as const,
   },
-} as const
+} as const;

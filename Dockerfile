@@ -21,6 +21,7 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 
 COPY backend/ .
+COPY shared/ ../shared/
 # Compile TypeScript
 RUN npm run build
 # Prune to production-only deps (native binaries stay compiled)

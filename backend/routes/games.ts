@@ -19,7 +19,15 @@ export function createGameRouter(gameService: GameService): Router {
   })
 
   router.post('/', validateBody(CreateGameSchema), (req, res) => {
-    res.status(201).json(gameService.create(req.body))
+    try {
+      res.status(201).json(gameService.create(req.body))
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message === 'duplicate_game') {
+        res.status(409).json({ error: 'duplicate_game' })
+        return
+      }
+      throw e
+    }
   })
 
   router.put('/:id', validateParams(IdParam), validateBody(UpdateGameSchema), (req, res) => {

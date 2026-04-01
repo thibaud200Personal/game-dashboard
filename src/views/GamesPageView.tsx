@@ -62,6 +62,7 @@ interface GamesPageViewProps {
   setEditDialogOpen: (open: boolean) => void;
   darkMode: boolean;
   addGameError?: string | null;
+  isAddDuplicate?: boolean;
   updateGameError?: string | null;
 }
 
@@ -424,6 +425,7 @@ export function GamesPageView(props: GamesPageViewProps) {
               onBGGSearchToggle={setBGGSearchOpen}
               darkMode={darkMode}
               serverError={props.addGameError}
+              disabled={props.isAddDuplicate}
             />
             <EditGameDialog
               isOpen={props.isEditDialogOpen}

@@ -27,7 +27,14 @@ export class GameService {
   }
 
   create(data: CreateGameRequest): Game {
-    const id = this.gameRepo.create(data)
+    let id: number
+    try {
+      id = this.gameRepo.create(data)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : ''
+      if (msg.includes('UNIQUE constraint failed')) throw new Error('duplicate_game')
+      throw e
+    }
     if (data.expansions?.length) {
       for (const exp of data.expansions) this.gameRepo.createExpansion(id, exp)
     }

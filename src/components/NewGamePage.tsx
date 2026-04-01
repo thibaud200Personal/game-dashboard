@@ -1,9 +1,9 @@
-import React from 'react'
-import { useNewGamePage } from '@/hooks/useNewGamePage'
-import NewGameView from '@/views/NewGameView'
+import React from 'react';
+import { useNewGamePage } from '@/hooks/useNewGamePage';
+import NewGameView from '@/views/NewGameView';
 
 export default function NewGamePage() {
-  const hookData = useNewGamePage()
+  const hookData = useNewGamePage();
 
   return (
     <NewGameView
@@ -11,5 +11,5 @@ export default function NewGamePage() {
       currentView="new-game"
       darkMode={true}
     />
-  )
+  );
 }
