@@ -10,7 +10,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src'
+      '@': '/src',
+      '@shared': '/shared',
     },
     dedupe: ['react', 'react-dom'],
   },
