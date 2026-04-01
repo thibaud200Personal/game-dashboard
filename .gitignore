@@ -52,3 +52,8 @@ CONTEXT.md
 
 # One-shot audit configs — local use only, never commit
 eslint.audit.config.js
+
+# TypeScript compilation artifacts in shared/ (compiled by backend tsc)
+shared/**/*.js
+shared/**/*.js.map
+shared/**/*.d.ts.map
