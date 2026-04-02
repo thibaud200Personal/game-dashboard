@@ -144,6 +144,18 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 </details>
 
 <details>
+<summary><b>Création de session — Mode coopératif / scoring</b></summary>
+
+- **🎮 Mode coopératif : champ Score à masquer** — En mode coopératif (et campaign/hybrid), les champs de score individuel n'ont pas de sens. L'interface affiche actuellement la section "Competitive Scoring" avec les inputs de score quel que soit le mode. À corriger : masquer complètement la section score en mode non-compétitif, et adapter le layout (objectifs coopératifs à la place).
+- **⚙️ Dégrisage du bouton de création selon le mode** — La logique `canSubmit()` bloque sur `competitiveWinnerMissing` / `winnerScoreInvalid` uniquement en mode compétitif, mais le bouton peut rester grisé pour de mauvaises raisons selon le mode actif. À réviser : clarifier les conditions d'activation par mode (compétitif vs coopératif vs campagne).
+- **0️⃣ Score à 0 par défaut en mode compétitif** — Si un joueur est sélectionné mais que son champ score n'est pas rempli, la valeur est `undefined` / `0` implicitement. À corriger : forcer `0` explicitement à la soumission pour tous les joueurs dont le score n'a pas été saisi (évite des `NaN` ou valeurs manquantes en BDD).
+- **📐 Indentation `.map` dans `NewGameView`** — Le `return (` dans le bloc `.map` des joueurs (`NewGameView.tsx` ~ligne 260) est décalé d'un niveau par rapport au style du reste du fichier. À corriger lors d'un prochain passage de nettoyage.
+- **🔒 Routes export/import non protégées côté backend** — Le contrôle `isAdmin` dans `SettingsPageView` est purement UI (hiding). Les stubs `handleExportData` / `handleImportData` / `handleResetData` dans `useSettingsPage` devront appeler des routes backend protégées par `requireRole('admin')` lorsqu'elles seront implémentées.
+- **⚙️ `canSubmit` — modes `campaign`/`hybrid` sans condition** — En mode campagne ou hybride, `canSubmit()` retourne `true` dès que le jeu et les joueurs sont valides, sans vérification supplémentaire. À aligner avec les règles métier de ces modes lors de leur implémentation.
+
+</details>
+
+<details>
 <summary><b>Schema BDD — Colonnes stats dénormalisées dans `players`</b></summary>
 
 - **🗄️ `players.games_played/wins/total_score/average_score` — colonnes mortes** : ces 4 colonnes existent dans la table `players` ET sont recalculées dynamiquement dans la vue SQL `player_statistics` (depuis `session_players`). Le backend lit **toujours** via la vue — les colonnes stockées restent à `0` en permanence (aucun trigger, aucune mise à jour applicative).
