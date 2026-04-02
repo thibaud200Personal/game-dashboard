@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { bggApiService } from '@/services/bggApi';
 
-// TODO: update MSW handlers for /api/v1/bgg/* paths and rework assertions
+// NOTE: needs MSW handlers for /api/v1/bgg/* paths and reworked assertions
 // (bggApiService now uses relative URLs + cookie auth; searchGames returns bgg_id not id)
 describe.skip('BGG API Service', () => {
   beforeEach(() => {

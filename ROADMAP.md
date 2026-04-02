@@ -106,6 +106,21 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+<details>
+<summary><b>Sprint 0 — Refactoring architecture complète (branche `architecture`, avril 2026)</b></summary>
+
+- ✅ **`shared/types/index.ts`** — source de vérité unique pour tous les types TS, importée par le front et le backend
+- ✅ **Migrations SQL numérotées (001–007)** — `backend/database/migrations/`, runner dans `DatabaseConnection.ts`
+- ✅ **`DatabaseManager.ts` + `interfaces.ts` supprimés** — remplacés par `DatabaseConnection` + couche Repositories
+- ✅ **Architecture en couches backend** : Routes → Services → Repositories → DatabaseConnection (aucun handler inline dans `server.ts`)
+- ✅ **`server.ts` réécrit** : `/api/v1`, Helmet, pino, rate limiting, routes séparées par domaine
+- ✅ **JWT middleware** : `auth.ts` (JWT signé, HttpOnly cookie), `requireRole.ts` (rôles `admin`/`user`)
+- ✅ **Frontend React Query v5** : toutes les pages migrées en hooks zero-prop (`useXxxPage`)
+- ✅ **React Router v7** : shell `App.tsx`, `AuthContext`, `Layout`, `useNavigationAdapter`
+- ✅ **`api/*` split** : `playerApi.ts`, `gameApi.ts`, `sessionApi.ts`, `statsApi.ts`, `authApi.ts`, `bggApi.ts`, `queryKeys.ts`
+
+</details>
+
 </details>
 
 ---
