@@ -7,10 +7,8 @@ export interface AuthRequest extends Request {
 
 export function createAuthMiddleware(authService: AuthService) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    // Cookie-based auth (web)
-    const cookieHeader = req.headers.cookie ?? ''
-    const match = /auth_token=([^;]+)/.exec(cookieHeader)
-    const cookieToken = match?.[1]
+    // Cookie-based auth (web) — cookie-parser populates req.cookies
+    const cookieToken = req.cookies['auth_token'] as string | undefined
 
     // Bearer header auth (future Android client)
     const bearerToken = req.headers.authorization?.replace('Bearer ', '')

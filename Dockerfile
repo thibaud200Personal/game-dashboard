@@ -40,6 +40,9 @@ COPY --from=backend-builder /app/backend/dist ./dist
 # Copy SQL schema (read at runtime via __dirname)
 COPY backend/database/schema.sql ./dist/database/schema.sql
 
+# Copy SQL migration files (read at runtime by DatabaseConnection via __dirname/migrations)
+COPY backend/database/migrations/ ./dist/database/migrations/
+
 # Copy frontend build
 COPY --from=frontend-builder /app/dist ./public
 

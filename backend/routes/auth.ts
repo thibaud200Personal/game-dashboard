@@ -27,9 +27,7 @@ export function createAuthRouter(authService: AuthService): Router {
   })
 
   router.get('/me', (req, res) => {
-    const cookieHeader = req.headers.cookie ?? ''
-    const match = /auth_token=([^;]+)/.exec(cookieHeader)
-    const token = match?.[1] ?? req.headers.authorization?.replace('Bearer ', '')
+    const token = (req.cookies['auth_token'] as string | undefined) ?? req.headers.authorization?.replace('Bearer ', '')
     if (!token) { res.status(401).json({ error: 'Not authenticated' }); return }
     const payload = authService.verifyToken(token)
     if (!payload) { res.status(401).json({ error: 'Invalid or expired token' }); return }

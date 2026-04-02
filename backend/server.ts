@@ -85,7 +85,7 @@ const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeade
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/v1/auth/login', loginLimiter)
 app.use('/api/v1/auth',    createAuthRouter(authService))
-app.use('/api/v1/logs',    createLogsRouter(logger))
+app.use('/api/v1/logs',    authenticate, createLogsRouter(logger))
 
 // Protected routes
 app.use('/api/v1/players',  authenticate, createPlayerRouter(playerService))

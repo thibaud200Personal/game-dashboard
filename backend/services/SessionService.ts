@@ -4,6 +4,8 @@ import type { GameSession, CreateSessionRequest } from '@shared/types'
 
 export class SessionService {
   constructor(
+    // db is passed directly (not via repo) to support better-sqlite3 transactions
+    // which require a synchronous callback on the same db instance.
     private db: Database.Database,
     private sessionRepo: SessionRepository,
   ) {}
