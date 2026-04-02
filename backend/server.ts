@@ -99,7 +99,7 @@ app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
 
 // Frontend static (production)
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../../dist')
+  const distPath = path.join(__dirname, '../public')
   app.use(express.static(distPath))
   app.get('*splat', (_req, res) => res.sendFile(path.join(distPath, 'index.html')))
 }
