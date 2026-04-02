@@ -9,10 +9,11 @@ services:
       NODE_ENV: production
       PORT: 5000
       DB_PATH: /data/board_game_score.db
-      # CORS_ORIGINS: domaine(s) autorisé(s), séparés par une virgule
-      CORS_ORIGINS: http://localhost:5000
-      # AUTH_PASSWORD: à définir au déploiement (obligatoire)
-      AUTH_PASSWORD: "changeme"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5000}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      USER_PASSWORD: ${USER_PASSWORD:-}
     restart: unless-stopped
 
 volumes:
