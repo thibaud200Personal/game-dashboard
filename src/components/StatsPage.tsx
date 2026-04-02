@@ -1,98 +1,74 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, TrendUp } from '@phosphor-icons/react';
+import { useQuery } from '@tanstack/react-query';
+import { playerApi } from '@/services/api/playerApi';
+import { gameApi } from '@/services/api/gameApi';
+import { queryKeys } from '@/services/api/queryKeys';
+import { useNavigationAdapter } from '@/hooks/useNavigationAdapter';
 import PlayerStatsPage from './PlayerStatsPage';
 import GameStatsPage from './GameStatsPage';
-import { Player, Game } from '@/types';
 
-interface StatsPageProps {
-  players: Player[];
-  games: Game[];
-  onNavigation: (view: string, id?: number, source?: string) => void;
-  _currentView: string;
-  selectedPlayerId?: number;
-  selectedGameId?: number;
-  navigationContext?: {
-    id?: number;
-    source?: string;
-    initialTab?: 'players' | 'games';
-  };
-  darkMode: boolean;
-}
+export default function StatsPage() {
+  const [searchParams] = useSearchParams();
+  const onNavigation = useNavigationAdapter();
 
-export default function StatsPage({
-  players,
-  games,
-  onNavigation,
-  _currentView,
-  selectedPlayerId,
-  selectedGameId,
-  navigationContext,
-  darkMode
-}: StatsPageProps) {
-  // Determine initial tab based on navigation context
+  const idParam  = searchParams.get('id');
+  const srcParam = searchParams.get('src') as 'players' | 'games' | null;
+
+  const selectedId = idParam ? parseInt(idParam) : undefined;
+  const selectedPlayerId = srcParam === 'players' ? selectedId : undefined;
+  const selectedGameId   = srcParam === 'games'   ? selectedId : undefined;
+
+  const { data: players = [] } = useQuery({
+    queryKey: queryKeys.players.all,
+    queryFn: playerApi.getAll,
+  });
+
+  const { data: games = [] } = useQuery({
+    queryKey: queryKeys.games.all,
+    queryFn: gameApi.getAll,
+  });
+
   const resolveTab = (): 'players' | 'games' => {
-    if (navigationContext?.initialTab) return navigationContext.initialTab;
-    if (selectedGameId || navigationContext?.source === 'games') return 'games';
+    if (srcParam === 'games' || selectedGameId != null) return 'games';
     return 'players';
   };
 
   const [activeTab, setActiveTab] = useState<'players' | 'games'>(resolveTab);
 
-  // Update active tab when navigation context changes
   useEffect(() => {
     setActiveTab(resolveTab());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigationContext, selectedGameId, selectedPlayerId]);
+  }, [srcParam, selectedGameId, selectedPlayerId]);
 
   const handleBackNavigation = () => {
-    // Go back to the appropriate page based on context
-    if (navigationContext?.source === 'players') {
-      onNavigation('players');
-    } else if (navigationContext?.source === 'games') {
-      onNavigation('games');
-    } else if (selectedPlayerId) {
-      onNavigation('players');
-    } else if (selectedGameId) {
-      onNavigation('games');
-    } else {
-      onNavigation('dashboard');
-    }
+    if (srcParam === 'players') onNavigation('players');
+    else if (srcParam === 'games') onNavigation('games');
+    else if (selectedPlayerId != null) onNavigation('players');
+    else if (selectedGameId != null) onNavigation('games');
+    else onNavigation('dashboard');
   };
 
-  // Classes dynamiques cohérentes avec Dashboard
-  const mainClass = darkMode
-    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
-    : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900";
-  const tabActiveClass = darkMode
-    ? "bg-teal-600 text-white"
-    : "bg-teal-300 text-slate-900";
-  const tabInactiveClass = darkMode
-    ? "bg-white/10 text-white/80 hover:bg-white/20"
-    : "bg-slate-100 text-slate-500 hover:bg-slate-200";
-
   return (
-    <div className={mainClass}>
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
       <div className="px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={handleBackNavigation}
-            className={darkMode ? "p-2 hover:bg-white/10 rounded-lg transition-colors" : "p-2 hover:bg-slate-200 rounded-lg transition-colors"}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className={darkMode ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900"}>Statistics</h1>
-          <div className="w-10" /> {/* Spacer for centering */}
+          <h1 className="text-2xl font-bold text-white">Statistics</h1>
+          <div className="w-10" />
         </div>
 
-        {/* Tab Navigation */}
         <div className="flex space-x-2 mb-6">
           <button
             onClick={() => setActiveTab('players')}
             className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
-              activeTab === 'players'
-                ? tabActiveClass
-                : tabInactiveClass
+              activeTab === 'players' ? 'bg-teal-600 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
             }`}
           >
             <Users className="w-5 h-5" />
@@ -101,9 +77,7 @@ export default function StatsPage({
           <button
             onClick={() => setActiveTab('games')}
             className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
-              activeTab === 'games'
-                ? tabActiveClass
-                : tabInactiveClass
+              activeTab === 'games' ? 'bg-teal-600 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
             }`}
           >
             <TrendUp className="w-5 h-5" />
@@ -112,29 +86,28 @@ export default function StatsPage({
         </div>
       </div>
 
-      {/* Tab Content */}
       <div className="flex-1">
         {activeTab === 'players' ? (
           <div className="px-4 space-y-6 pb-32">
-              <PlayerStatsPage
-                players={players}
-                games={games}
-                onNavigation={onNavigation}
-                currentView="player-stats"
-                selectedPlayerId={navigationContext?.source === 'players' ? navigationContext?.id : selectedPlayerId}
-                darkMode={darkMode}
-              />
+            <PlayerStatsPage
+              players={players}
+              games={games}
+              onNavigation={onNavigation}
+              currentView="player-stats"
+              selectedPlayerId={selectedPlayerId}
+              darkMode={true}
+            />
           </div>
         ) : (
           <div className="px-4 space-y-6 pb-32">
-              <GameStatsPage
-                games={games}
-                players={players}
-                onNavigation={onNavigation}
-                currentView="game-stats"
-                selectedCircleId={navigationContext?.source === 'games' ? navigationContext?.id : selectedGameId}
-                darkMode={darkMode}
-              />
+            <GameStatsPage
+              games={games}
+              players={players}
+              onNavigation={onNavigation}
+              currentView="game-stats"
+              selectedCircleId={selectedGameId}
+              darkMode={true}
+            />
           </div>
         )}
       </div>

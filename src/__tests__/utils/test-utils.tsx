@@ -46,11 +46,11 @@ export const mockPlayers = [
     player_name: 'Alice',
     pseudo: 'alice42',
     avatar: 'avatar1.jpg',
-    stats: 'Advanced player',
     games_played: 10,
     wins: 5,
     total_score: 100,
     average_score: 10,
+    win_percentage: 50,
     created_at: new Date('2024-01-01'),
     favorite_game: 'Wingspan'
   },
@@ -59,11 +59,11 @@ export const mockPlayers = [
     player_name: 'Bob',
     pseudo: 'bob_gamer',
     avatar: 'avatar2.jpg',
-    stats: 'Beginner player',
     games_played: 5,
     wins: 2,
     total_score: 50,
     average_score: 10,
+    win_percentage: 40,
     created_at: new Date('2024-01-02'),
     favorite_game: 'Azul'
   }

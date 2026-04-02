@@ -1,4 +1,5 @@
-import React from 'react';
+import type { ComponentType } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   TrendUp,
   Users,
@@ -7,77 +8,49 @@ import {
   ChartLineUp
 } from '@phosphor-icons/react';
 
-interface BottomNavigationProps {
-  currentView: string
-  onNavigation: (view: string) => void
-  showStats?: boolean
+interface NavItem {
+  to: string
+  icon: ComponentType<{ className?: string }>
+  label: string
 }
 
-export default function BottomNavigation({ currentView, onNavigation, showStats = true }: BottomNavigationProps) {
-  const navItems = [
-    {
-      id: 'dashboard',
-      icon: TrendUp,
-      label: 'Dashboard'
-    },
-    {
-      id: 'players',
-      icon: Users,
-      label: 'Players'
-    },
-    {
-      id: 'games',
-      icon: GameController,
-      label: 'Games'
-    }
-  ];
+const navItems: NavItem[] = [
+  { to: '/',           icon: TrendUp,      label: 'Dashboard' },
+  { to: '/players',    icon: Users,         label: 'Players' },
+  { to: '/games',      icon: GameController, label: 'Games' },
+  { to: '/stats',      icon: ChartLineUp,   label: 'Stats' },
+  { to: '/settings',   icon: Gear,          label: 'Settings' },
+];
 
-  if (showStats) {
-    navItems.push({
-      id: 'stats',
-      icon: ChartLineUp,
-      label: 'Stats'
-    });
-  }
-
-  navItems.push({
-    id: 'settings',
-    icon: Gear,
-    label: 'Settings'
-  });
-
-  const handleNavigation = (view: string) => {
-    if (view === 'stats') {
-      onNavigation('stats');
-    } else {
-      onNavigation(view);
-    }
-  };
+function BottomNavigation() {
+  const location = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-white/10">
+    <nav className="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-white/10">
       <div className="flex justify-around items-center py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentView === item.id || 
-            (item.id === 'stats' && (currentView === 'player-stats' || currentView === 'game-stats' || currentView === 'stats'));
-          
+          const isActive = item.to === '/'
+            ? location.pathname === '/'
+            : location.pathname.startsWith(item.to);
+
           return (
-            <button
-              key={item.id}
-              onClick={() => handleNavigation(item.id)}
+            <Link
+              key={item.to}
+              to={item.to}
               className={`flex flex-col items-center p-3 transition-colors ${
-                isActive
-                  ? 'text-teal-400'
-                  : 'text-white/60 hover:text-white'
+                isActive ? 'text-teal-400' : 'text-white/60 hover:text-white'
               }`}
+              aria-label={item.label}
             >
               <Icon className="w-6 h-6 mb-1" />
               <span className="text-xs">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
+
+export default BottomNavigation;

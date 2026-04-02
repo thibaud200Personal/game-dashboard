@@ -14,6 +14,19 @@ const config: KnipConfig = {
     // test utilities — exported for reuse across test files
     'src/__tests__/mocks/server.ts',
     'src/__tests__/utils/test-utils.tsx',
+    // Future features — Sprint 1+ (game detail, expansions, characters sub-pages)
+    'src/components/GameCharactersPage.tsx',
+    'src/components/GameDetailPage.tsx',
+    'src/components/GameExpansionsPage.tsx',
+    'src/hooks/games/useGameCharacters.ts',
+    'src/hooks/games/useGameDetail.ts',
+    'src/hooks/games/useGameExpansions.ts',
+    'src/views/games/GameCharactersView.tsx',
+    'src/views/games/GameDetailView.tsx',
+    'src/views/games/GameExpansionsView.tsx',
+    // Dialog components for future features (Expansion, Character CRUD)
+    'src/components/dialogs/ExpansionDialogs.tsx',
+    'src/components/dialogs/CharacterDialogs.tsx',
   ],
   ignoreDependencies: [
     // shadcn/ui components (ignored above) import these — knip can't see it

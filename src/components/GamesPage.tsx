@@ -1,60 +1,14 @@
 import React, { useState } from 'react';
-import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
-import { useGamesPage, GamesPageData } from '@/hooks/useGamesPage';
+import { useGamesPage } from '@/hooks/useGamesPage';
 import { GamesPageView } from '@/views/GamesPageView';
+import type { BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 
-interface GamesPageProps {
-  games: Game[];
-  onNavigation: (view: string, gameId?: number, source?: string) => void;
-  onAddGame: (game: Omit<Game, 'game_id' | 'players'>) => void;
-  onUpdateGame: (gameId: number, game: Partial<Game>) => void;
-  onDeleteGame: (gameId: number) => void;
-  onAddExpansion?: (gameId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
-  onUpdateExpansion?: (expansionId: number, expansion: Omit<GameExpansion, 'expansion_id' | 'game_id'>) => void;
-  onDeleteExpansion?: (expansionId: number) => void;
-  onAddCharacter?: (gameId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
-  onUpdateCharacter?: (characterId: number, character: Omit<GameCharacter, 'character_id' | 'game_id'>) => void;
-  onDeleteCharacter?: (characterId: number) => void;
-  currentView?: string;
-  darkMode: boolean;
-}
-
-export default function GamesPage({
-  games: gamesProp,
-  onNavigation: onNavigationProp,
-  onAddGame,
-  onUpdateGame,
-  onDeleteGame,
-  onAddExpansion,
-  onUpdateExpansion,
-  onDeleteExpansion,
-  onAddCharacter,
-  onUpdateCharacter,
-  onDeleteCharacter,
-  currentView: currentViewProp,
-  darkMode
-}: GamesPageProps) {
+export default function GamesPage() {
   const [expandedGame, setExpandedGame] = useState<number | null>(null);
   const [isBGGSearchOpen, setIsBGGSearchOpen] = useState(false);
 
-  // Prepare data for the hook
-  const hookData: GamesPageData = {
-    games: gamesProp,
-    onNavigation: onNavigationProp,
-    onAddGame,
-    onUpdateGame,
-    onDeleteGame,
-    onAddExpansion: onAddExpansion || (() => {}),
-    onUpdateExpansion: onUpdateExpansion || (() => {}),
-    onDeleteExpansion: onDeleteExpansion || (() => {}),
-    onAddCharacter: onAddCharacter || (() => {}),
-    onUpdateCharacter: onUpdateCharacter || (() => {}),
-    onDeleteCharacter: onDeleteCharacter || (() => {}),
-    currentView: currentViewProp
-  };
-
   const {
-    games: filteredGames,
+    games,
     totalGames,
     averageRating,
     formData,
@@ -62,6 +16,7 @@ export default function GamesPage({
     isAddDialogOpen,
     isEditDialogOpen,
     addGameError,
+    isAddDuplicate,
     updateGameError,
     searchQuery,
     setSearchQuery,
@@ -73,10 +28,13 @@ export default function GamesPage({
     handleDeleteGame,
     handleBGGSearch,
     resetForm,
-    setFormData
-  } = useGamesPage(hookData);
+    setFormData,
+    onNavigation,
+  } = useGamesPage();
 
-  const handleFormDataChange = (newData: Partial<GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }>) => {
+  const handleFormDataChange = (
+    newData: Partial<GameFormData & { expansions: GameExpansion[]; characters: GameCharacter[] }>
+  ) => {
     setFormData(prev => ({ ...prev, ...newData }));
   };
 
@@ -85,14 +43,10 @@ export default function GamesPage({
     setIsBGGSearchOpen(false);
   };
 
-  const onAddDialogToggle = () => {
-    handleAddDialogOpen(!isAddDialogOpen);
-  };
-
   return (
     <GamesPageView
-      games={filteredGames}
-      currentView={currentViewProp || 'games'}
+      games={games}
+      currentView="games"
       totalGames={totalGames}
       averageRating={averageRating}
       formData={formData}
@@ -102,9 +56,9 @@ export default function GamesPage({
       isBGGSearchOpen={isBGGSearchOpen}
       expandedGame={expandedGame}
       searchQuery={searchQuery}
-      onNavigation={onNavigationProp}
+      onNavigation={onNavigation}
       onSearchChange={setSearchQuery}
-      onAddDialogToggle={onAddDialogToggle}
+      onAddDialogToggle={() => handleAddDialogOpen(!isAddDialogOpen)}
       onFormDataChange={handleFormDataChange}
       onBGGGameSelect={handleBGGGameSelect}
       onAddGame={handleAddGame}
@@ -115,8 +69,9 @@ export default function GamesPage({
       setBGGSearchOpen={setIsBGGSearchOpen}
       setExpandedGame={setExpandedGame}
       setEditDialogOpen={handleEditDialogOpen}
-      darkMode={!!darkMode}
+      darkMode={true}
       addGameError={addGameError}
+      isAddDuplicate={isAddDuplicate}
       updateGameError={updateGameError}
     />
   );

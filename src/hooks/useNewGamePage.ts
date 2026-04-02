@@ -1,22 +1,45 @@
 import { useState } from 'react';
-import { Game, Player, CreateSessionPayload } from '@/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { gameApi } from '../services/api/gameApi';
+import { playerApi } from '../services/api/playerApi';
+import { sessionApi } from '../services/api/sessionApi';
+import { queryKeys } from '../services/api/queryKeys';
+import { useNavigationAdapter } from './useNavigationAdapter';
+import type { CreateSessionPayload } from '@/types';
 
-export const useNewGamePage = (
-  games: Game[],
-  players: Player[],
-  onCreateSession: (sessionData: CreateSessionPayload) => Promise<void>
-) => {
+export const useNewGamePage = () => {
+  const onNavigation = useNavigationAdapter();
+  const queryClient = useQueryClient();
+
+  const { data: games = [] } = useQuery({
+    queryKey: queryKeys.games.all,
+    queryFn: gameApi.getAll,
+  });
+
+  const { data: players = [] } = useQuery({
+    queryKey: queryKeys.players.all,
+    queryFn: playerApi.getAll,
+  });
+
+  const createSession = useMutation({
+    mutationFn: sessionApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats.dashboard });
+    },
+  });
+
   const [selectedGameId, setSelectedGameId] = useState<string>('');
   const [sessionType, setSessionType] = useState<'competitive' | 'cooperative' | 'campaign' | 'hybrid'>('competitive');
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
-  const [playerScores, setPlayerScores] = useState<{[key: number]: number}>({});
+  const [playerScores, setPlayerScores] = useState<Record<number, number>>({});
   const [winnerId, setWinnerId] = useState<string>('');
   const [duration, setDuration] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Cooperative scoring state
-  const [objectives, setObjectives] = useState<Array<{id: string, text: string, completed: boolean, points: number}>>([]);
+  const [objectives, setObjectives] = useState<Array<{ id: string; text: string; completed: boolean; points: number }>>([]);
   const [teamScore, setTeamScore] = useState<number>(0);
   const [difficultyLevel, setDifficultyLevel] = useState<string>('normal');
   const [teamSuccess, setTeamSuccess] = useState<boolean>(false);
@@ -24,47 +47,31 @@ export const useNewGamePage = (
   const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null;
 
   const handlePlayerToggle = (playerId: number) => {
-    setSelectedPlayers(prev => {
-      if (prev.includes(playerId)) {
-        return prev.filter(id => id !== playerId);
-      } else {
-        return [...prev, playerId];
-      }
-    });
+    setSelectedPlayers(prev =>
+      prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+    );
   };
 
   const handleScoreChange = (playerId: number, value: string) => {
-    setPlayerScores(prev => ({
-      ...prev,
-      [playerId]: parseInt(value) || 0
-    }));
+    setPlayerScores(prev => ({ ...prev, [playerId]: parseInt(value) || 0 }));
   };
 
-  // Cooperative scoring handlers
   const addObjective = () => {
-    const newObjective = {
-      id: Date.now().toString(),
-      text: '',
-      completed: false,
-      points: 0
-    };
-    setObjectives([...objectives, newObjective]);
+    setObjectives(prev => [...prev, { id: Date.now().toString(), text: '', completed: false, points: 0 }]);
   };
 
   const addPresetObjectives = () => {
-    const commonObjectives = [
-      { id: Date.now().toString(), text: 'Complete primary mission', completed: false, points: 50 },
-      { id: (Date.now() + 1).toString(), text: 'No player eliminated', completed: false, points: 20 },
+    const presets = [
+      { id: Date.now().toString(),       text: 'Complete primary mission', completed: false, points: 50 },
+      { id: (Date.now() + 1).toString(), text: 'No player eliminated',     completed: false, points: 20 },
       { id: (Date.now() + 2).toString(), text: 'Finish within time limit', completed: false, points: 30 },
-      { id: (Date.now() + 3).toString(), text: 'Collect all bonus items', completed: false, points: 25 }
+      { id: (Date.now() + 3).toString(), text: 'Collect all bonus items',  completed: false, points: 25 },
     ];
-    setObjectives([...objectives, ...commonObjectives]);
+    setObjectives(prev => [...prev, ...presets]);
   };
 
   const updateObjective = (id: string, field: string, value: string | number | boolean) => {
-    setObjectives(prev => prev.map(obj => 
-      obj.id === id ? { ...obj, [field]: value } : obj
-    ));
+    setObjectives(prev => prev.map(obj => obj.id === id ? { ...obj, [field]: value } : obj));
   };
 
   const removeObjective = (id: string) => {
@@ -72,65 +79,20 @@ export const useNewGamePage = (
   };
 
   const calculateTeamScore = () => {
-    const completedObjectives = objectives.filter(obj => obj.completed);
-    const totalPoints = completedObjectives.reduce((sum, obj) => sum + obj.points, 0);
-    setTeamScore(totalPoints);
-    return totalPoints;
+    const total = objectives.filter(o => o.completed).reduce((sum, o) => sum + o.points, 0);
+    setTeamScore(total);
+    return total;
   };
 
   const canSubmit = (): boolean => {
-    const hasValidGame = Boolean(selectedGameId && 
-           selectedPlayers.length >= (selectedGame?.min_players || 1) &&
-           selectedPlayers.length <= (selectedGame?.max_players || 8));
-    
+    const hasValidGame = Boolean(
+      selectedGameId &&
+      selectedPlayers.length >= (selectedGame?.min_players || 1) &&
+      selectedPlayers.length <= (selectedGame?.max_players || 8)
+    );
     if (!hasValidGame) return false;
-    
-    // Additional validation for cooperative mode
-    if (sessionType === 'cooperative') {
-      // At least one objective or a team score should be set
-      const hasObjectives = objectives.length > 0;
-      const hasTeamScore = teamScore > 0;
-      return hasObjectives || hasTeamScore;
-    }
-    
+    if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
     return true;
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedGame || !onCreateSession) return;
-
-    setIsSubmitting(true);
-    try {
-      const sessionData = {
-        game_id: parseInt(selectedGameId),
-        session_date: new Date(),
-        duration_minutes: duration ? parseInt(duration) : null,
-        winner_player_id: winnerId ? parseInt(winnerId) : null,
-        session_type: sessionType,
-        notes: notes || null,
-        players: selectedPlayers.map(playerId => ({
-          player_id: playerId,
-          score: playerScores[playerId] || 0,
-          is_winner: winnerId === playerId.toString()
-        })),
-        // Cooperative scoring data
-        ...(sessionType === 'cooperative' && {
-          team_score: teamScore,
-          team_success: teamSuccess,
-          difficulty_level: difficultyLevel,
-          objectives: objectives.map(obj => ({
-            description: obj.text,
-            completed: obj.completed,
-            points: obj.points
-          }))
-        })
-      };
-
-      await onCreateSession(sessionData);
-      return { success: true };
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const resetForm = () => {
@@ -147,8 +109,47 @@ export const useNewGamePage = (
     setTeamSuccess(false);
   };
 
+  const handleSubmit = async (): Promise<{ success: boolean }> => {
+    if (!selectedGame) return { success: false };
+    setIsSubmitting(true);
+    try {
+      const payload: CreateSessionPayload = {
+        game_id: parseInt(selectedGameId),
+        session_date: new Date(),
+        duration_minutes: duration ? parseInt(duration) : null,
+        winner_player_id: winnerId ? parseInt(winnerId) : null,
+        session_type: sessionType,
+        notes: notes || null,
+        players: selectedPlayers.map(playerId => ({
+          player_id: playerId,
+          score: playerScores[playerId] || 0,
+          is_winner: winnerId === playerId.toString(),
+        })),
+      };
+      await createSession.mutateAsync({
+        game_id: payload.game_id,
+        session_date: payload.session_date?.toISOString(),
+        duration_minutes: payload.duration_minutes ?? undefined,
+        winner_player_id: payload.winner_player_id ?? undefined,
+        session_type: payload.session_type,
+        notes: payload.notes ?? undefined,
+        players: payload.players,
+      });
+      toast.success('Game session created successfully!');
+      resetForm();
+      onNavigation('dashboard');
+      return { success: true };
+    } catch {
+      toast.error('Failed to create game session');
+      return { success: false };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
-    // State
+    games,
+    players,
     selectedGameId,
     setSelectedGameId,
     sessionType,
@@ -164,8 +165,6 @@ export const useNewGamePage = (
     notes,
     setNotes,
     isSubmitting,
-    
-    // Cooperative scoring state
     objectives,
     setObjectives,
     teamScore,
@@ -174,22 +173,17 @@ export const useNewGamePage = (
     setDifficultyLevel,
     teamSuccess,
     setTeamSuccess,
-    
-    // Computed
     selectedGame,
-    
-    // Methods
     handlePlayerToggle,
     handleScoreChange,
     canSubmit,
     handleSubmit,
     resetForm,
-    
-    // Cooperative scoring methods
     addObjective,
     addPresetObjectives,
     updateObjective,
     removeObjective,
-    calculateTeamScore
+    calculateTeamScore,
+    onNavigation,
   };
 };

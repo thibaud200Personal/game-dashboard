@@ -1,16 +1,15 @@
 import React, { useState, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import ApiService from '@/services/ApiService';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface LoginPageProps {
-  onLoginSuccess: () => void;
-}
-
-export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,8 +19,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setError(null);
     setLoading(true);
     try {
-      await ApiService.login(password);
-      onLoginSuccess();
+      await login(password);
+      navigate('/', { replace: true });
     } catch {
       setError('Mot de passe incorrect. Veuillez réessayer.');
     } finally {

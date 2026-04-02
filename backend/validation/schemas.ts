@@ -16,10 +16,6 @@ export const UpdatePlayerSchema = z.object({
   player_name: z.string().min(1, 'Le nom du joueur est requis').max(50, 'Le nom ne peut pas dépasser 50 caractères').optional(),
   pseudo: z.string().min(1, 'Le pseudo est requis').max(50, 'Le pseudo ne peut pas dépasser 50 caractères').optional(),
   avatar: z.string().url('URL d\'avatar invalide').optional(),
-  games_played: z.number().int().min(0, 'Le nombre de parties ne peut pas être négatif').optional(),
-  wins: z.number().int().min(0, 'Le nombre de victoires ne peut pas être négatif').optional(),
-  total_score: z.number().min(0, 'Le score total ne peut pas être négatif').optional(),
-  average_score: z.number().min(0, 'Le score moyen ne peut pas être négatif').optional(),
   favorite_game: z.string().max(100, 'Le nom du jeu favori ne peut pas dépasser 100 caractères').optional()
 }).refine(data => Object.keys(data).length > 0, {
   message: 'Au moins un champ doit être fourni pour la mise à jour'
@@ -49,8 +45,8 @@ export const CreateGameBaseSchema = z.object({
   bgg_id: z.number().int().positive('ID BGG invalide').optional(),
   name: z.string().min(1, 'Le nom du jeu est requis').max(200, 'Le nom ne peut pas dépasser 200 caractères'),
   description: z.string().max(9000, 'La description ne peut pas dépasser 9000 caractères').optional(),
-  image: z.string().url('URL d\'image invalide').optional(),
-  thumbnail: z.string().url('URL de miniature invalide').optional(),
+  image: z.string().url('URL d\'image invalide').optional().or(z.literal('')).transform(v => v || undefined),
+  thumbnail: z.string().url('URL de miniature invalide').optional().or(z.literal('')).transform(v => v || undefined),
   min_players: z.number().int().min(1, 'Le nombre minimum de joueurs doit être au moins 1').max(20, 'Le nombre maximum de joueurs ne peut pas dépasser 20'),
   max_players: z.number().int().min(1, 'Le nombre maximum de joueurs doit être au moins 1').max(20, 'Le nombre maximum de joueurs ne peut pas dépasser 20'),
   playing_time: z.number().int().min(0, 'La durée de jeu ne peut pas être négative').optional(),
