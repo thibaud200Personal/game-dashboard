@@ -45,6 +45,7 @@ export const useNewGamePage = () => {
   const [teamSuccess, setTeamSuccess] = useState<boolean>(false);
 
   const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null;
+  const maxPlayersReached = selectedGame !== null && selectedPlayers.length >= selectedGame.max_players;
 
   const handlePlayerToggle = (playerId: number) => {
     setSelectedPlayers(prev =>
@@ -53,7 +54,8 @@ export const useNewGamePage = () => {
   };
 
   const handleScoreChange = (playerId: number, value: string) => {
-    setPlayerScores(prev => ({ ...prev, [playerId]: parseInt(value) || 0 }));
+    const parsed = parseInt(value) || 0;
+    setPlayerScores(prev => ({ ...prev, [playerId]: Math.min(999, Math.max(0, parsed)) }));
   };
 
   const addObjective = () => {
@@ -84,6 +86,10 @@ export const useNewGamePage = () => {
     return total;
   };
 
+  const competitiveWinnerMissing = sessionType === 'competitive' && selectedPlayers.length > 0 && winnerId === '';
+  const winnerScoreInvalid = sessionType === 'competitive' && winnerId !== '' && (playerScores[parseInt(winnerId)] ?? 0) === 0;
+  const durationMissing = duration === '';
+
   const canSubmit = (): boolean => {
     const hasValidGame = Boolean(
       selectedGameId &&
@@ -91,7 +97,9 @@ export const useNewGamePage = () => {
       selectedPlayers.length <= (selectedGame?.max_players || 8)
     );
     if (!hasValidGame) return false;
+    if (durationMissing) return false;
     if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
+    if (sessionType === 'competitive' && (competitiveWinnerMissing || winnerScoreInvalid)) return false;
     return true;
   };
 
@@ -174,6 +182,10 @@ export const useNewGamePage = () => {
     teamSuccess,
     setTeamSuccess,
     selectedGame,
+    maxPlayersReached,
+    competitiveWinnerMissing,
+    winnerScoreInvalid,
+    durationMissing,
     handlePlayerToggle,
     handleScoreChange,
     canSubmit,

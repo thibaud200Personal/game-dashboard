@@ -67,7 +67,7 @@ export interface BGGExpansion {
   expansion_id?: number
   bgg_expansion_id: number
   name: string
-  year_published: number
+  year_published?: number
   description?: string
 }
 
@@ -206,7 +206,7 @@ class BGGService {
       .map(l => ({
         bgg_expansion_id: parseInt(l.objectid),
         name: l.name,
-        year_published: 0
+        // year_published not available from geekdo links API — omit to avoid Zod min(1800) rejection
       }))
       .filter(e => e.bgg_expansion_id > 0)
 
