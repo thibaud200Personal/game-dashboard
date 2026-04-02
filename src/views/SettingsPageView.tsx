@@ -38,6 +38,7 @@ interface SettingsPageViewProps {
   bggImportError: string | null;
   handleImportBggCatalog: (file: File) => void;
   onLogout: () => void;
+  isAdmin: boolean;
 }
 
 export function SettingsPageView(props: SettingsPageViewProps) {
@@ -164,8 +165,8 @@ export function SettingsPageView(props: SettingsPageViewProps) {
           </div>
         </div>
 
-        {/* Data Management */}
-        <div className={cardClass}>
+        {/* Data Management — admin only */}
+        {props.isAdmin && <div className={cardClass}>
           <h2 className={titleClass}>Data Management</h2>
           <div className="space-y-3">
             {/* Last operation dates */}
@@ -250,7 +251,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               </label>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* About */}
         <div className={cardClass}>

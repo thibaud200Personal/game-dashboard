@@ -5,7 +5,7 @@ import apiService from '@/services/ApiService';
 
 export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
 
   const [notifications, setNotifications] = useState(true);
   const [language, setLanguage] = useState('en');
@@ -64,5 +64,6 @@ export const useSettingsPage = () => {
     handleResetData: () => {},
     handleImportBggCatalog,
     onLogout: logout,
+    isAdmin: role === 'admin',
   };
 };

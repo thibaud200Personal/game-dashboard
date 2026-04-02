@@ -41,6 +41,10 @@ interface NewGameViewProps {
   selectedGame: Game | null
   
   // Methods
+  maxPlayersReached: boolean
+  competitiveWinnerMissing: boolean
+  winnerScoreInvalid: boolean
+  durationMissing: boolean
   handlePlayerToggle: (playerId: number) => void
   handleScoreChange: (playerId: number, value: string) => void
   canSubmit: () => boolean
@@ -86,6 +90,10 @@ export default function NewGameView({
   teamSuccess,
   setTeamSuccess,
   selectedGame,
+  maxPlayersReached,
+  competitiveWinnerMissing,
+  winnerScoreInvalid,
+  durationMissing,
   handlePlayerToggle,
   handleScoreChange,
   canSubmit,
@@ -218,14 +226,28 @@ export default function NewGameView({
                 <Users className="w-5 h-5" />
                 Select Players
               </CardTitle>
+              {safeSelectedPlayers.length < (selectedGame?.min_players ?? 1) && (
+                <p className="text-orange-400 text-sm mt-1">
+                  Minimum {selectedGame!.min_players} joueurs requis ({safeSelectedPlayers.length} sélectionné{safeSelectedPlayers.length > 1 ? 's' : ''})
+                </p>
+              )}
+              {maxPlayersReached && (
+                <p className="text-red-400 text-sm mt-1">
+                  Maximum de {selectedGame!.max_players} joueurs atteint
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {safePlayers.map(player => (
-                  <div key={player.player_id} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+                {safePlayers.map(player => {
+                  const isSelected = safeSelectedPlayers.includes(player.player_id);
+                  const isDisabled = maxPlayersReached && !isSelected;
+                  return (
+                  <div key={player.player_id} className={`flex items-center space-x-3 p-3 bg-white/5 rounded-lg transition-opacity${isDisabled ? ' opacity-40' : ''}`}>
                     <Checkbox
-                      checked={safeSelectedPlayers.includes(player.player_id)}
+                      checked={isSelected}
                       onCheckedChange={() => handlePlayerToggle(player.player_id)}
+                      disabled={isDisabled}
                       className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                     />
                     <div className="flex items-center gap-3 flex-1">
@@ -238,7 +260,8 @@ export default function NewGameView({
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -398,6 +421,12 @@ export default function NewGameView({
                 <Trophy className="w-5 h-5" />
                 Competitive Scoring
               </CardTitle>
+              {competitiveWinnerMissing && (
+                <p className="text-orange-400 text-sm mt-1">Un vainqueur doit être désigné</p>
+              )}
+              {winnerScoreInvalid && (
+                <p className="text-orange-400 text-sm mt-1">Le score du vainqueur doit être supérieur à 0</p>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               {safeSelectedPlayers.map(playerId => {
@@ -416,7 +445,9 @@ export default function NewGameView({
                       <Input
                         type="number"
                         placeholder="Score"
-                        value={playerScores[playerId] || ''}
+                        min={0}
+                        max={999}
+                        value={playerScores[playerId] ?? ''}
                         onChange={(e) => handleScoreChange(playerId, e.target.value)}
                         className="w-20 bg-white/5 border-white/20 text-white"
                       />
@@ -515,13 +546,19 @@ export default function NewGameView({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-white/80">Duration (minutes)</Label>
+                <div className="flex items-center gap-2 mb-1">
+                  <Label className="text-white/80">Duration (minutes)</Label>
+                  {durationMissing && (
+                    <span className="text-orange-400 text-xs">Obligatoire</span>
+                  )}
+                </div>
                 <Input
                   type="number"
                   placeholder="60"
+                  min={1}
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className="bg-white/5 border-white/20 text-white"
+                  className={`bg-white/5 border-white/20 text-white${durationMissing ? ' border-orange-400/60' : ''}`}
                 />
               </div>
               <div>
