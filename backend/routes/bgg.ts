@@ -1,6 +1,4 @@
-import { Router } from 'express'
-import * as path from 'path'
-import * as fs from 'fs'
+import { Router, text } from 'express'
 import type { Response } from 'express'
 import type { BGGRepository } from '../repositories/BGGRepository'
 import type { AuthRequest } from '../middleware/auth'
@@ -18,21 +16,19 @@ export function createBggRouter(bggRepo: BGGRepository): Router {
   })
 
   router.get('/import-status', (_req, res) => {
-    res.json(bggRepo.getImportLog())
+    res.json(bggRepo.getCatalogStatus())
   })
 
-  router.post('/import-catalog', requireRole('admin'), async (req: AuthRequest, res: Response) => {
-    const importDir = path.join(__dirname, '../database/import')
-    const csvPath = path.join(importDir, 'boardgames_ranks.csv')
-    if (!fs.existsSync(csvPath)) {
-      res.status(404).json({ error: 'CSV not found at backend/database/import/boardgames_ranks.csv' })
+  router.post('/import-catalog', requireRole('admin'), text({ limit: '25mb' }), async (req: AuthRequest, res: Response) => {
+    const csvText = typeof req.body === 'string' ? req.body : ''
+    if (!csvText) {
+      res.status(400).json({ error: 'CSV body required' })
       return
     }
-    const csvText = fs.readFileSync(csvPath, 'utf8')
     const rows = parseBggCsv(csvText)
     bggRepo.upsertCatalogBatch(rows)
     bggRepo.recordCatalogImport()
-    res.json({ imported: rows.length })
+    res.json({ count: rows.length })
   })
 
   router.get('/game/:bggId', async (req, res) => {
