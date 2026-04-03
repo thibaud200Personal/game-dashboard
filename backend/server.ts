@@ -54,7 +54,14 @@ const app = express()
 const PORT = parseInt(process.env.PORT ?? '3001', 10)
 
 // Security
-app.use(helmet())
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'img-src': ["'self'", 'data:', 'https://cf.geekdo-images.com', 'https://images.unsplash.com'],
+    },
+  },
+}))
 
 // HTTPS redirect in production
 if (process.env.NODE_ENV === 'production') {
