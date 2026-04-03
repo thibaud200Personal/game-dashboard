@@ -20,10 +20,14 @@ export class BGGRepository {
     return rows.map(r => ({ ...r, is_expansion: !!r.is_expansion, year_published: r.year_published ?? undefined }))
   }
 
-  getImportLog(): { bgg_catalog_imported_at: string | null } {
-    return this.db
+  getCatalogStatus(): { count: number; bgg_catalog_imported_at: string | null } {
+    const { count } = this.db
+      .prepare('SELECT COUNT(*) as count FROM bgg_catalog')
+      .get() as { count: number }
+    const { bgg_catalog_imported_at } = this.db
       .prepare('SELECT bgg_catalog_imported_at FROM log_import WHERE id = 1')
       .get() as { bgg_catalog_imported_at: string | null }
+    return { count, bgg_catalog_imported_at }
   }
 
   recordCatalogImport(): void {

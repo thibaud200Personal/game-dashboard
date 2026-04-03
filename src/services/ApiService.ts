@@ -253,24 +253,21 @@ class ApiService {
 
   // Import / Export log
   async getImportLog(): Promise<{ bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null }> {
-    return this.request('/settings/import-log');
+    return this.request('/v1/bgg/import-status');
   }
 
   // BGG Catalog
   async getBggCatalogStatus(): Promise<{ count: number }> {
-    return this.request<{ count: number }>('/bgg/catalog/status');
+    return this.request<{ count: number }>('/v1/bgg/import-status');
   }
 
   async importBggCatalog(file: File): Promise<{ count: number }> {
     const text = await file.text();
-    const url = `${this.baseUrl}/bgg/catalog/import`;
-    const token = this.getToken();
+    const url = `${this.baseUrl}/v1/bgg/import-catalog`;
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'text/plain' },
       body: text,
     });
     if (response.status === 401) {

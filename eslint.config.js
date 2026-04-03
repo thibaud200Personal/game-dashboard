@@ -25,6 +25,7 @@ export default [
       '*.d.ts',
       'packages/',
       '.git/',
+      '.claude/',
       'test-backend.mjs',
       'backend/**/*',
       // shadcn/ui auto-generated components — do not lint manually
