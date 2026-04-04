@@ -2,22 +2,64 @@ import type Database from 'better-sqlite3'
 import type { BGGSearchResult } from '@shared/types'
 import type { BggCatalogRow } from '../database/parseBggCsv'
 
-type BggRow = { bgg_id: number; name: string; year_published: number | null; is_expansion: number }
+type BggRow = {
+  bgg_id: number
+  name: string
+  year_published: number | null
+  is_expansion: number
+  rank: number | null
+  bgg_rating: number | null
+  abstracts_rank: number | null
+  cgs_rank: number | null
+  childrensgames_rank: number | null
+  familygames_rank: number | null
+  partygames_rank: number | null
+  strategygames_rank: number | null
+  thematic_rank: number | null
+  wargames_rank: number | null
+}
+
+function deriveGameTypes(row: BggRow): string[] {
+  const types: string[] = []
+  if (row.strategygames_rank   != null) types.push('strategy')
+  if (row.familygames_rank     != null) types.push('family')
+  if (row.partygames_rank      != null) types.push('party')
+  if (row.thematic_rank        != null) types.push('thematic')
+  if (row.abstracts_rank       != null) types.push('abstract')
+  if (row.wargames_rank        != null) types.push('war')
+  if (row.childrensgames_rank  != null) types.push('children')
+  if (row.cgs_rank             != null) types.push('customizable')
+  return types
+}
 
 export class BGGRepository {
   constructor(private db: Database.Database) {}
 
   search(query: string, limit = 20): BGGSearchResult[] {
     const rows = this.db.prepare(`
-      SELECT bgg_id, name, year_published, is_expansion
+      SELECT bgg_id, name, year_published, is_expansion,
+             rank, bgg_rating,
+             abstracts_rank, cgs_rank, childrensgames_rank,
+             familygames_rank, partygames_rank, strategygames_rank,
+             thematic_rank, wargames_rank
       FROM bgg_catalog
       WHERE name LIKE ?
       ORDER BY
         CASE WHEN name LIKE ? THEN 0 ELSE 1 END,
+        CASE WHEN rank IS NOT NULL THEN rank ELSE 999999 END,
         name
       LIMIT ?
     `).all(`%${query}%`, `${query}%`, limit) as BggRow[]
-    return rows.map(r => ({ ...r, is_expansion: !!r.is_expansion, year_published: r.year_published ?? undefined }))
+
+    return rows.map(r => ({
+      bgg_id:        r.bgg_id,
+      name:          r.name,
+      year_published: r.year_published ?? undefined,
+      is_expansion:  !!r.is_expansion,
+      rank:          r.rank ?? undefined,
+      bgg_rating:    r.bgg_rating ?? undefined,
+      game_types:    deriveGameTypes(r),
+    }))
   }
 
   getCatalogStatus(): { count: number; bgg_catalog_imported_at: string | null } {
@@ -38,16 +80,38 @@ export class BGGRepository {
 
   upsertCatalogBatch(rows: BggCatalogRow[]): void {
     const stmt = this.db.prepare(`
-      INSERT INTO bgg_catalog (bgg_id, name, year_published, is_expansion)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO bgg_catalog (
+        bgg_id, name, year_published, is_expansion,
+        rank, bgg_rating, users_rated,
+        abstracts_rank, cgs_rank, childrensgames_rank,
+        familygames_rank, partygames_rank, strategygames_rank,
+        thematic_rank, wargames_rank
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(bgg_id) DO UPDATE SET
-        name = excluded.name,
-        year_published = excluded.year_published,
-        is_expansion = excluded.is_expansion
+        name                = excluded.name,
+        year_published      = excluded.year_published,
+        is_expansion        = excluded.is_expansion,
+        rank                = excluded.rank,
+        bgg_rating          = excluded.bgg_rating,
+        users_rated         = excluded.users_rated,
+        abstracts_rank      = excluded.abstracts_rank,
+        cgs_rank            = excluded.cgs_rank,
+        childrensgames_rank = excluded.childrensgames_rank,
+        familygames_rank    = excluded.familygames_rank,
+        partygames_rank     = excluded.partygames_rank,
+        strategygames_rank  = excluded.strategygames_rank,
+        thematic_rank       = excluded.thematic_rank,
+        wargames_rank       = excluded.wargames_rank
     `)
     const insert = this.db.transaction((batch: BggCatalogRow[]) => {
       for (const row of batch) {
-        stmt.run(row.bgg_id, row.name, row.year_published, row.is_expansion)
+        stmt.run(
+          row.bgg_id, row.name, row.year_published, row.is_expansion,
+          row.rank, row.bgg_rating, row.users_rated,
+          row.abstracts_rank, row.cgs_rank, row.childrensgames_rank,
+          row.familygames_rank, row.partygames_rank, row.strategygames_rank,
+          row.thematic_rank, row.wargames_rank
+        )
       }
     })
     insert(rows)

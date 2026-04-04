@@ -200,6 +200,9 @@ export interface BGGSearchResult {
   year_published?: number
   is_expansion: boolean
   thumbnail?: string
+  rank?: number
+  bgg_rating?: number
+  game_types?: string[] // derived: ['strategy', 'family', 'party', 'thematic', 'abstract', 'war', 'children', 'customizable']
 }
 
 export interface BGGExpansion {

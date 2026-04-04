@@ -68,6 +68,15 @@ export class DatabaseConnection {
         }
       }
 
+      // Guard: skip migration 008 if bgg_catalog already has extended columns
+      if (file === '008_extend_bgg_catalog.sql') {
+        const cols = (this.db.pragma('table_info(bgg_catalog)') as { name: string }[]).map(c => c.name)
+        if (cols.includes('rank')) {
+          this.db.prepare('INSERT INTO schema_version (filename) VALUES (?)').run(file)
+          continue
+        }
+      }
+
       // better-sqlite3 blocks exec() inside any active transaction (including savepoints).
       // Run exec() directly — if it throws, schema_version is not updated, so the migration
       // will be retried on next startup (safe: DDL statements use IF NOT EXISTS).
