@@ -152,7 +152,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - ✅ **Dégrisage du bouton de création selon le mode** — `canSubmit()` (`useNewGamePage.ts`) gère correctement chaque mode : coopératif (objectifs ou teamScore), compétitif (gagnant + score), campaign/hybrid (jeu + joueurs valides).
 - ✅ **Score à 0 par défaut en mode compétitif** — `playerScores[playerId] || 0` forcé à la soumission dans `handleSubmit` (`useNewGamePage.ts`).
 - ✅ **Indentation `.map` dans `NewGameView`** — `return (` et contenu réindentés correctement dans le bloc `.map` des joueurs (avril 2026).
-- **🔒 Routes export/import non protégées côté backend** — Le contrôle `isAdmin` dans `SettingsPageView` est purement UI (hiding). Les stubs `handleExportData` / `handleImportData` / `handleResetData` dans `useSettingsPage` devront appeler des routes backend protégées par `requireRole('admin')` lorsqu'elles seront implémentées.
+- ✅ **Routes export/import protégées côté backend** — `GET /api/v1/data/export`, `POST /api/v1/data/import`, `POST /api/v1/data/reset` implémentées dans `backend/routes/data.ts`, toutes protégées par `requireRole('admin')`. Stubs frontend connectés dans `useSettingsPage` (avril 2026).
 - ✅ **`canSubmit` — modes `campaign`/`hybrid` sans condition** — Hybrid exige désormais un gagnant individuel OU teamSuccess OU teamScore > 0. Campaign garde `return true` (game + joueurs + durée suffisent, pas de scoring spécifique) (avril 2026).
 
 </details>

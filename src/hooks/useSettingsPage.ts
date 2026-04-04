@@ -17,6 +17,11 @@ export const useSettingsPage = () => {
   const [isBggImporting, setIsBggImporting] = useState(false);
   const [bggImportError, setBggImportError] = useState<string | null>(null);
 
+  const [isDataExporting, setIsDataExporting] = useState(false);
+  const [isDataImporting, setIsDataImporting] = useState(false);
+  const [isDataResetting, setIsDataResetting] = useState(false);
+  const [dataOpError, setDataOpError] = useState<string | null>(null);
+
   useEffect(() => {
     apiService.getBggCatalogStatus().then(s => {
       setBggCatalogCount(s.count);
@@ -59,9 +64,49 @@ export const useSettingsPage = () => {
     handleLanguageChange: setLanguage,
     handleAutoSaveChange: setAutoSave,
     handleShowTooltipsChange: setShowTooltips,
-    handleExportData: () => {},
-    handleImportData: () => {},
-    handleResetData: () => {},
+    isDataExporting,
+    isDataImporting,
+    isDataResetting,
+    dataOpError,
+    handleExportData: async () => {
+      setIsDataExporting(true);
+      setDataOpError(null);
+      try {
+        const blob = await apiService.exportData();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `board-game-dashboard-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        setDataOpError(err instanceof Error ? err.message : 'Erreur export');
+      } finally {
+        setIsDataExporting(false);
+      }
+    },
+    handleImportData: async (file: File) => {
+      setIsDataImporting(true);
+      setDataOpError(null);
+      try {
+        await apiService.importData(file);
+      } catch (err) {
+        setDataOpError(err instanceof Error ? err.message : 'Erreur import');
+      } finally {
+        setIsDataImporting(false);
+      }
+    },
+    handleResetData: async () => {
+      setIsDataResetting(true);
+      setDataOpError(null);
+      try {
+        await apiService.resetData();
+      } catch (err) {
+        setDataOpError(err instanceof Error ? err.message : 'Erreur reset');
+      } finally {
+        setIsDataResetting(false);
+      }
+    },
     handleImportBggCatalog,
     onLogout: logout,
     isAdmin: role === 'admin',
