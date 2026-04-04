@@ -3,6 +3,10 @@
  * - Détails : API JSON interne geekdo.com (pas d'auth nécessaire)
  * - Cache 24h + rate limiting
  */
+import type { BGGGame, BGGExpansion, BGGCharacter } from '@shared/types'
+
+export type { BGGGame, BGGExpansion, BGGCharacter } from '@shared/types'
+
 // --- Types geekdo search API ---
 
 interface GeekdoSearchResponse {
@@ -53,62 +57,14 @@ interface GeekdoItem {
   }
 }
 
-// --- Types retournés au frontend ---
+// --- Type interne geekdo search (non exposé) ---
 
-export interface BGGSearchResult {
+interface GeekdoSearchEntry {
   id: number
   name: string
   year_published: number
   type: string
   thumbnail: string
-}
-
-export interface BGGExpansion {
-  expansion_id?: number
-  bgg_expansion_id: number
-  name: string
-  year_published?: number
-  description?: string
-}
-
-export interface BGGCharacter {
-  character_id?: string
-  character_key: string
-  name: string
-  description: string
-  abilities: string[]
-  avatar?: string
-}
-
-export interface BGGGame {
-  id: number
-  name: string
-  description: string
-  image: string
-  thumbnail: string
-  min_players: number
-  max_players: number
-  playing_time: number
-  min_playtime: number
-  max_playtime: number
-  min_age: number
-  year_published: number
-  designers: string[]
-  publishers: string[]
-  categories: string[]
-  mechanics: string[]
-  families: string[]
-  rating: number
-  weight: number
-  difficulty: string
-  expansions: BGGExpansion[]
-  characters: BGGCharacter[]
-  supports_cooperative: boolean
-  supports_competitive: boolean
-  supports_campaign: boolean
-  supports_hybrid: boolean
-  is_expansion: boolean
-  base_game_id?: number
 }
 
 interface CacheEntry {
@@ -137,7 +93,7 @@ class BGGService {
    * Retourne jusqu'à 15 résultats uniques instantanément depuis geekdo search.
    * Thumbnails + années sont vides ici — le frontend les charge en arrière-plan via getGameDetails.
    */
-  async searchGames(query: string): Promise<BGGSearchResult[]> {
+  async searchGames(query: string): Promise<GeekdoSearchEntry[]> {
     await this.rateLimit()
 
     const url = `${this.GEEKDO_BASE_URL}/geekitems?nosession=1&objecttype=thing&subtype=boardgame&showcount=20&pageid=1&search=${encodeURIComponent(query)}`

@@ -191,10 +191,62 @@ export interface GameStatistics {
   created_at: Date
 }
 
-// BGG types
-export interface BggGame {
+// BGG types — single source of truth (used by frontend and backend)
+
+// Catalog search result (from bgg_catalog table / /api/v1/bgg/search)
+export interface BGGSearchResult {
   bgg_id: number
   name: string
   year_published?: number
   is_expansion: boolean
+  thumbnail?: string
+}
+
+export interface BGGExpansion {
+  expansion_id?: number
+  bgg_expansion_id: number
+  name: string
+  year_published?: number
+  description?: string
+}
+
+export interface BGGCharacter {
+  character_id?: string
+  character_key: string
+  name: string
+  description: string
+  abilities: string[]
+  avatar?: string
+}
+
+// Full game details returned by /api/v1/bgg/game/:bggId
+export interface BGGGame {
+  id: number
+  name: string
+  description: string
+  image: string
+  thumbnail: string
+  min_players: number
+  max_players: number
+  playing_time: number
+  min_playtime: number
+  max_playtime: number
+  min_age: number
+  year_published: number
+  designers: string[]
+  publishers: string[]
+  categories: string[]
+  mechanics: string[]
+  families: string[]
+  rating: number
+  weight: number
+  difficulty: string
+  expansions: BGGExpansion[]
+  characters: BGGCharacter[]
+  supports_cooperative: boolean
+  supports_competitive: boolean
+  supports_campaign: boolean
+  supports_hybrid: boolean
+  is_expansion: boolean
+  base_game_id?: number
 }

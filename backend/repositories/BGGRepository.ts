@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3'
-import type { BggGame } from '@shared/types'
+import type { BGGSearchResult } from '@shared/types'
 import type { BggCatalogRow } from '../database/parseBggCsv'
 
 type BggRow = { bgg_id: number; name: string; year_published: number | null; is_expansion: number }
@@ -7,7 +7,7 @@ type BggRow = { bgg_id: number; name: string; year_published: number | null; is_
 export class BGGRepository {
   constructor(private db: Database.Database) {}
 
-  search(query: string, limit = 20): BggGame[] {
+  search(query: string, limit = 20): BGGSearchResult[] {
     const rows = this.db.prepare(`
       SELECT bgg_id, name, year_published, is_expansion
       FROM bgg_catalog

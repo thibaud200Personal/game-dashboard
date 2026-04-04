@@ -14,7 +14,10 @@ export type {
   CreateSessionRequest,
   DashboardStats,
   GameStatistics,
-  BggGame,
+  BGGGame,
+  BGGExpansion,
+  BGGCharacter,
+  BGGSearchResult,
 } from '../../shared/types';
 
 // ── Frontend-only types ──────────────────────────────────────────────────────
@@ -72,63 +75,6 @@ export interface GameFormData {
   bgg_id?: number
 }
 
-// BGG API response types (not stored in shared — frontend BGG service detail)
-export interface BGGGame {
-  id: number
-  name: string
-  description: string
-  image: string
-  thumbnail: string
-  min_players: number
-  max_players: number
-  playing_time: number
-  min_playtime: number
-  max_playtime: number
-  min_age: number
-  year_published: number
-  categories: string[]
-  mechanics: string[]
-  families: string[]
-  designers: string[]
-  publishers: string[]
-  rating: number
-  weight: number
-  difficulty: string
-  expansions: BGGExpansion[]
-  characters: BGGCharacter[]
-  supports_cooperative: boolean
-  supports_competitive: boolean
-  supports_campaign: boolean
-  supports_hybrid: boolean
-  is_expansion: boolean
-  base_game_id?: number
-}
-
-export interface BGGExpansion {
-  expansion_id?: number
-  bgg_expansion_id: number
-  name: string
-  year_published: number
-  description?: string
-}
-
-export interface BGGCharacter {
-  character_id?: string
-  character_key: string
-  name: string
-  description: string
-  abilities: string[]
-  avatar?: string
-}
-
-// Search result from the local BGG catalog (bgg_catalog table)
-export interface BGGSearchResult {
-  bgg_id: number
-  name: string
-  year_published?: number
-  is_expansion: boolean
-  thumbnail?: string
-}
 
 // Session creation (frontend-side extended payload with cooperative fields)
 export interface CreateSessionPayload {
