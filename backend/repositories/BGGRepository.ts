@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { BGGSearchResult } from '@shared/types'
-import type { BggCatalogRow } from '../database/parseBggCsv'
+import type { BggCatalogRow, BggCatalogLangueRow } from '../database/parseBggCsv'
 
 type BggRow = {
   bgg_id: number
@@ -76,6 +76,49 @@ export class BGGRepository {
     this.db.prepare(
       'UPDATE log_import SET bgg_catalog_imported_at = CURRENT_TIMESTAMP WHERE id = 1'
     ).run()
+  }
+
+  upsertCatalogLangueBatch(rows: BggCatalogLangueRow[]): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO bgg_catalog_langue (
+        bgg_id, name_en, name_fr, name_es,
+        year_published, is_expansion,
+        rank, bgg_rating, users_rated,
+        abstracts_rank, cgs_rank, childrensgames_rank,
+        familygames_rank, partygames_rank, strategygames_rank,
+        thematic_rank, wargames_rank
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(bgg_id) DO UPDATE SET
+        name_en             = excluded.name_en,
+        name_fr             = COALESCE(excluded.name_fr, bgg_catalog_langue.name_fr),
+        name_es             = COALESCE(excluded.name_es, bgg_catalog_langue.name_es),
+        year_published      = excluded.year_published,
+        is_expansion        = excluded.is_expansion,
+        rank                = excluded.rank,
+        bgg_rating          = excluded.bgg_rating,
+        users_rated         = excluded.users_rated,
+        abstracts_rank      = excluded.abstracts_rank,
+        cgs_rank            = excluded.cgs_rank,
+        childrensgames_rank = excluded.childrensgames_rank,
+        familygames_rank    = excluded.familygames_rank,
+        partygames_rank     = excluded.partygames_rank,
+        strategygames_rank  = excluded.strategygames_rank,
+        thematic_rank       = excluded.thematic_rank,
+        wargames_rank       = excluded.wargames_rank
+    `)
+    const insert = this.db.transaction((batch: BggCatalogLangueRow[]) => {
+      for (const row of batch) {
+        stmt.run(
+          row.bgg_id, row.name_en, row.name_fr, row.name_es,
+          row.year_published, row.is_expansion,
+          row.rank, row.bgg_rating, row.users_rated,
+          row.abstracts_rank, row.cgs_rank, row.childrensgames_rank,
+          row.familygames_rank, row.partygames_rank, row.strategygames_rank,
+          row.thematic_rank, row.wargames_rank
+        )
+      }
+    })
+    insert(rows)
   }
 
   upsertCatalogBatch(rows: BggCatalogRow[]): void {

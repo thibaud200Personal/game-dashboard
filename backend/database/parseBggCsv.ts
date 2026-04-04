@@ -16,6 +16,13 @@ export type BggCatalogRow = {
   wargames_rank: number | null
 }
 
+// Même structure que BggCatalogRow mais avec noms multilingues
+export type BggCatalogLangueRow = Omit<BggCatalogRow, 'name'> & {
+  name_en: string
+  name_fr: string | null
+  name_es: string | null
+}
+
 // CSV columns (boardgames_ranks.csv):
 // 0:id  1:name  2:yearpublished  3:rank  4:bayesaverage  5:average
 // 6:usersrated  7:is_expansion  8:abstracts_rank  9:cgs_rank
