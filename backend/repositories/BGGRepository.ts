@@ -78,6 +78,47 @@ export class BGGRepository {
     ).run()
   }
 
+  /**
+   * Copie dans bgg_catalog_langue les entrées de bgg_catalog absentes.
+   * Les entrées existantes (déjà traduites ou en attente) ne sont pas touchées.
+   * Retourne le nombre de nouvelles entrées insérées.
+   */
+  syncCatalogToLangue(): number {
+    const result = this.db.prepare(`
+      INSERT OR IGNORE INTO bgg_catalog_langue (
+        bgg_id, name_en, name_fr, name_es,
+        year_published, is_expansion,
+        rank, bgg_rating, users_rated,
+        abstracts_rank, cgs_rank, childrensgames_rank,
+        familygames_rank, partygames_rank, strategygames_rank,
+        thematic_rank, wargames_rank
+      )
+      SELECT
+        bgg_id, name, NULL, NULL,
+        year_published, is_expansion,
+        rank, bgg_rating, users_rated,
+        abstracts_rank, cgs_rank, childrensgames_rank,
+        familygames_rank, partygames_rank, strategygames_rank,
+        thematic_rank, wargames_rank
+      FROM bgg_catalog
+      WHERE bgg_id NOT IN (SELECT bgg_id FROM bgg_catalog_langue)
+    `).run()
+    return result.changes
+  }
+
+  getLangueStatus(): { count: number; pending_fr: number; pending_es: number } {
+    const { count } = this.db.prepare(
+      'SELECT COUNT(*) as count FROM bgg_catalog_langue'
+    ).get() as { count: number }
+    const { pending_fr } = this.db.prepare(
+      'SELECT COUNT(*) as pending_fr FROM bgg_catalog_langue WHERE name_fr IS NULL'
+    ).get() as { pending_fr: number }
+    const { pending_es } = this.db.prepare(
+      'SELECT COUNT(*) as pending_es FROM bgg_catalog_langue WHERE name_es IS NULL'
+    ).get() as { pending_es: number }
+    return { count, pending_fr, pending_es }
+  }
+
   upsertCatalogLangueBatch(rows: BggCatalogLangueRow[]): void {
     const stmt = this.db.prepare(`
       INSERT INTO bgg_catalog_langue (

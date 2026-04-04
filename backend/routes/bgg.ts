@@ -31,6 +31,17 @@ export function createBggRouter(bggRepo: BGGRepository): Router {
     res.json({ count: rows.length })
   })
 
+  // POST /api/v1/bgg/sync-langue — admin only
+  // Copie les nouvelles entrées de bgg_catalog vers bgg_catalog_langue
+  router.post('/sync-langue', requireRole('admin'), (_req: AuthRequest, res: Response) => {
+    const inserted = bggRepo.syncCatalogToLangue()
+    res.json({ inserted, ...bggRepo.getLangueStatus() })
+  })
+
+  router.get('/langue-status', requireRole('admin'), (_req: AuthRequest, res: Response) => {
+    res.json(bggRepo.getLangueStatus())
+  })
+
   router.get('/game/:bggId', async (req, res) => {
     try {
       const data = await bggService.getGameDetails(Number(req.params.bggId))
