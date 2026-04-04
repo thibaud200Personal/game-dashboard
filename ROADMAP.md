@@ -151,9 +151,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - ✅ **Mode coopératif : champ Score à masquer** — La section "Competitive Scoring" est déjà conditionnée par `sessionType === 'competitive'` (`NewGameView.tsx` ligne 417). Section coopérative séparée présente depuis Sprint 0.
 - ✅ **Dégrisage du bouton de création selon le mode** — `canSubmit()` (`useNewGamePage.ts`) gère correctement chaque mode : coopératif (objectifs ou teamScore), compétitif (gagnant + score), campaign/hybrid (jeu + joueurs valides).
 - ✅ **Score à 0 par défaut en mode compétitif** — `playerScores[playerId] || 0` forcé à la soumission dans `handleSubmit` (`useNewGamePage.ts`).
-- **📐 Indentation `.map` dans `NewGameView`** — Le `return (` dans le bloc `.map` des joueurs (`NewGameView.tsx` ~ligne 260) est décalé d'un niveau par rapport au style du reste du fichier. À corriger lors d'un prochain passage de nettoyage.
+- ✅ **Indentation `.map` dans `NewGameView`** — `return (` et contenu réindentés correctement dans le bloc `.map` des joueurs (avril 2026).
 - **🔒 Routes export/import non protégées côté backend** — Le contrôle `isAdmin` dans `SettingsPageView` est purement UI (hiding). Les stubs `handleExportData` / `handleImportData` / `handleResetData` dans `useSettingsPage` devront appeler des routes backend protégées par `requireRole('admin')` lorsqu'elles seront implémentées.
-- **⚙️ `canSubmit` — modes `campaign`/`hybrid` sans condition** — En mode campagne ou hybride, `canSubmit()` retourne `true` dès que le jeu et les joueurs sont valides, sans vérification supplémentaire. À aligner avec les règles métier de ces modes lors de leur implémentation.
+- ✅ **`canSubmit` — modes `campaign`/`hybrid` sans condition** — Hybrid exige désormais un gagnant individuel OU teamSuccess OU teamScore > 0. Campaign garde `return true` (game + joueurs + durée suffisent, pas de scoring spécifique) (avril 2026).
 
 </details>
 

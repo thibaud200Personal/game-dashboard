@@ -243,23 +243,23 @@ export default function NewGameView({
                   const isSelected = safeSelectedPlayers.includes(player.player_id);
                   const isDisabled = maxPlayersReached && !isSelected;
                   return (
-                  <div key={player.player_id} className={`flex items-center space-x-3 p-3 bg-white/5 rounded-lg transition-opacity${isDisabled ? ' opacity-40' : ''}`}>
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => handlePlayerToggle(player.player_id)}
-                      disabled={isDisabled}
-                      className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
-                    />
-                    <div className="flex items-center gap-3 flex-1">
-                      {player.avatar && (
-                        <img src={player.avatar} alt={player.player_name} className="w-8 h-8 rounded-full" />
-                      )}
-                      <div>
-                        <p className="text-white font-medium">{player.player_name}</p>
-                        <p className="text-white/60 text-sm">{player.stats}</p>
+                    <div key={player.player_id} className={`flex items-center space-x-3 p-3 bg-white/5 rounded-lg transition-opacity${isDisabled ? ' opacity-40' : ''}`}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handlePlayerToggle(player.player_id)}
+                        disabled={isDisabled}
+                        className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                      />
+                      <div className="flex items-center gap-3 flex-1">
+                        {player.avatar && (
+                          <img src={player.avatar} alt={player.player_name} className="w-8 h-8 rounded-full" />
+                        )}
+                        <div>
+                          <p className="text-white font-medium">{player.player_name}</p>
+                          <p className="text-white/60 text-sm">{player.stats}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   );
                 })}
               </div>

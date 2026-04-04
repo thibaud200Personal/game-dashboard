@@ -100,7 +100,8 @@ export const useNewGamePage = () => {
     if (durationMissing) return false;
     if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
     if (sessionType === 'competitive' && (competitiveWinnerMissing || winnerScoreInvalid)) return false;
-    return true;
+    if (sessionType === 'hybrid') return !competitiveWinnerMissing || teamSuccess || teamScore > 0;
+    return true; // campaign : game + joueurs + durée suffisent
   };
 
   const resetForm = () => {
