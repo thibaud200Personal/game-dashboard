@@ -250,6 +250,10 @@ class BGGService {
       if (entry.expiresAt <= now) this.cache.delete(key)
     }
   }
+
+  clearCache(): void {
+    this.cache.clear()
+  }
 }
 
 export const bggService = new BGGService()

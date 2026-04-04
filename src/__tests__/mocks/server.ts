@@ -32,19 +32,19 @@ const mockWingspan = {
 };
 
 export const handlers = [
-  // BGG search proxy — backend route
-  http.get('http://localhost:3001/api/bgg/search', ({ request }) => {
+  // BGG search — v1 route
+  http.get('/api/v1/bgg/search', ({ request }) => {
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
-    if (!q) return HttpResponse.json({ error: 'Query parameter q is required' }, { status: 400 });
+    if (!q) return HttpResponse.json([], { status: 400 });
     if (q.includes('zzz') || q.includes('nonexistent')) return HttpResponse.json([]);
     return HttpResponse.json([
-      { id: 266192, name: 'Wingspan', year_published: 2019, type: 'boardgame' }
+      { bgg_id: 266192, name: 'Wingspan', year_published: 2019, is_expansion: false, thumbnail: '' }
     ]);
   }),
 
-  // BGG game details proxy — backend route
-  http.get('http://localhost:3001/api/bgg/game/:id', ({ params }) => {
+  // BGG game details — v1 route
+  http.get('/api/v1/bgg/game/:id', ({ params }) => {
     const id = parseInt(params.id as string);
     if (id === 266192) return HttpResponse.json(mockWingspan);
     return HttpResponse.json({ error: 'Game not found on BGG' }, { status: 404 });
