@@ -246,6 +246,33 @@ class ApiService {
     return this.request<unknown>('/stats/games');
   }
 
+  // Data export / import / reset (admin only)
+  async exportData(): Promise<Blob> {
+    const url = `${this.baseUrl}/v1/data/export`;
+    const token = this.getToken();
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      throw new Error('UNAUTHORIZED');
+    }
+    if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+    return res.blob();
+  }
+
+  async importData(file: File): Promise<{ ok: boolean }> {
+    const text = await file.text();
+    return this.request<{ ok: boolean }>('/v1/data/import', {
+      method: 'POST',
+      body: text,
+    });
+  }
+
+  async resetData(): Promise<{ ok: boolean }> {
+    return this.request<{ ok: boolean }>('/v1/data/reset', { method: 'POST' });
+  }
+
   // Health check
   async healthCheck() {
     return this.request<{ status: string; timestamp: string }>('/health');

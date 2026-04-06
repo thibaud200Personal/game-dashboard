@@ -28,6 +28,7 @@ import { createSessionRouter } from './routes/sessions'
 import { createStatsRouter } from './routes/stats'
 import { createBggRouter } from './routes/bgg'
 import { createLogsRouter } from './routes/logs'
+import { createDataRouter } from './routes/data'
 
 // ── Logger ──────────────────────────────────────────────────────────────────
 export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' })
@@ -100,6 +101,7 @@ app.use('/api/v1/games',    authenticate, createGameRouter(gameService))
 app.use('/api/v1/sessions', authenticate, createSessionRouter(sessionService))
 app.use('/api/v1/stats',    authenticate, createStatsRouter(statsService))
 app.use('/api/v1/bgg',      authenticate, createBggRouter(bggRepo))
+app.use('/api/v1/data',     authenticate, createDataRouter(dbConn.db))
 
 // Health
 app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
