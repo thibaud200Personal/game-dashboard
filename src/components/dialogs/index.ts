@@ -8,6 +8,6 @@ export { default as AddGameDialog } from './AddGameDialog';
 export { default as EditGameDialog } from './EditGameDialog';
 export { default as DeleteGameDialog } from './DeleteGameDialog';
 
-// Expansion and Character dialogs — deferred to Sprint 1+
-// export { AddExpansionDialog, EditExpansionDialog, DeleteExpansionDialog } from './ExpansionDialogs';
-// export { AddCharacterDialog, EditCharacterDialog, DeleteCharacterDialog } from './CharacterDialogs';
+// Expansion and Character dialogs
+export { AddExpansionDialog, EditExpansionDialog, DeleteExpansionDialog } from './ExpansionDialogs';
+export { AddCharacterDialog, EditCharacterDialog, DeleteCharacterDialog } from './CharacterDialogs';

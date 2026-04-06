@@ -32,7 +32,7 @@ interface SettingsPageViewProps {
   handleExportData: () => void;
   handleImportData: () => void;
   handleResetData: () => void;
-  importLog: { bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null } | null;
+  bggCatalogImportedAt: string | null;
   bggCatalogCount: number | null;
   isBggImporting: boolean;
   bggImportError: string | null;
@@ -171,16 +171,10 @@ export function SettingsPageView(props: SettingsPageViewProps) {
           <div className="space-y-3">
             {/* Last operation dates */}
             <div className="space-y-1 pb-2 border-b border-white/10 text-xs text-white/40">
-              {([
-                ['BGG Catalog importé', props.importLog?.bgg_catalog_imported_at],
-                ['Données exportées',   props.importLog?.data_exported_at],
-                ['Données importées',   props.importLog?.data_imported_at],
-              ] as [string, string | null | undefined][]).map(([label, date]) => (
-                <div key={label} className="flex justify-between">
-                  <span>{label}</span>
-                  <span>{date ? new Date(date).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
-                </div>
-              ))}
+              <div className="flex justify-between">
+                <span>BGG Catalog importé</span>
+                <span>{props.bggCatalogImportedAt ? new Date(props.bggCatalogImportedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+              </div>
             </div>
 
             <Button

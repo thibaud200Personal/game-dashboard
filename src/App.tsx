@@ -9,9 +9,10 @@ const PlayersPage  = lazy(() => import('./components/PlayersPage'));
 const GamesPage    = lazy(() => import('./components/GamesPage'));
 const NewGamePage  = lazy(() => import('./components/NewGamePage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
-const SettingsPage = lazy(() => import('./components/SettingsPage'));
-const LoginPage    = lazy(() => import('./components/LoginPage'));
-const Layout       = lazy(() => import('./components/Layout'));
+const SettingsPage   = lazy(() => import('./components/SettingsPage'));
+const LoginPage      = lazy(() => import('./components/LoginPage'));
+const Layout         = lazy(() => import('./components/Layout'));
+const GamePageRoute  = lazy(() => import('./components/GamePageRoute'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +48,9 @@ function AppRoutes() {
           <Route path="players" element={<PlayersPage />} />
           <Route path="games" element={<GamesPage />} />
           <Route path="sessions/new" element={<NewGamePage />} />
+          <Route path="games/:id" element={<GamePageRoute subRoute="detail" />} />
+          <Route path="games/:id/expansions" element={<GamePageRoute subRoute="expansions" />} />
+          <Route path="games/:id/characters" element={<GamePageRoute subRoute="characters" />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

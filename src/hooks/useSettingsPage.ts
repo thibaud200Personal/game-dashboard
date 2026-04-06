@@ -12,19 +12,16 @@ export const useSettingsPage = () => {
   const [autoSave, setAutoSave] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
 
-  type ImportLog = {
-    bgg_catalog_imported_at: string | null
-    data_exported_at: string | null
-    data_imported_at: string | null
-  }
-  const [importLog, setImportLog] = useState<ImportLog | null>(null);
+  const [bggCatalogImportedAt, setBggCatalogImportedAt] = useState<string | null>(null);
   const [bggCatalogCount, setBggCatalogCount] = useState<number | null>(null);
   const [isBggImporting, setIsBggImporting] = useState(false);
   const [bggImportError, setBggImportError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiService.getBggCatalogStatus().then(s => setBggCatalogCount(s.count)).catch(() => {});
-    apiService.getImportLog().then(setImportLog).catch(() => {});
+    apiService.getBggCatalogStatus().then(s => {
+      setBggCatalogCount(s.count);
+      setBggCatalogImportedAt(s.bgg_catalog_imported_at);
+    }).catch(() => {});
   }, []);
 
   const handleImportBggCatalog = async (file: File) => {
@@ -33,7 +30,10 @@ export const useSettingsPage = () => {
     try {
       const result = await apiService.importBggCatalog(file);
       setBggCatalogCount(result.count);
-      apiService.getImportLog().then(setImportLog).catch(() => {});
+      apiService.getBggCatalogStatus().then(s => {
+        setBggCatalogCount(s.count);
+        setBggCatalogImportedAt(s.bgg_catalog_imported_at);
+      }).catch(() => {});
     } catch (err) {
       setBggImportError(err instanceof Error ? err.message : "Erreur lors de l'import");
     } finally {
@@ -48,7 +48,7 @@ export const useSettingsPage = () => {
     language,
     autoSave,
     showTooltips,
-    importLog,
+    bggCatalogImportedAt,
     bggCatalogCount,
     isBggImporting,
     bggImportError,

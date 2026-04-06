@@ -251,14 +251,9 @@ class ApiService {
     return this.request<{ status: string; timestamp: string }>('/health');
   }
 
-  // Import / Export log
-  async getImportLog(): Promise<{ bgg_catalog_imported_at: string | null; data_exported_at: string | null; data_imported_at: string | null }> {
-    return this.request('/v1/bgg/import-status');
-  }
-
-  // BGG Catalog
-  async getBggCatalogStatus(): Promise<{ count: number }> {
-    return this.request<{ count: number }>('/v1/bgg/import-status');
+  // BGG Catalog status (count + last import date)
+  async getBggCatalogStatus(): Promise<{ count: number; bgg_catalog_imported_at: string | null }> {
+    return this.request<{ count: number; bgg_catalog_imported_at: string | null }>('/v1/bgg/import-status');
   }
 
   async importBggCatalog(file: File): Promise<{ count: number }> {

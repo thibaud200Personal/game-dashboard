@@ -100,7 +100,11 @@ export const useNewGamePage = () => {
     if (durationMissing) return false;
     if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
     if (sessionType === 'competitive' && (competitiveWinnerMissing || winnerScoreInvalid)) return false;
-    return true;
+    if (sessionType === 'hybrid') {
+      const winnerValid = winnerId !== '' && (playerScores[parseInt(winnerId)] ?? 0) > 0;
+      return winnerValid || teamSuccess || teamScore > 0;
+    }
+    return true; // campaign : game + joueurs + durée suffisent
   };
 
   const resetForm = () => {
@@ -145,7 +149,6 @@ export const useNewGamePage = () => {
       });
       toast.success('Game session created successfully!');
       resetForm();
-      onNavigation('dashboard');
       return { success: true };
     } catch {
       toast.error('Failed to create game session');
