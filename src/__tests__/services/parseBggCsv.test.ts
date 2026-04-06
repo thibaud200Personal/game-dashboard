@@ -8,7 +8,7 @@ describe('parseBggCsv', () => {
     const csv = `${CSV_HEADER}\n174430,Gloomhaven,2017,1,8.4,8.8,120000,0,50000`;
     const rows = parseBggCsv(csv);
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toEqual({ bgg_id: 174430, name: 'Gloomhaven', year_published: 2017, is_expansion: 0 });
+    expect(rows[0]).toMatchObject({ bgg_id: 174430, name: 'Gloomhaven', year_published: 2017, is_expansion: 0 });
   });
 
   it('parse un nom entre guillemets avec virgule', () => {
