@@ -100,7 +100,10 @@ export const useNewGamePage = () => {
     if (durationMissing) return false;
     if (sessionType === 'cooperative') return objectives.length > 0 || teamScore > 0;
     if (sessionType === 'competitive' && (competitiveWinnerMissing || winnerScoreInvalid)) return false;
-    if (sessionType === 'hybrid') return !competitiveWinnerMissing || teamSuccess || teamScore > 0;
+    if (sessionType === 'hybrid') {
+      const winnerValid = winnerId !== '' && (playerScores[parseInt(winnerId)] ?? 0) > 0;
+      return winnerValid || teamSuccess || teamScore > 0;
+    }
     return true; // campaign : game + joueurs + durée suffisent
   };
 
