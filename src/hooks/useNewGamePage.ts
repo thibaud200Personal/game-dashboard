@@ -149,7 +149,6 @@ export const useNewGamePage = () => {
       });
       toast.success('Game session created successfully!');
       resetForm();
-      onNavigation('dashboard');
       return { success: true };
     } catch {
       toast.error('Failed to create game session');
