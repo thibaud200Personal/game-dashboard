@@ -127,7 +127,7 @@ export const SessionPlayerSchema = z.object({
 
 export const CreateSessionSchema = z.object({
   game_id: z.number().int().positive('ID de jeu invalide'),
-  session_date: z.string().datetime('Date de session invalide').optional().transform(val => val ? new Date(val) : new Date()),
+  session_date: z.string().datetime('Date de session invalide').optional(),
   duration_minutes: z.number().int().min(1, 'La durée doit être au moins 1 minute').max(1440, 'La durée ne peut pas dépasser 24 heures').optional(),
   winner_player_id: z.number().int().positive('ID du joueur gagnant invalide').optional(),
   session_type: SessionTypeSchema.optional(),
