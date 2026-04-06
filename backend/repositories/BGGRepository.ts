@@ -36,20 +36,23 @@ export class BGGRepository {
   constructor(private db: Database.Database) {}
 
   search(query: string, limit = 20): BGGSearchResult[] {
+    const contains = `%${query}%`
+    const starts   = `${query}%`
     const rows = this.db.prepare(`
-      SELECT bgg_id, name, year_published, is_expansion,
-             rank, bgg_rating,
-             abstracts_rank, cgs_rank, childrensgames_rank,
-             familygames_rank, partygames_rank, strategygames_rank,
-             thematic_rank, wargames_rank
-      FROM bgg_catalog
-      WHERE name LIKE ?
+      SELECT c.bgg_id, COALESCE(l.name_en, c.name) AS name, c.year_published, c.is_expansion,
+             c.rank, c.bgg_rating,
+             c.abstracts_rank, c.cgs_rank, c.childrensgames_rank,
+             c.familygames_rank, c.partygames_rank, c.strategygames_rank,
+             c.thematic_rank, c.wargames_rank
+      FROM bgg_catalog c
+      LEFT JOIN bgg_catalog_langue l ON l.bgg_id = c.bgg_id
+      WHERE l.name_en LIKE ? OR l.name_fr LIKE ? OR l.name_es LIKE ? OR c.name LIKE ?
       ORDER BY
-        CASE WHEN name LIKE ? THEN 0 ELSE 1 END,
-        CASE WHEN rank IS NOT NULL THEN rank ELSE 999999 END,
-        name
+        CASE WHEN l.name_en LIKE ? OR l.name_fr LIKE ? OR l.name_es LIKE ? THEN 0 ELSE 1 END,
+        CASE WHEN c.rank IS NOT NULL THEN c.rank ELSE 999999 END,
+        COALESCE(l.name_en, c.name)
       LIMIT ?
-    `).all(`%${query}%`, `${query}%`, limit) as BggRow[]
+    `).all(contains, contains, contains, contains, starts, starts, starts, limit) as BggRow[]
 
     return rows.map(r => ({
       bgg_id:        r.bgg_id,
@@ -117,6 +120,27 @@ export class BGGRepository {
       'SELECT COUNT(*) as pending_es FROM bgg_catalog_langue WHERE name_es IS NULL'
     ).get() as { pending_es: number }
     return { count, pending_fr, pending_es }
+  }
+
+  /**
+   * Met à jour les noms FR/ES dans bgg_catalog_langue depuis une source externe (ex. Wikidata).
+   * N'insère pas de nouvelles lignes — utilise syncCatalogToLangue() d'abord.
+   * Préserve les noms existants si la nouvelle valeur est null.
+   */
+  upsertLanguageNames(rows: Array<{ bgg_id: number; name_en?: string; name_fr?: string; name_es?: string }>): void {
+    const stmt = this.db.prepare(`
+      UPDATE bgg_catalog_langue SET
+        name_en = COALESCE(?, name_en),
+        name_fr = COALESCE(?, name_fr),
+        name_es = COALESCE(?, name_es)
+      WHERE bgg_id = ?
+    `)
+    const upsert = this.db.transaction((batch: typeof rows) => {
+      for (const row of batch) {
+        stmt.run(row.name_en ?? null, row.name_fr ?? null, row.name_es ?? null, row.bgg_id)
+      }
+    })
+    upsert(rows)
   }
 
   upsertCatalogLangueBatch(rows: BggCatalogLangueRow[]): void {
