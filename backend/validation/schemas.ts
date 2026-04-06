@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Game-related schemas
 export const GameTypeSchema = z.enum(['competitive', 'cooperative', 'campaign', 'hybrid']);
-export const SessionTypeSchema = z.enum(['competitive', 'cooperative', 'campaign']);
+export const SessionTypeSchema = z.enum(['competitive', 'cooperative', 'campaign', 'hybrid']);
 
 // Player schemas
 export const CreatePlayerSchema = z.object({

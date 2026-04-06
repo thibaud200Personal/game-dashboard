@@ -115,12 +115,8 @@ export default function NewGameView({
   const safeSelectedPlayers = selectedPlayers || [];
   
   const onSubmit = async () => {
-    try {
-      await handleSubmit();
-      onNavigation('dashboard');
-    } catch {
-      // Error handling is done in the hook
-    }
+    const result = await handleSubmit();
+    if (result.success) onNavigation('dashboard');
   };
 
   return (
