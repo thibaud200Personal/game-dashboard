@@ -249,32 +249,28 @@ class ApiService {
   // Data export / import / reset (admin only)
   async exportData(): Promise<Blob> {
     const url = `${this.baseUrl}/v1/data/export`;
-    const res = await fetch(url, { credentials: 'include' });
+    const token = this.getToken();
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      throw new Error('UNAUTHORIZED');
+    }
     if (!res.ok) throw new Error(`Export failed: ${res.status}`);
     return res.blob();
   }
 
   async importData(file: File): Promise<{ ok: boolean }> {
     const text = await file.text();
-    const url = `${this.baseUrl}/v1/data/import`;
-    const res = await fetch(url, {
+    return this.request<{ ok: boolean }>('/v1/data/import', {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
       body: text,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Erreur inconnue' })) as { error?: string };
-      throw new Error(err.error ?? `Import failed: ${res.status}`);
-    }
-    return res.json() as Promise<{ ok: boolean }>;
   }
 
   async resetData(): Promise<{ ok: boolean }> {
-    const url = `${this.baseUrl}/v1/data/reset`;
-    const res = await fetch(url, { method: 'POST', credentials: 'include' });
-    if (!res.ok) throw new Error(`Reset failed: ${res.status}`);
-    return res.json() as Promise<{ ok: boolean }>;
+    return this.request<{ ok: boolean }>('/v1/data/reset', { method: 'POST' });
   }
 
   // Health check
