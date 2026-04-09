@@ -73,3 +73,44 @@ describe('GameRepository', () => {
     expect(game?.mechanics).toEqual(['Dice Rolling'])
   })
 })
+
+describe('GameRepository — additional coverage', () => {
+  it('update modifies game name and fields', () => {
+    const id = repo.create(gloomhaven)
+    repo.update(id, { name: 'Gloomhaven Second Edition', min_players: 1, max_players: 4 })
+    const updated = repo.findById(id)
+    expect(updated?.name).toBe('Gloomhaven Second Edition')
+  })
+
+  it('update does nothing if id does not exist', () => {
+    expect(() => repo.update(9999, { name: 'Ghost' })).not.toThrow()
+  })
+
+  it('createCharacter + findCharacters + deleteCharacter', () => {
+    const gameId = repo.create({ ...gloomhaven, has_characters: true })
+    const charId = repo.createCharacter(gameId, {
+      character_key: 'brute', name: 'Brute', abilities: ['Move 2', 'Attack 2'],
+    })
+    const chars = repo.findCharacters(gameId)
+    expect(chars).toHaveLength(1)
+    expect(chars[0].name).toBe('Brute')
+    expect(chars[0].abilities).toEqual(['Move 2', 'Attack 2'])
+    repo.deleteCharacter(charId)
+    expect(repo.findCharacters(gameId)).toHaveLength(0)
+  })
+
+  it('deleteExpansion removes only the target expansion', () => {
+    const gameId = repo.create({ ...gloomhaven, has_expansion: true })
+    const expId = repo.createExpansion(gameId, { name: 'Forgotten Circles', bgg_expansion_id: 1001 })
+    repo.createExpansion(gameId, { name: 'Jaws of the Lion', bgg_expansion_id: 1002 })
+    repo.deleteExpansion(expId)
+    const remaining = repo.findExpansions(gameId)
+    expect(remaining).toHaveLength(1)
+    expect(remaining[0].name).toBe('Jaws of the Lion')
+  })
+
+  it('duplicate bgg_id throws unique constraint error', () => {
+    repo.create({ ...gloomhaven, bgg_id: 174430 })
+    expect(() => repo.create({ ...gloomhaven, name: 'Clone', bgg_id: 174430 })).toThrow()
+  })
+})

@@ -21,8 +21,16 @@ export function createPlayerRouter(playerService: PlayerService): Router {
   })
 
   router.post('/', validateBody(CreatePlayerSchema), (req, res) => {
-    const player = playerService.create(req.body)
-    res.status(201).json(player)
+    try {
+      const player = playerService.create(req.body)
+      res.status(201).json(player)
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message === 'duplicate_pseudo') {
+        res.status(409).json({ error: 'duplicate_pseudo' })
+        return
+      }
+      throw e
+    }
   })
 
   router.put('/:id', validateParams(IdParam), validateBody(UpdatePlayerSchema), (req, res) => {
