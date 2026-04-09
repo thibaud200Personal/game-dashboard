@@ -5,34 +5,50 @@ import type { AuthRequest } from '../middleware/auth'
 import { requireRole } from '../middleware/requireRole'
 import { parseBggCsv } from '../database/parseBggCsv'
 import { bggService } from '../bggService'
-import { logger } from '../server'
+import { logger } from '../logger'
 
 const WIKIDATA_SPARQL = 'https://query.wikidata.org/sparql'
 const PAGE_SIZE = 5000
 
 let enrichmentRunning = false
 
+function cleanWikidataValue(v: string | undefined): string | undefined {
+  if (!v) return undefined
+  const t = v.trim()
+  // Strip surrounding double-quotes sometimes present in Wikidata labels
+  return t.startsWith('"') && t.endsWith('"') && t.length > 2 ? t.slice(1, -1) : t
+}
+
 async function runEnrichment(bggRepo: BGGRepository): Promise<void> {
   let offset = 0
   let total = 0
+  let withFr = 0
+  let withEs = 0
 
+  logger.info('Wikidata enrichment starting')
   try {
     while (true) {
       const sparql = `
-        SELECT DISTINCT ?bggId ?nameEn ?nameFr ?nameEs WHERE {
+        SELECT ?bggId ?nameEn ?nameFr ?nameEs WHERE {
           ?item wdt:P2339 ?bggId .
-          OPTIONAL { ?item rdfs:label ?nameEn FILTER(LANG(?nameEn) = "en") }
-          OPTIONAL { ?item rdfs:label ?nameFr FILTER(LANG(?nameFr) = "fr") }
-          OPTIONAL { ?item rdfs:label ?nameEs FILTER(LANG(?nameEs) = "es") }
+          OPTIONAL { ?item rdfs:label ?nameEn . FILTER(LANG(?nameEn) = "en") }
+          OPTIONAL { ?item rdfs:label ?nameFr . FILTER(LANG(?nameFr) = "fr") }
+          OPTIONAL { ?item rdfs:label ?nameEs . FILTER(LANG(?nameEs) = "es") }
         } LIMIT ${PAGE_SIZE} OFFSET ${offset}
       `
       const url = `${WIKIDATA_SPARQL}?query=${encodeURIComponent(sparql)}`
-      const resp = await fetch(url, {
-        headers: {
-          'Accept': 'application/sparql-results+json',
-          'User-Agent': 'BoardGameDashboard/1.0',
-        },
-      })
+      let resp: Awaited<ReturnType<typeof fetch>>
+      try {
+        resp = await fetch(url, {
+          headers: {
+            'Accept': 'application/sparql-results+json',
+            'User-Agent': 'BoardGameDashboard/1.0',
+          },
+        })
+      } catch (err) {
+        logger.error({ err }, 'Wikidata SPARQL fetch failed (network error)')
+        break
+      }
 
       if (!resp.ok) {
         logger.error({ status: resp.status }, 'Wikidata SPARQL error')
@@ -45,15 +61,20 @@ async function runEnrichment(bggRepo: BGGRepository): Promise<void> {
       if (bindings.length === 0) break
 
       const rows = bindings.map(b => ({
-        bgg_id: parseInt(b.bggId.value, 10),
-        name_en: b.nameEn?.value,
-        name_fr: b.nameFr?.value,
-        name_es: b.nameEs?.value,
+        bgg_id: parseInt(b.bggId.value.trim(), 10),
+        name_en: cleanWikidataValue(b.nameEn?.value),
+        name_fr: cleanWikidataValue(b.nameFr?.value),
+        name_es: cleanWikidataValue(b.nameEs?.value),
       })).filter(r => !isNaN(r.bgg_id))
+
+      const pageFr = rows.filter(r => r.name_fr).length
+      const pageEs = rows.filter(r => r.name_es).length
+      withFr += pageFr
+      withEs += pageEs
 
       bggRepo.upsertLanguageNames(rows)
       total += rows.length
-      logger.info({ offset, rows: rows.length, total }, 'Wikidata enrichment page done')
+      logger.info({ offset, rows: rows.length, total, pageFr, pageEs }, 'Wikidata enrichment page done')
 
       if (bindings.length < PAGE_SIZE) break
 
@@ -61,7 +82,7 @@ async function runEnrichment(bggRepo: BGGRepository): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
 
-    logger.info({ total }, 'Wikidata enrichment complete')
+    logger.info({ total, withFr, withEs }, 'Wikidata enrichment complete')
   } finally {
     enrichmentRunning = false
   }
@@ -93,14 +114,14 @@ export function createBggRouter(bggRepo: BGGRepository): Router {
   })
 
   // POST /api/v1/bgg/sync-langue — admin only
-  // Copie les nouvelles entrées de bgg_catalog vers bgg_catalog_langue
+  // Copie les nouvelles entrées de bgg_catalog vers bgg_catalog_language
   router.post('/sync-langue', requireRole('admin'), (_req: AuthRequest, res: Response) => {
-    const inserted = bggRepo.syncCatalogToLangue()
-    res.json({ inserted, ...bggRepo.getLangueStatus() })
+    const inserted = bggRepo.syncCatalogToLanguage()
+    res.json({ inserted, ...bggRepo.getLanguageStatus() })
   })
 
   router.get('/langue-status', requireRole('admin'), (_req: AuthRequest, res: Response) => {
-    res.json(bggRepo.getLangueStatus())
+    res.json(bggRepo.getLanguageStatus())
   })
 
   // POST /api/v1/bgg/enrich-names — admin only

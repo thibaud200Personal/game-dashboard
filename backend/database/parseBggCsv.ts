@@ -17,7 +17,7 @@ export type BggCatalogRow = {
 }
 
 // Même structure que BggCatalogRow mais avec noms multilingues
-export type BggCatalogLangueRow = Omit<BggCatalogRow, 'name'> & {
+export type BggCatalogLanguageRow = Omit<BggCatalogRow, 'name'> & {
   name_en: string
   name_fr: string | null
   name_es: string | null
