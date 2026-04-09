@@ -2,9 +2,15 @@
 
 Ce document présente l'état d'avancement et les prochaines étapes pour l'application Board Game Dashboard. La roadmap est organisée pour séparer clairement ce qui est **terminé** de ce qui **reste à faire**.
 
-**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (63/63 ✅). Les gaps restants sont des finitions techniques.
+**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (163/163 backend ✅, 74/74 frontend ✅ — cible ~126 frontend). Les gaps restants sont des finitions techniques.
 
 **🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets boardGameScore et board-game-scorekeep plutôt que de repartir de zéro.
+
+---
+
+## 🧹 Dette Technique — Active
+
+- **`vitest.config.ts` backend — variables d'env de test** : `server.ts` exécute `createAuthService()` et `getDb()` au niveau module (effets de bord à l'import). Contourné en extrayant `logger` dans `backend/logger.ts` pour éviter que les routes importent `server.ts`. La vraie solution propre : ajouter `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` dans `backend/vitest.config.ts` — ainsi les tests ne dépendent pas de la structure des imports et `server.ts` peut s'initialiser normalement sans `.env` local.
 
 ---
 
@@ -137,11 +143,16 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - ✅ **`has_expansion`/`has_characters` non recalculés à l'import BGG** — `handleBGGSearch` (`useGamesPage.ts`) calcule `has_expansion: (bggGame.expansions?.length || 0) > 0` et `has_characters: false` (correct, BGG ne fournit pas de personnages).
 - ✅ **`BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — Unifié dans `shared/types/index.d.ts`, re-exporté par `src/types/index.ts` et importé par `backend/bggService.ts` (avril 2026).
 - ✅ **Tests BGG backend couverts** — `backend/__tests__/unit/services/BGGService.test.ts` (22 tests : cache, parsing, modes de jeu, difficultés, erreurs réseau) + `BGGRepository.test.ts` (13 tests : upsert, search, status). `src/__tests__/services/bggApi.test.ts` réécrit avec MSW sur les routes `/api/v1/bgg/*`. 73/73 backend ✅, 74/74 frontend ✅ (avril 2026).
+- ✅ **Couverture backend complète** — 20 fichiers de tests, **163/163 tests** ✅ (avril 2026). Ajouts : StatsRepository, GameService, PlayerService, StatsService, + 7 suites de tests de routes HTTP via supertest (auth, games, players, sessions, stats, data, bgg). `PlayerService` et `routes/players.ts` mis à jour pour lever `duplicate_pseudo` (cohérent avec `duplicate_game`). Plans frontend et CI/Docker prêts, non démarrés.
 - **📅 Filtre par année dans la recherche BGG** — Permettre de restreindre la recherche à une année de publication (ex. "Cascadia 2021"). À étudier : l'API geekdo search (`/api/geekitems?search=...`) ne semble pas exposer de paramètre `yearpublished` côté serveur — le filtrage serait probablement à faire côté client sur les résultats retournés. Faible priorité.
 - **🗄️ Index local BGG — recherche à brancher** — Infrastructure livrée (PR #59). Reste : brancher `searchGames()` sur `bgg_catalog` (local) au lieu de l'API geekdo — FTS5 à envisager pour 175k entrées.
   - **UI `BGGSearch`** : une fois le catalogue local branché, ajouter un champ année (filtre optionnel) et une case à cocher "inclure les extensions" (exploite `is_expansion` — impossible avec l'API geekdo actuelle).
+  - **Couverture Wikidata FR/ES** : ~4 210 / 175 351 jeux ont un BGG ID sur Wikidata (2.4%). 1 760 noms FR et 501 noms ES disponibles après enrichissement. Pour les ~173k restants, pas de source externe identifiée — les noms FR/ES resteront NULL sauf contribution manuelle ou autre source.
+  - **✖ Piste fermée — enrichissement Wikidata par nom de jeu** : Testé en avril 2026. Extraction de 110k items Wikidata (board game + card game + tabletop game + war game...) → 25k FR, 19k ES. Matching exact case-insensitive contre `bgg_catalog_language.name_en` : seulement 4 604 matches (2.6%), +376 FR et +119 ES nouveaux — gain marginal et risque de faux positifs élevé. Wikidata couvre bien les blockbusters (~4k jeux notables) mais pas le catalogue long-tail BGG. Piste abandonnée.
 - ✅ **`ApiService.getImportLog()` — type de retour inexact** — `getImportLog()` supprimé, fusionné dans `getBggCatalogStatus()` avec le type exact `{ count: number; bgg_catalog_imported_at: string | null }`. Champs fantômes `data_exported_at`/`data_imported_at` retirés de l'UI et du hook (avril 2026).
 - **🖼️ Thumbnails BGG non persistés** — `BGGSearch.tsx` enrichit les résultats de recherche avec les thumbnails via `getGameDetails()` (geekdo API) en arrière-plan, mais ces URLs ne sont pas mises en cache. À chaque recherche, jusqu'à 15 appels geekdo sont refaits. Solution : ajouter une colonne `thumbnail_url TEXT` dans `bgg_catalog`, la peupler lors du premier hit `GET /api/v1/bgg/game/:bggId`, et la retourner dans `search()`. **Contrainte** : ne pas stocker dans `bgg_catalog` pour ne pas perdre l'info à un re-import CSV — stocker dans une table séparée `bgg_thumbnails (bgg_id PK, thumbnail_url, fetched_at)` indépendante du cycle d'import.
+- **🕒 Colonne `name_updated_at` dans `bgg_catalog_language`** — Ajouter une colonne timestamp pour tracer la dernière mise à jour du `name_en` (nom canonique BGG). Utile pour détecter les cas (rares) où BGG renomme un jeu : si `name_en` change, les versions localisées (`name_fr`, `name_es`) devraient potentiellement être invalidées ou revérifiées. Peut servir d'indicateur pour la recherche (fraîcheur des données). À envisager lors de la migration qui branchera la recherche sur le catalogue local.
+- **🔽 Recherche BGG — liste déroulante avec saisie libre** — Remplacer ou compléter le champ de recherche actuel par un composant autocomplete : saisie libre + filtre auto sur les noms (en/fr/es) au keystroke. Bénéficie directement du catalogue local une fois branché. À concevoir lors du sprint "brancher la recherche sur `bgg_catalog`". **Piste** : la sélection devrait transmettre le `bgg_id` plutôt que le nom — évite tous les problèmes de correspondance par nom (homonymes, caractères spéciaux, noms localisés différents). Le nom affiché reste libre, mais l'identifiant technique est le `bgg_id`.
 
 </details>
 
@@ -274,7 +285,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <summary><b>🧪 Tests & Qualité TERMINÉS</b></summary>
 
 -   ✅ **Infrastructure Tests** : Vitest + React Testing Library + MSW configurés
--   ✅ **63/63 Tests Passent** : 100% de réussite avec couverture seuils 80%
+-   ✅ **163/163 Tests Backend Passent** : 100% de réussite (20 fichiers, repos + services + routes HTTP)
+-   ✅ **74/74 Tests Frontend Passent** : coverage seuils 80% — plan ~52 tests supplémentaires à venir
 -   ✅ **Tests Services** : BGG API service avec mocks MSW fonctionnels
 -   ✅ **Tests Hooks** : useGamesPage et autres hooks React validés
 -   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard, helpers purs
@@ -405,7 +417,7 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 <summary><b>🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours</b></summary>
 
 #### **Restructuration & E2E**
-- **État** : 63/63 tests ✅, structure plate
+- **État** : 163/163 backend ✅, 74/74 frontend ✅ — plans frontend + CI/Docker écrits, non exécutés
 - **Objectif** : Organisation mature (unit/technical/, unit/functional/, integration/) + 7 workflows E2E BGG
 - **Référence** : board-game-scorekeep (52/52 tests ✅)
 - **Impact** : Qualité code et robustesse application

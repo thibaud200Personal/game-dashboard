@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { BGGSearchResult } from '@shared/types'
-import type { BggCatalogRow, BggCatalogLangueRow } from '../database/parseBggCsv'
+import type { BggCatalogRow, BggCatalogLanguageRow } from '../database/parseBggCsv'
 
 type BggRow = {
   bgg_id: number
@@ -45,7 +45,7 @@ export class BGGRepository {
              c.familygames_rank, c.partygames_rank, c.strategygames_rank,
              c.thematic_rank, c.wargames_rank
       FROM bgg_catalog c
-      LEFT JOIN bgg_catalog_langue l ON l.bgg_id = c.bgg_id
+      LEFT JOIN bgg_catalog_language l ON l.bgg_id = c.bgg_id
       WHERE l.name_en LIKE ? OR l.name_fr LIKE ? OR l.name_es LIKE ? OR c.name LIKE ?
       ORDER BY
         CASE WHEN l.name_en LIKE ? OR l.name_fr LIKE ? OR l.name_es LIKE ? THEN 0 ELSE 1 END,
@@ -82,13 +82,13 @@ export class BGGRepository {
   }
 
   /**
-   * Copie dans bgg_catalog_langue les entrées de bgg_catalog absentes.
+   * Copie dans bgg_catalog_language les entrées de bgg_catalog absentes.
    * Les entrées existantes (déjà traduites ou en attente) ne sont pas touchées.
    * Retourne le nombre de nouvelles entrées insérées.
    */
-  syncCatalogToLangue(): number {
+  syncCatalogToLanguage(): number {
     const result = this.db.prepare(`
-      INSERT OR IGNORE INTO bgg_catalog_langue (
+      INSERT OR IGNORE INTO bgg_catalog_language (
         bgg_id, name_en, name_fr, name_es,
         year_published, is_expansion,
         rank, bgg_rating, users_rated,
@@ -104,32 +104,32 @@ export class BGGRepository {
         familygames_rank, partygames_rank, strategygames_rank,
         thematic_rank, wargames_rank
       FROM bgg_catalog
-      WHERE bgg_id NOT IN (SELECT bgg_id FROM bgg_catalog_langue)
+      WHERE bgg_id NOT IN (SELECT bgg_id FROM bgg_catalog_language)
     `).run()
     return result.changes
   }
 
-  getLangueStatus(): { count: number; pending_fr: number; pending_es: number } {
+  getLanguageStatus(): { count: number; pending_fr: number; pending_es: number } {
     const { count } = this.db.prepare(
-      'SELECT COUNT(*) as count FROM bgg_catalog_langue'
+      'SELECT COUNT(*) as count FROM bgg_catalog_language'
     ).get() as { count: number }
     const { pending_fr } = this.db.prepare(
-      'SELECT COUNT(*) as pending_fr FROM bgg_catalog_langue WHERE name_fr IS NULL'
+      'SELECT COUNT(*) as pending_fr FROM bgg_catalog_language WHERE name_fr IS NULL'
     ).get() as { pending_fr: number }
     const { pending_es } = this.db.prepare(
-      'SELECT COUNT(*) as pending_es FROM bgg_catalog_langue WHERE name_es IS NULL'
+      'SELECT COUNT(*) as pending_es FROM bgg_catalog_language WHERE name_es IS NULL'
     ).get() as { pending_es: number }
     return { count, pending_fr, pending_es }
   }
 
   /**
-   * Met à jour les noms FR/ES dans bgg_catalog_langue depuis une source externe (ex. Wikidata).
-   * N'insère pas de nouvelles lignes — utilise syncCatalogToLangue() d'abord.
+   * Met à jour les noms FR/ES dans bgg_catalog_language depuis une source externe (ex. Wikidata).
+   * N'insère pas de nouvelles lignes — utilise syncCatalogToLanguage() d'abord.
    * Préserve les noms existants si la nouvelle valeur est null.
    */
   upsertLanguageNames(rows: Array<{ bgg_id: number; name_en?: string; name_fr?: string; name_es?: string }>): void {
     const stmt = this.db.prepare(`
-      UPDATE bgg_catalog_langue SET
+      UPDATE bgg_catalog_language SET
         name_en = COALESCE(?, name_en),
         name_fr = COALESCE(?, name_fr),
         name_es = COALESCE(?, name_es)
@@ -143,9 +143,9 @@ export class BGGRepository {
     upsert(rows)
   }
 
-  upsertCatalogLangueBatch(rows: BggCatalogLangueRow[]): void {
+  upsertCatalogLanguageBatch(rows: BggCatalogLanguageRow[]): void {
     const stmt = this.db.prepare(`
-      INSERT INTO bgg_catalog_langue (
+      INSERT INTO bgg_catalog_language (
         bgg_id, name_en, name_fr, name_es,
         year_published, is_expansion,
         rank, bgg_rating, users_rated,
@@ -155,8 +155,8 @@ export class BGGRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(bgg_id) DO UPDATE SET
         name_en             = excluded.name_en,
-        name_fr             = COALESCE(excluded.name_fr, bgg_catalog_langue.name_fr),
-        name_es             = COALESCE(excluded.name_es, bgg_catalog_langue.name_es),
+        name_fr             = COALESCE(excluded.name_fr, bgg_catalog_language.name_fr),
+        name_es             = COALESCE(excluded.name_es, bgg_catalog_language.name_es),
         year_published      = excluded.year_published,
         is_expansion        = excluded.is_expansion,
         rank                = excluded.rank,
@@ -171,7 +171,7 @@ export class BGGRepository {
         thematic_rank       = excluded.thematic_rank,
         wargames_rank       = excluded.wargames_rank
     `)
-    const insert = this.db.transaction((batch: BggCatalogLangueRow[]) => {
+    const insert = this.db.transaction((batch: BggCatalogLanguageRow[]) => {
       for (const row of batch) {
         stmt.run(
           row.bgg_id, row.name_en, row.name_fr, row.name_es,
@@ -187,7 +187,7 @@ export class BGGRepository {
   }
 
   upsertCatalogBatch(rows: BggCatalogRow[]): void {
-    const stmt = this.db.prepare(`
+    const catalogStmt = this.db.prepare(`
       INSERT INTO bgg_catalog (
         bgg_id, name, year_published, is_expansion,
         rank, bgg_rating, users_rated,
@@ -211,9 +211,41 @@ export class BGGRepository {
         thematic_rank       = excluded.thematic_rank,
         wargames_rank       = excluded.wargames_rank
     `)
+    const langStmt = this.db.prepare(`
+      INSERT INTO bgg_catalog_language (
+        bgg_id, name_en, name_fr, name_es,
+        year_published, is_expansion,
+        rank, bgg_rating, users_rated,
+        abstracts_rank, cgs_rank, childrensgames_rank,
+        familygames_rank, partygames_rank, strategygames_rank,
+        thematic_rank, wargames_rank
+      ) VALUES (?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(bgg_id) DO UPDATE SET
+        name_en             = excluded.name_en,
+        year_published      = excluded.year_published,
+        is_expansion        = excluded.is_expansion,
+        rank                = excluded.rank,
+        bgg_rating          = excluded.bgg_rating,
+        users_rated         = excluded.users_rated,
+        abstracts_rank      = excluded.abstracts_rank,
+        cgs_rank            = excluded.cgs_rank,
+        childrensgames_rank = excluded.childrensgames_rank,
+        familygames_rank    = excluded.familygames_rank,
+        partygames_rank     = excluded.partygames_rank,
+        strategygames_rank  = excluded.strategygames_rank,
+        thematic_rank       = excluded.thematic_rank,
+        wargames_rank       = excluded.wargames_rank
+    `)
     const insert = this.db.transaction((batch: BggCatalogRow[]) => {
       for (const row of batch) {
-        stmt.run(
+        catalogStmt.run(
+          row.bgg_id, row.name, row.year_published, row.is_expansion,
+          row.rank, row.bgg_rating, row.users_rated,
+          row.abstracts_rank, row.cgs_rank, row.childrensgames_rank,
+          row.familygames_rank, row.partygames_rank, row.strategygames_rank,
+          row.thematic_rank, row.wargames_rank
+        )
+        langStmt.run(
           row.bgg_id, row.name, row.year_published, row.is_expansion,
           row.rank, row.bgg_rating, row.users_rated,
           row.abstracts_rank, row.cgs_rank, row.childrensgames_rank,

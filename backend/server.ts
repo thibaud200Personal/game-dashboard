@@ -4,7 +4,6 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import { rateLimit } from 'express-rate-limit'
-import pino from 'pino'
 import pinoHttp from 'pino-http'
 import path from 'path'
 
@@ -31,7 +30,8 @@ import { createLogsRouter } from './routes/logs'
 import { createDataRouter } from './routes/data'
 
 // ── Logger ──────────────────────────────────────────────────────────────────
-export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' })
+export { logger } from './logger'
+import { logger } from './logger'
 
 // ── Dependency wiring ────────────────────────────────────────────────────────
 const dbConn = getDb()

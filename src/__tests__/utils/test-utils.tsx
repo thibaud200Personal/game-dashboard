@@ -1,6 +1,9 @@
 import { render, RenderOptions } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Mock de l'interface MobileHook pour les tests
 interface MockMobileHook {
@@ -127,6 +130,38 @@ export const mockGames = [
     players: '2-4'
   }
 ];
+
+/** Rend un composant Page avec MemoryRouter + QueryClient frais + TooltipProvider. */
+export function renderPage(ui: React.ReactElement, initialPath = '/') {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <TooltipProvider>
+          {ui}
+        </TooltipProvider>
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+
+/** Wrapper pour renderHook avec QueryClient + MemoryRouter. */
+export function createHookWrapper(initialPath = '/') {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={[initialPath]}>
+          {children}
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  };
+}
 
 export const mockBGGGameData = {
   id: 266192,

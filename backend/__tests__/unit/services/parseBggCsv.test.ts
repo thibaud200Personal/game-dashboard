@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseBggCsv } from '../../../backend/database/parseBggCsv';
+import { parseBggCsv } from '../../../database/parseBggCsv';
 
 const CSV_HEADER = 'id,name,yearpublished,rank,bayesaverage,average,usersrated,is_expansion,numowned';
 

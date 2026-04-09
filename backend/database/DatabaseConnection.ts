@@ -77,6 +77,31 @@ export class DatabaseConnection {
         }
       }
 
+      // Guard: skip migration 010 if bgg_catalog_langue was already renamed
+      if (file === '010_rename_bgg_catalog_langue.sql') {
+        const tables = (this.db.prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='bgg_catalog_langue'"
+        ).all() as { name: string }[])
+        if (tables.length === 0) {
+          this.db.prepare('INSERT INTO schema_version (filename) VALUES (?)').run(file)
+          continue
+        }
+        // Safety: abort if bgg_catalog_language already exists with data — the migration
+        // would silently DROP it before renaming bgg_catalog_langue.
+        const targetExists = (this.db.prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='bgg_catalog_language'"
+        ).all() as { name: string }[]).length > 0
+        if (targetExists) {
+          const count = (this.db.prepare('SELECT COUNT(*) as n FROM bgg_catalog_language').get() as { n: number }).n
+          if (count > 0) {
+            throw new Error(
+              'Migration 010 aborted: bgg_catalog_language already exists with data. ' +
+              'Drop or rename it manually before running this migration.'
+            )
+          }
+        }
+      }
+
       // better-sqlite3 blocks exec() inside any active transaction (including savepoints).
       // Run exec() directly — if it throws, schema_version is not updated, so the migration
       // will be retried on next startup (safe: DDL statements use IF NOT EXISTS).
