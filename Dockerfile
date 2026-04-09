@@ -39,7 +39,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY src ./src
-COPY index.html tsconfig.json vite.config.ts tailwind.config.js ./
+COPY index.html tsconfig.json vite.config.ts vitest.config.ts tailwind.config.js ./
 COPY shared/ ./shared/
 
 ENV CI=true
