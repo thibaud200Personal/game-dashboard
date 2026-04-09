@@ -17,7 +17,14 @@ export class PlayerService {
   }
 
   create(data: CreatePlayerRequest): Player {
-    const id = this.playerRepo.create(data)
+    let id: number
+    try {
+      id = this.playerRepo.create(data)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : ''
+      if (msg.includes('UNIQUE constraint failed')) throw new Error('duplicate_pseudo')
+      throw e
+    }
     return this.playerRepo.findById(id)!
   }
 

@@ -111,3 +111,67 @@ describe('BGGRepository.recordCatalogImport', () => {
     expect(status.bgg_catalog_imported_at).not.toBeNull()
   })
 })
+
+describe('BGGRepository.syncCatalogToLanguage', () => {
+  it('copie les entrées de bgg_catalog dans bgg_catalog_language', () => {
+    repo.upsertCatalogBatch([
+      { bgg_id: 266192, name: 'Wingspan', year_published: 2019, is_expansion: 0,
+        rank: null, bgg_rating: null, users_rated: null,
+        abstracts_rank: null, cgs_rank: null, childrensgames_rank: null,
+        familygames_rank: null, partygames_rank: null, strategygames_rank: 5,
+        thematic_rank: null, wargames_rank: null },
+    ])
+    const inserted = repo.syncCatalogToLanguage()
+    expect(inserted).toBe(0) // upsertCatalogBatch already syncs language, so 0 new rows
+    const status = repo.getLanguageStatus()
+    expect(status.count).toBe(1)
+  })
+
+  it('ne duplique pas les entrées déjà présentes', () => {
+    repo.upsertCatalogBatch([
+      { bgg_id: 266192, name: 'Wingspan', year_published: 2019, is_expansion: 0,
+        rank: null, bgg_rating: null, users_rated: null,
+        abstracts_rank: null, cgs_rank: null, childrensgames_rank: null,
+        familygames_rank: null, partygames_rank: null, strategygames_rank: 5,
+        thematic_rank: null, wargames_rank: null },
+    ])
+    repo.syncCatalogToLanguage()
+    const second = repo.syncCatalogToLanguage()
+    expect(second).toBe(0)
+  })
+})
+
+describe('BGGRepository.upsertLanguageNames', () => {
+  beforeEach(() => {
+    repo.upsertCatalogBatch([
+      { bgg_id: 266192, name: 'Wingspan', year_published: 2019, is_expansion: 0,
+        rank: null, bgg_rating: null, users_rated: null,
+        abstracts_rank: null, cgs_rank: null, childrensgames_rank: null,
+        familygames_rank: null, partygames_rank: null, strategygames_rank: 5,
+        thematic_rank: null, wargames_rank: null },
+    ])
+    repo.syncCatalogToLanguage()
+  })
+
+  it('met à jour name_fr sans écraser name_en existant', () => {
+    repo.upsertLanguageNames([{ bgg_id: 266192, name_fr: 'Envol' }])
+    const status = repo.getLanguageStatus()
+    expect(status.pending_fr).toBe(0)
+    expect(status.pending_es).toBe(1)
+  })
+
+  it('ne plante pas sur un bgg_id absent de bgg_catalog_language', () => {
+    expect(() =>
+      repo.upsertLanguageNames([{ bgg_id: 99999, name_fr: 'Fantôme' }])
+    ).not.toThrow()
+  })
+})
+
+describe('BGGRepository.getLanguageStatus', () => {
+  it('retourne count=0 sur table vide', () => {
+    const s = repo.getLanguageStatus()
+    expect(s.count).toBe(0)
+    expect(s.pending_fr).toBe(0)
+    expect(s.pending_es).toBe(0)
+  })
+})
