@@ -6,6 +6,9 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     exclude: ['dist/**', 'node_modules/**'],
+    reporters: process.env.CI
+      ? ['verbose', ['junit', { outputFile: '../test-results/backend.xml', suiteName: 'Backend' }]]
+      : ['verbose'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

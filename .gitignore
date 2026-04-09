@@ -50,6 +50,9 @@ pids
 CLAUDE.md
 CONTEXT.md
 
+test-results/
+coverage/
+
 # One-shot audit configs — local use only, never commit
 eslint.audit.config.js
 

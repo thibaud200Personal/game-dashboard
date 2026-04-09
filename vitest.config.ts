@@ -27,6 +27,9 @@ export default defineConfig({
     
     // Timeout étendu pour les tests d'intégration
     testTimeout: 10000,
+    reporters: process.env.CI
+      ? ['verbose', ['junit', { outputFile: 'test-results/frontend.xml', suiteName: 'Frontend' }]]
+      : ['verbose'],
     
     // Couverture de code - standards de board-game-scorekeep
     coverage: {
