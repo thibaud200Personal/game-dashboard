@@ -22,7 +22,7 @@ export class PlayerService {
       id = this.playerRepo.create(data)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : ''
-      if (msg.includes('UNIQUE constraint failed')) throw new Error('duplicate_pseudo')
+      if (msg.includes('UNIQUE constraint failed: players.pseudo')) throw new Error('duplicate_pseudo')
       throw e
     }
     return this.playerRepo.findById(id)!
