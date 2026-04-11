@@ -1,12 +1,7 @@
 import type { DashboardStats, PlayerStatistics, GameStatistics } from '@shared/types';
+import { request } from './request';
 
 const BASE = '/api/v1/stats';
-
-async function request<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<T>;
-}
 
 export const statsApi = {
   getDashboard:   (): Promise<DashboardStats> => request<DashboardStats>(`${BASE}/dashboard`),

@@ -1,11 +1,15 @@
 import { Router, text } from 'express'
+import { z } from 'zod'
 import type { Response } from 'express'
 import type { BGGRepository } from '../repositories/BGGRepository'
 import type { AuthRequest } from '../middleware/auth'
 import { requireRole } from '../middleware/requireRole'
+import { validateQuery } from '../validation/middleware'
 import { parseBggCsv } from '../database/parseBggCsv'
 import { bggService } from '../bggService'
 import { logger } from '../logger'
+
+const BggSearchQuery = z.object({ q: z.string().min(1).max(200).trim() })
 
 const WIKIDATA_SPARQL = 'https://query.wikidata.org/sparql'
 const PAGE_SIZE = 5000
@@ -91,10 +95,8 @@ async function runEnrichment(bggRepo: BGGRepository): Promise<void> {
 export function createBggRouter(bggRepo: BGGRepository): Router {
   const router = Router()
 
-  router.get('/search', (req, res) => {
-    const query = String(req.query.q ?? '').trim()
-    if (!query) { res.json([]); return }
-    res.json(bggRepo.search(query))
+  router.get('/search', validateQuery(BggSearchQuery), (req, res) => {
+    res.json(bggRepo.search(req.query.q as string))
   })
 
   router.get('/import-status', (_req, res) => {

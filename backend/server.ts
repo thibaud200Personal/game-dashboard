@@ -28,6 +28,10 @@ import { createStatsRouter } from './routes/stats'
 import { createBggRouter } from './routes/bgg'
 import { createLogsRouter } from './routes/logs'
 import { createDataRouter } from './routes/data'
+import { LabelsRepository } from './repositories/LabelsRepository'
+import { LabelsService } from './services/LabelsService'
+import { createLabelsRouter } from './routes/labels'
+import { RefreshTokenRepository } from './repositories/RefreshTokenRepository'
 
 // ── Logger ──────────────────────────────────────────────────────────────────
 export { logger } from './logger'
@@ -41,12 +45,15 @@ const gameRepo    = new GameRepository(dbConn.db)
 const sessionRepo = new SessionRepository(dbConn.db)
 const statsRepo   = new StatsRepository(dbConn.db)
 const bggRepo     = new BGGRepository(dbConn.db)
+const labelsRepo  = new LabelsRepository(dbConn.db)
+const refreshTokenRepo = new RefreshTokenRepository(dbConn.db)
 
 const playerService  = new PlayerService(playerRepo)
 const gameService    = new GameService(gameRepo)
 const sessionService = new SessionService(dbConn.db, sessionRepo)
 const statsService   = new StatsService(statsRepo)
-const authService    = createAuthService()
+const labelsService  = new LabelsService(labelsRepo)
+const authService    = createAuthService(refreshTokenRepo)
 
 const authenticate = createAuthMiddleware(authService)
 
@@ -87,12 +94,15 @@ app.use(cookieParser())
 // Request logging
 app.use(pinoHttp({ logger }))
 
-// Rate limiting on auth
-const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true })
+// Rate limiting
+const loginLimiter  = rateLimit({ windowMs: 15 * 60 * 1000, max: 5,   standardHeaders: true, legacyHeaders: false })
+const globalLimiter = rateLimit({ windowMs:       60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false })
 
 // ── Routes ───────────────────────────────────────────────────────────────────
+app.use('/api', globalLimiter)
 app.use('/api/v1/auth/login', loginLimiter)
 app.use('/api/v1/auth',    createAuthRouter(authService))
+app.use('/api/v1/labels',  createLabelsRouter(labelsService))
 app.use('/api/v1/logs',    authenticate, createLogsRouter(logger))
 
 // Protected routes

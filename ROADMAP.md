@@ -182,6 +182,54 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 ---
 
+## 🔍 PERFORMANCE & SEO — AUDIT UNLIGHTHOUSE AVRIL 2026
+
+Audit Unlighthouse prod complet — 6 pages scannées (`/`, `/games`, `/players`, `/sessions/new`, `/settings`, `/stats`) via `vite.preview.config.ts` (SPA fallback + proxy `/api`).
+
+**Scores globaux :** 91 total · 89 Performance · 92 Accessibility · 100 Best Practices · 83 SEO
+
+**Scores par page :**
+
+| Page | Perf | A11y | BP | SEO |
+|------|------|------|-----|-----|
+| / (dashboard) | 88 | 92 | 100 | 83 |
+| /games | 89 | 91 | 100 | 83 |
+| /players | 89 | 93 | 100 | 83 |
+| /sessions/new | 93 | 93 | 100 | 82 |
+| /settings | 95 | 93 | 100 | 82 |
+| /stats | **80** | **87** | 100 | 83 |
+
+### Points d'amélioration prioritaires
+
+| Priorité | Catégorie | Problème | Solution |
+|----------|-----------|----------|----------|
+| ⭐⭐ | SEO | Meta description absente (global) | `<meta name="description">` dans `index.html` |
+| ⭐⭐ | Performance | `/stats` perf 80 — recharts lourd | Lazy load charts, optimiser les requêtes stats |
+| ⭐⭐ | Accessibility | `/stats` a11y 87 — charts sans aria | `aria-label` sur les graphiques recharts |
+| ⭐ | Performance | Google Fonts render-blocking (~780ms) | `font-display: swap` ou self-hosting |
+| ⭐ | Accessibility | `/games` a11y 91 | À investiguer |
+| ⭐ | Performance | Pas de cache headers sur les assets | Fix niveau serveur/Nginx |
+| ⭐ | Performance | Images BGG non optimisées (~32 KiB économisables) | Voir idée proxy ci-dessous |
+
+### 💡 Idée : télécharger les images BGG à l'import
+
+Les images `cf.geekdo-images.com` représentent la majorité des économies signalées par Lighthouse (~32 KiB sur 39 KiB). On ne peut pas contrôler leur compression JPEG ni leur format depuis le client.
+
+**Idée** : lors de l'import BGG (appel API manuel), télécharger l'image et la stocker en local (ex. `backend/uploads/games/<id>.jpg`). Le champ `image` en DB pointe alors vers notre propre endpoint (`/api/v1/games/<id>/image`) au lieu de `cf.geekdo-images.com`.
+
+**Avantages** :
+- Élimine toutes les requêtes vers les serveurs BGG pour la liste des jeux
+- Permet de re-encoder en WebP avec `sharp` une seule fois à l'import (pas de runtime)
+- Meilleur contrôle des `Cache-Control` headers
+- Fonctionne offline / si BGG est down
+
+**À prévoir** :
+- Volume Docker : le dossier `uploads/` doit être dans le named volume existant (avec SQLite)
+- Migration : les jeux déjà importés auraient encore l'URL BGG — prévoir un script de backfill
+- `sharp` en dépendance backend (binaire natif, à vérifier compatibilité ARM/NAS Synology)
+
+---
+
 ## 🔒 SÉCURITÉ — AUDIT MARS 2026
 
 ### ✅ Corrigé (28 mars 2026)
@@ -310,11 +358,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - Colonnes `thumbnail`, `playing_time`, `min_playtime`, `max_playtime`, `categories`, `mechanics`, `families` ajoutées en BDD
 - `runMigrations()` étendu pour couvrir toutes ces colonnes automatiquement au démarrage
 
-#### **Formulaire Édition BGG Pré-Import** - 3-4 jours
-- **État** : Import direct BGG → BDD, pas d'édition pré-import
-- **Référence** : board-game-scorekeep a formulaire d'édition complet
-- **Reste à faire** : Interface modification tous champs avant sauvegarde
-- **Impact** : Contrôle utilisateur sur données importées
+#### **~~Formulaire Édition BGG Pré-Import~~** — Annulé
+- **Décision** : Le formulaire d'ajout gère déjà les deux cas (saisie manuelle + pré-remplissage depuis BGG) et permet la modification avant sauvegarde. Un formulaire dédié pré-import serait redondant. Approche également mieux adaptée au contexte mobile.
 
 #### **✅ Système Migration Automatique** — PR #55 mars 2026
 - `runMigrations()` dans `DatabaseManager.ts` : vérifie et applique les colonnes manquantes à chaque démarrage
@@ -396,11 +441,11 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 - Labels des modes de jeu (checkboxes) : impact moindre
 
 **Approche à implémenter :**
-- `useSettingsPage` possède déjà un state `language` (stub non fonctionnel)
-- Quand l'implémentation i18n sera faite, créer une map centralisée `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS`, etc. consommée par tous les dialogs et vues
-- Ne pas patcher chaque dialog en dur — attendre la couche i18n globale
+- L'infrastructure i18n est maintenant en place (`useLabels` / `t('key')`)
+- Créer une map centralisée `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS`, etc. consommée par tous les dialogs et vues
+- Ne pas patcher chaque dialog en dur — utiliser `t()` avec les clés définies dans `labels`
 
-**Dépendance :** Implémentation du réglage Langue dans SettingsPage
+**Dépendance :** ~~Implémentation du réglage Langue dans SettingsPage~~ ✅ Livré
 
 </details>
 
@@ -606,7 +651,7 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 <summary><b>Sprint 1 — Complétude BGG (1-2 semaines)</b></summary>
 
 1. ✅ **🗄️ Migration schema BGG étendu** — PR #55 : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
-2. **📝 Formulaire pré-import BGG** : Permettre l'édition avant sauvegarde (3-4 jours) → [détail](changelog/sprint1-bgg-preimport-form.md)
+2. ~~**📝 Formulaire pré-import BGG**~~ — Annulé (formulaire actuel gère saisie manuelle + import BGG, mobile-first)
 3. **📊 Cache BGG local** : localStorage + expiration (2-3 jours) → [détail](changelog/sprint1-bgg-cache.md)
 4. **🔀 Unifier BGGGame/BGGGameDetails** : Source de vérité unique dans `src/types/index.ts` (1 jour) → [détail](changelog/sprint1-bgg-interfaces-unification.md)
 
@@ -645,7 +690,9 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 <details>
 <summary><b>Sprint 5 — Évolutions Long Terme (1-3 mois)</b></summary>
 
-1. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
+1. ~~**🌍 Internationalisation DB-driven**~~ — ✅ **Infrastructure livrée** — Table `labels(key, locale, value)`, endpoints `GET /api/v1/labels?locale=xx` + `GET /api/v1/labels/locales` (public), hooks `useLabels` / `useLocale` / `useLocales` / `useApiReachable`, sélecteur dynamique dans Settings avec grisage offline + bouton Retry. **Reste :** câbler `t('key')` dans chaque vue/dialog (travail mécanique vue par vue).
+   - **Note :** Traduire le *contenu* des entités (description d'un jeu, noms localisés) est un sujet séparé impliquant une refonte du schéma BDD (`games_translations` etc.) — à investiguer si le besoin est confirmé.
+2. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
 2. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)
 3. Système d'achievements / gamification → [détail](changelog/sprint5-achievements.md)
 4. Système de recommandations → [détail](changelog/sprint5-recommendations.md)

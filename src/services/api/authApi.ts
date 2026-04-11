@@ -15,6 +15,11 @@ export const authApi = {
       res.ok ? (res.json() as Promise<{ role: 'admin' | 'user' }>) : null
     ),
 
+  refresh: (): Promise<{ role: 'admin' | 'user' } | null> =>
+    fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' }).then(res =>
+      res.ok ? (res.json() as Promise<{ role: 'admin' | 'user' }>) : null
+    ),
+
   logout: (): Promise<void> =>
     fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' }).then(() => undefined),
 };
