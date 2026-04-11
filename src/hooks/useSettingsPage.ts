@@ -2,13 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigationAdapter } from './useNavigationAdapter';
 import { useAuth } from '@/contexts/AuthContext';
 import apiService from '@/services/ApiService';
+import { useLocale } from '@/hooks/useLocale';
+import { useApiReachable } from '@/hooks/useApiReachable';
+import { useLocales } from '@/hooks/useLocales';
 
 export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();
   const { logout, role } = useAuth();
 
   const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState('en');
+  const [locale, setLocale] = useLocale();
+  const { isReachable, triggerRetry } = useApiReachable();
+  const { locales } = useLocales(isReachable);
   const [autoSave, setAutoSave] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
 
@@ -50,7 +55,9 @@ export const useSettingsPage = () => {
     currentView: 'settings',
     darkMode: true,
     notifications,
-    language,
+    locale,
+    locales,
+    isApiReachable: isReachable,
     autoSave,
     showTooltips,
     bggCatalogImportedAt,
@@ -61,7 +68,8 @@ export const useSettingsPage = () => {
     onNavigation,
     handleNotificationsChange: setNotifications,
     handleDarkModeChange: (_enabled: boolean) => {},
-    handleLanguageChange: setLanguage,
+    handleLanguageChange: setLocale,
+    handleRetryConnection: triggerRetry,
     handleAutoSaveChange: setAutoSave,
     handleShowTooltipsChange: setShowTooltips,
     isDataExporting,

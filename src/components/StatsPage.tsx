@@ -6,12 +6,14 @@ import { playerApi } from '@/services/api/playerApi';
 import { gameApi } from '@/services/api/gameApi';
 import { queryKeys } from '@/services/api/queryKeys';
 import { useNavigationAdapter } from '@/hooks/useNavigationAdapter';
+import { useLabels } from '@/hooks/useLabels';
 import PlayerStatsPage from './PlayerStatsPage';
 import GameStatsPage from './GameStatsPage';
 
 export default function StatsPage() {
   const [searchParams] = useSearchParams();
   const onNavigation = useNavigationAdapter();
+  const { t } = useLabels();
 
   const idParam  = searchParams.get('id');
   const srcParam = searchParams.get('src') as 'players' | 'games' | null;
@@ -56,11 +58,12 @@ export default function StatsPage() {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={handleBackNavigation}
+            aria-label="Go back"
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-2xl font-bold text-white">Statistics</h1>
+          <h1 className="text-2xl font-bold text-white">{t('stats.page.title')}</h1>
           <div className="w-10" />
         </div>
 
@@ -72,7 +75,7 @@ export default function StatsPage() {
             }`}
           >
             <Users className="w-5 h-5" />
-            <span>Player Stats</span>
+            <span>{t('stats.tab.players')}</span>
           </button>
           <button
             onClick={() => setActiveTab('games')}
@@ -81,7 +84,7 @@ export default function StatsPage() {
             }`}
           >
             <TrendUp className="w-5 h-5" />
-            <span>Game Stats</span>
+            <span>{t('stats.tab.games')}</span>
           </button>
         </div>
       </div>

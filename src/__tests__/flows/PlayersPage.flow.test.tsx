@@ -57,7 +57,7 @@ describe('PlayersPage — flux CRUD', () => {
     await user.clear(pseudoInput);
     await user.type(pseudoInput, 'charlie99');
 
-    await user.click(screen.getByRole('button', { name: /ajouter/i }));
+    await user.click(screen.getByRole('button', { name: /^add$/i }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
@@ -75,7 +75,7 @@ describe('PlayersPage — flux CRUD', () => {
     const pseudoInput = screen.getByLabelText(/pseudo/i);
     await user.clear(pseudoInput);
     await user.type(pseudoInput, 'alice42');
-    await user.click(screen.getByRole('button', { name: /ajouter/i }));
+    await user.click(screen.getByRole('button', { name: /^add$/i }));
 
     await waitFor(() =>
       expect(

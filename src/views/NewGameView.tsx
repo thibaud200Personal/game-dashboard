@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Play, Users, Trophy, Timer, Target, Plus, Trash } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
+import { useLabels } from '@/hooks/useLabels';
 
 type SessionType = 'competitive' | 'cooperative' | 'campaign' | 'hybrid';
 
@@ -109,6 +110,7 @@ export default function NewGameView({
   currentView: _currentView,
   darkMode
 }: NewGameViewProps) {
+  const { t } = useLabels();
   // Safety checks for arrays
   const safeGames = games || [];
   const safePlayers = players || [];
@@ -131,7 +133,7 @@ export default function NewGameView({
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className={darkMode ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900"}>New Game Session</h1>
+          <h1 className={darkMode ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900"}>{t('sessions.new.title')}</h1>
         </div>
 
         {/* Game Setup */}
@@ -139,16 +141,16 @@ export default function NewGameView({
           <CardHeader>
             <CardTitle className={darkMode ? "flex items-center gap-2 text-white" : "flex items-center gap-2 text-slate-900"}>
               <Play className="w-5 h-5" />
-              Game Setup
+              {t('sessions.setup.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-white/80">Game</Label>
+                <Label className="text-white/80">{t('sessions.setup.game.label')}</Label>
                 <Select value={selectedGameId} onValueChange={setSelectedGameId}>
                   <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue placeholder="Choose a game..." />
+                    <SelectValue placeholder={t('sessions.setup.game.placeholder')} />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-white/20">
                     {safeGames.map(game => (
@@ -162,23 +164,23 @@ export default function NewGameView({
 
               {selectedGame && (
                 <div>
-                  <Label className="text-white/80">Session Type</Label>
+                  <Label className="text-white/80">{t('sessions.setup.type.label')}</Label>
                   <Select value={sessionType} onValueChange={(value: 'competitive' | 'cooperative' | 'campaign' | 'hybrid') => setSessionType(value)}>
                     <SelectTrigger className="bg-white/5 border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-white/20">
                       {selectedGame.supports_competitive && (
-                        <SelectItem value="competitive">Competitive - Players compete against each other</SelectItem>
+                        <SelectItem value="competitive">{t('sessions.setup.type.competitive')}</SelectItem>
                       )}
                       {selectedGame.supports_cooperative && (
-                        <SelectItem value="cooperative">Cooperative - Players work together</SelectItem>
+                        <SelectItem value="cooperative">{t('sessions.setup.type.cooperative')}</SelectItem>
                       )}
                       {selectedGame.supports_campaign && (
-                        <SelectItem value="campaign">Campaign - Ongoing story mode</SelectItem>
+                        <SelectItem value="campaign">{t('sessions.setup.type.campaign')}</SelectItem>
                       )}
                       {selectedGame.supports_hybrid && (
-                        <SelectItem value="hybrid">Hybrid - Mix of team and individual goals</SelectItem>
+                        <SelectItem value="hybrid">{t('sessions.setup.type.hybrid')}</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -220,16 +222,16 @@ export default function NewGameView({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Users className="w-5 h-5" />
-                Select Players
+                {t('sessions.players.title')}
               </CardTitle>
               {safeSelectedPlayers.length < (selectedGame?.min_players ?? 1) && (
                 <p className="text-orange-400 text-sm mt-1">
-                  Minimum {selectedGame!.min_players} joueurs requis ({safeSelectedPlayers.length} sélectionné{safeSelectedPlayers.length > 1 ? 's' : ''})
+                  Minimum {selectedGame!.min_players} players required ({safeSelectedPlayers.length} selected)
                 </p>
               )}
               {maxPlayersReached && (
                 <p className="text-red-400 text-sm mt-1">
-                  Maximum de {selectedGame!.max_players} joueurs atteint
+                  Maximum of {selectedGame!.max_players} players reached
                 </p>
               )}
             </CardHeader>
@@ -248,7 +250,7 @@ export default function NewGameView({
                       />
                       <div className="flex items-center gap-3 flex-1">
                         {player.avatar && (
-                          <img src={player.avatar} alt={player.player_name} className="w-8 h-8 rounded-full" />
+                          <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
                         )}
                         <div>
                           <p className="text-white font-medium">{player.player_name}</p>
@@ -269,13 +271,13 @@ export default function NewGameView({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Target className="w-5 h-5" />
-                Cooperative Objectives
+                {t('sessions.cooperative.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Difficulty Level */}
               <div>
-                <Label className="text-white/80">Difficulty Level</Label>
+                <Label className="text-white/80">{t('sessions.cooperative.difficulty.label')}</Label>
                 <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
                   <SelectTrigger className="bg-white/5 border-white/20 text-white">
                     <SelectValue />
@@ -296,12 +298,12 @@ export default function NewGameView({
                   onCheckedChange={(checked) => setTeamSuccess(!!checked)}
                   className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
-                <Label className="text-white font-medium">Team Victory</Label>
+                <Label className="text-white font-medium">{t('sessions.cooperative.team_success')}</Label>
               </div>
 
               {/* Team Score */}
               <div>
-                <Label className="text-white/80">Team Score</Label>
+                <Label className="text-white/80">{t('sessions.cooperative.team_score.label')}</Label>
                 <Input
                   type="number"
                   placeholder="0"
@@ -314,7 +316,7 @@ export default function NewGameView({
               {/* Objectives */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="text-white/80">Shared Objectives</Label>
+                  <Label className="text-white/80">{t('sessions.cooperative.objectives.label')}</Label>
                   <div className="flex gap-2">
                     {objectives.length === 0 && (
                       <Button
@@ -324,7 +326,7 @@ export default function NewGameView({
                         className="bg-white/10 text-white border-white/20 hover:bg-white/20"
                       >
                         <Target className="w-4 h-4 mr-1" />
-                        Add Common
+                        {t('sessions.cooperative.objectives.add_common')}
                       </Button>
                     )}
                     <Button
@@ -334,7 +336,7 @@ export default function NewGameView({
                       className="bg-white/10 text-white border-white/20 hover:bg-white/20"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Add Custom
+                      {t('sessions.cooperative.objectives.add_custom')}
                     </Button>
                   </div>
                 </div>
@@ -342,7 +344,7 @@ export default function NewGameView({
                 {objectives.length === 0 && (
                   <div className="text-center py-8 text-white/60">
                     <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">No objectives set yet</p>
+                    <p className="text-sm">{t('sessions.cooperative.objectives.empty')}</p>
                     <p className="text-xs mt-1">Add objectives to track your team's progress</p>
                   </div>
                 )}
@@ -386,7 +388,7 @@ export default function NewGameView({
                           onCheckedChange={(checked) => updateObjective(objective.id, 'completed', !!checked)}
                           className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                         />
-                        <span className="text-white/60 text-sm">Completed</span>
+                        <span className="text-white/60 text-sm">{t('sessions.cooperative.objectives.completed')}</span>
                       </div>
                     </div>
                   </div>
@@ -415,7 +417,7 @@ export default function NewGameView({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Trophy className="w-5 h-5" />
-                Competitive Scoring
+                {t('sessions.competitive.title')}
               </CardTitle>
               {competitiveWinnerMissing && (
                 <p className="text-orange-400 text-sm mt-1">Un vainqueur doit être désigné</p>
@@ -433,7 +435,7 @@ export default function NewGameView({
                   <div key={playerId} className="flex items-center gap-4">
                     <div className="flex items-center gap-3 flex-1">
                       {player.avatar && (
-                        <img src={player.avatar} alt={player.player_name} className="w-8 h-8 rounded-full" />
+                        <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
                       )}
                       <span className="text-white font-medium">{player.player_name}</span>
                     </div>
@@ -452,7 +454,7 @@ export default function NewGameView({
                         onCheckedChange={(checked) => setWinnerId(checked ? playerId.toString() : '')}
                         className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
                       />
-                      <span className="text-white/60 text-sm">Winner</span>
+                      <span className="text-white/60 text-sm">{t('sessions.competitive.winner')}</span>
                     </div>
                   </div>
                 );
@@ -469,7 +471,7 @@ export default function NewGameView({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Target className="w-5 h-5" />
-                  Team Objectives
+                  {t('sessions.hybrid.team.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -479,11 +481,11 @@ export default function NewGameView({
                     onCheckedChange={(checked) => setTeamSuccess(!!checked)}
                     className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                   />
-                  <Label className="text-white font-medium">Team Objectives Completed</Label>
+                  <Label className="text-white font-medium">{t('sessions.hybrid.team.completed')}</Label>
                 </div>
 
                 <div>
-                  <Label className="text-white/80">Team Score</Label>
+                  <Label className="text-white/80">{t('sessions.hybrid.team.score')}</Label>
                   <Input
                     type="number"
                     placeholder="0"
@@ -500,7 +502,7 @@ export default function NewGameView({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Trophy className="w-5 h-5" />
-                  Individual Scores
+                  {t('sessions.hybrid.individual.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -512,7 +514,7 @@ export default function NewGameView({
                     <div key={playerId} className="flex items-center gap-4">
                       <div className="flex items-center gap-3 flex-1">
                         {player.avatar && (
-                          <img src={player.avatar} alt={player.player_name} className="w-8 h-8 rounded-full" />
+                          <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
                         )}
                         <span className="text-white font-medium">{player.player_name}</span>
                       </div>
@@ -537,13 +539,13 @@ export default function NewGameView({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Timer className="w-5 h-5" />
-                Session Details
+                {t('sessions.details.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Label className="text-white/80">Duration (minutes)</Label>
+                  <Label className="text-white/80">{t('sessions.details.duration.label')}</Label>
                   {durationMissing && (
                     <span className="text-orange-400 text-xs">Obligatoire</span>
                   )}
@@ -558,9 +560,9 @@ export default function NewGameView({
                 />
               </div>
               <div>
-                <Label className="text-white/80">Notes</Label>
+                <Label className="text-white/80">{t('sessions.details.notes.label')}</Label>
                 <Textarea
-                  placeholder="Game notes, highlights, or observations..."
+                  placeholder={t('sessions.details.notes.placeholder')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="bg-white/5 border-white/20 text-white min-h-20"
@@ -577,14 +579,14 @@ export default function NewGameView({
             variant="outline"
             className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
           >
-            Cancel
+            {t('common.buttons.cancel')}
           </Button>
           <Button
             onClick={onSubmit}
             disabled={!canSubmit() || isSubmitting}
             className="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700"
           >
-            {isSubmitting ? 'Creating...' : 'Create Session'}
+            {isSubmitting ? t('sessions.submit.loading') : t('sessions.submit')}
           </Button>
         </div>
       </div>

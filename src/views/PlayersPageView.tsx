@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from '@/components/dialogs';
 import { Player, PlayerFormData } from '@/types';
+import { useLabels } from '@/hooks/useLabels';
 
 interface PlayersPageViewProps {
   players: Player[];
@@ -58,6 +59,7 @@ interface PlayerCardProps {
 }
 
 const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStats, onEdit, onDelete }: PlayerCardProps) {
+  const { t } = useLabels();
   const cardClass = darkMode
     ? "bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-xl"
     : "bg-white rounded-xl p-4 border border-slate-200 shadow-xl";
@@ -74,8 +76,8 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
     <div className={cardClass}>
       <div className="flex items-center space-x-4">
         <img
-          src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
-          alt={player.player_name}
+          src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop&crop=face&fm=webp&q=70`}
+          alt=""
           className="w-12 h-12 rounded-full object-cover"
         />
         <div className="flex-1">
@@ -85,7 +87,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
           )}
           <div className={statsClass}>{player.stats || `${player.total_score} pts`}</div>
           <div className={metaClass}>
-            {player.games_played} games • {player.wins} wins • Avg: {player.average_score}
+            {player.games_played} {t('players.card.games')} • {player.wins} {t('players.card.wins')} • {t('players.card.avg')} {player.average_score}
           </div>
         </div>
         {/* Actions - Desktop */}
@@ -117,11 +119,11 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
             <DropdownMenuContent align="end" className={dropdownClass}>
               <DropdownMenuItem onClick={() => onViewStats(player.player_id)} className={dropdownItemClass}>
                 <ChartLineUp className="w-4 h-4 mr-2" />
-                View Stats
+                {t('players.card.menu.view_stats')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit(player)} className={dropdownItemClass}>
                 <PencilSimple className="w-4 h-4 mr-2" />
-                Edit
+                {t('players.card.menu.edit')}
               </DropdownMenuItem>
               <DeletePlayerDialog
                 playerName={player.player_name}
@@ -129,7 +131,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
                 trigger={
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className={dropdownDeleteClass}>
                     <Trash className="w-4 h-4 mr-2" />
-                    Delete
+                    {t('players.card.menu.delete')}
                   </DropdownMenuItem>
                 }
               />
@@ -142,6 +144,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, darkMode, onViewStat
 });
 
 export function PlayersPageView(props: PlayersPageViewProps) {
+  const { t } = useLabels();
   const safePlayers = props.players || [];
   const darkMode = props.darkMode;
   const statCardClass = darkMode ? "bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20" : "bg-slate-50 backdrop-blur-md rounded-xl p-3 border border-slate-200";
@@ -154,14 +157,16 @@ export function PlayersPageView(props: PlayersPageViewProps) {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={props.handleBackClick}
+            aria-label="Go back"
             className={darkMode ? "p-2 hover:bg-white/10 rounded-lg transition-colors" : "p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900"}
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className={darkMode ? "text-2xl font-bold" : "text-2xl font-bold text-slate-900"}>Players</h1>
+          <h1 className={darkMode ? "text-2xl font-bold" : "text-2xl font-bold text-slate-900"}>{t('players.page.title')}</h1>
           <div className="flex space-x-2">
             <button
               onClick={props.handlePlayerStatsClick}
+              aria-label="View players stats"
               className={darkMode ? "p-2 hover:bg-white/10 rounded-lg transition-colors" : "p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900"}
             >
               <TrendUp className="w-6 h-6" />
@@ -187,19 +192,19 @@ export function PlayersPageView(props: PlayersPageViewProps) {
           <div className={statCardClass}>
             <div className="text-center">
               <div className={darkMode ? "text-lg font-bold" : "text-lg font-bold text-emerald-700"}>{props.totalPlayers}</div>
-              <div className={subLabelClass}>Players</div>
+              <div className={subLabelClass}>{t('players.stats.total')}</div>
             </div>
           </div>
           <div className={statCardClass}>
             <div className="text-center">
               <div className={darkMode ? "text-lg font-bold" : "text-lg font-bold text-blue-700"}>{props.totalGamesPlayed}</div>
-              <div className={subLabelClass}>Games</div>
+              <div className={subLabelClass}>{t('players.stats.games')}</div>
             </div>
           </div>
           <div className={statCardClass}>
             <div className="text-center">
               <div className={darkMode ? "text-lg font-bold" : "text-lg font-bold text-purple-700"}>{props.totalWins}</div>
-              <div className={subLabelClass}>Wins</div>
+              <div className={subLabelClass}>{t('players.stats.wins')}</div>
             </div>
           </div>
         </div>
@@ -208,7 +213,7 @@ export function PlayersPageView(props: PlayersPageViewProps) {
         <div className="relative mb-6">
           <MagnifyingGlass className={darkMode ? "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/60" : "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500"} />
           <Input
-            placeholder="Search players..."
+            placeholder={t('players.search.placeholder')}
             value={props.searchQuery}
             onChange={(e) => props.setSearchQuery(e.target.value)}
             className={darkMode ? "pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60" : "pl-10 bg-slate-100 border-slate-200 text-slate-900 placeholder:text-slate-500"}
@@ -232,13 +237,13 @@ export function PlayersPageView(props: PlayersPageViewProps) {
         {props.players.length === 0 && (
           <div className="text-center py-8">
             <Users className={darkMode ? "w-16 h-16 mx-auto mb-4 text-white/20" : "w-16 h-16 mx-auto mb-4 text-slate-300"} />
-            <div className={darkMode ? "text-white/60 mb-4" : "text-slate-500 mb-4"}>No players found</div>
+            <div className={darkMode ? "text-white/60 mb-4" : "text-slate-500 mb-4"}>{t('players.empty')}</div>
             <Button
               onClick={() => props.handleAddDialogOpen(true)}
               className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Your First Player
+              {t('players.empty.add_first')}
             </Button>
           </div>
         )}

@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 import { Game, GameExpansion, GameCharacter } from '@/types';
 import { withUpdatedAbility, withRemovedAbility } from '@/utils/gameHelpers';
+import { useLabels } from '@/hooks/useLabels';
 
 interface FormData {
   name: string
@@ -73,6 +74,7 @@ export default function EditGameDialog({
   darkMode,
   serverError
 }: EditGameDialogProps) {
+  const { t } = useLabels();
   const setFormData = (updater: (prev: FormData) => FormData) => {
     const newData = updater(formData);
     onFormDataChange(newData);
@@ -143,7 +145,7 @@ export default function EditGameDialog({
         `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
       }>
         <DialogHeader>
-          <DialogTitle className={darkMode ? 'text-white' : 'text-blue-700'}>Edit Game</DialogTitle>
+          <DialogTitle className={darkMode ? 'text-white' : 'text-blue-700'}>{t('games.edit_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
             Update game information and details.
           </DialogDescription>
@@ -299,11 +301,11 @@ export default function EditGameDialog({
                   />
                   <Label htmlFor="edit-supports-competitive" className="text-sm flex items-center">
                     <Sword className="w-3 h-3 mr-1 text-red-400" />
-                    Compétitif
+                    {t('games.card.modes.competitive')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="edit-supports-cooperative"
                     checked={formData.supports_cooperative}
                     onCheckedChange={(checked) => onFormDataChange({ supports_cooperative: checked as boolean })}
@@ -311,11 +313,11 @@ export default function EditGameDialog({
                   />
                   <Label htmlFor="edit-supports-cooperative" className="text-sm flex items-center">
                     <Shield className="w-3 h-3 mr-1 text-blue-400" />
-                    Coopératif
+                    {t('games.card.modes.cooperative')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="edit-supports-campaign"
                     checked={formData.supports_campaign}
                     onCheckedChange={(checked) => onFormDataChange({ supports_campaign: checked as boolean })}
@@ -323,11 +325,11 @@ export default function EditGameDialog({
                   />
                   <Label htmlFor="edit-supports-campaign" className="text-sm flex items-center">
                     <Crown className="w-3 h-3 mr-1 text-purple-400" />
-                    Campagne
+                    {t('games.card.modes.campaign')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="edit-supports-hybrid"
                     checked={formData.supports_hybrid}
                     onCheckedChange={(checked) => onFormDataChange({ supports_hybrid: checked as boolean })}
@@ -335,7 +337,7 @@ export default function EditGameDialog({
                   />
                   <Label htmlFor="edit-supports-hybrid" className="text-sm flex items-center">
                     <Target className="w-3 h-3 mr-1 text-orange-400" />
-                    Hybride
+                    {t('games.card.modes.hybrid')}
                   </Label>
                 </div>
               </div>
@@ -541,6 +543,7 @@ export default function EditGameDialog({
                       <Button
                         type="button"
                         onClick={() => removeCharacter(charIndex)}
+                        aria-label="Remove character"
                         variant="outline"
                         className="border-red-500 text-red-400 hover:bg-red-500/20"
                       >
@@ -577,6 +580,7 @@ export default function EditGameDialog({
                           <Button
                             type="button"
                             onClick={() => removeAbility(charIndex, abilityIndex)}
+                            aria-label="Remove ability"
                             variant="outline"
                             className="border-red-500 text-red-400 hover:bg-red-500/20 h-8 w-8 p-0"
                           >
@@ -594,7 +598,7 @@ export default function EditGameDialog({
             <p className="text-red-400 text-sm text-center">{serverError}</p>
           )}
           <Button onClick={onUpdateGame} className="w-full bg-emerald-600 hover:bg-emerald-700">
-            Update Game
+            {t('games.edit_dialog.submit')}
           </Button>
         </div>
       </DialogContent>

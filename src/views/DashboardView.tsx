@@ -10,6 +10,7 @@ import {
 } from '@phosphor-icons/react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Player, Game, NavigationHandler } from '@/types';
+import { useLabels } from '@/hooks/useLabels';
 
 interface DashboardViewProps {
   stats: {
@@ -52,6 +53,7 @@ export function DashboardView({
   onNavigation: _onNavigation,
   darkMode
 }: DashboardViewProps) {
+  const { t } = useLabels();
   // Classes dynamiques
   const mainClass = darkMode
     ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
@@ -79,28 +81,30 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handleBackClick}
+                aria-label="Go back"
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Go Back</p>
+              <p>{t('dashboard.tooltip.back')}</p>
             </TooltipContent>
           </Tooltip>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
           <div className="flex space-x-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handleSettingsClick}
+                  aria-label="Settings"
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <Gear className="w-6 h-6" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Settings</p>
+                <p>{t('dashboard.tooltip.settings')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -112,6 +116,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handlePlayersClick}
+                aria-label="View all players"
                 className="group relative"
               >
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 flex items-center justify-center shadow-lg">
@@ -126,7 +131,7 @@ export function DashboardView({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View All Players</p>
+              <p>{t('dashboard.tooltip.view_players')}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -134,6 +139,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handleGamesClick}
+                aria-label="View all games"
                 className="group relative"
               >
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
@@ -148,7 +154,7 @@ export function DashboardView({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View All Games</p>
+              <p>{t('dashboard.tooltip.view_games')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -159,18 +165,19 @@ export function DashboardView({
         {/* Section Joueurs */}
         <div className={cardClass}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={titleClass}>Player Statistics</h2>
+            <h2 className={titleClass}>{t('dashboard.section.players')}</h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handlePlayersClick}
+                  aria-label="View all players"
                   className="text-teal-400 hover:text-teal-300 transition-colors"
                 >
                   <TrendUp className="w-5 h-5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>View All Players</p>
+                <p>{t('dashboard.tooltip.view_players')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -185,8 +192,11 @@ export function DashboardView({
                   <div className="bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-all duration-200 border border-white/10 hover:border-white/20 hover:shadow-lg hover:scale-105">
                     <img
                       src={player.avatar}
-                      alt={player.player_name}
+                      alt=""
                       className="w-8 h-8 rounded-full mb-2 mx-auto object-cover"
+                      loading="lazy"
+                      width={32}
+                      height={32}
                     />
                     <div className="text-center">
                       <div className={labelClass + " truncate"}>
@@ -199,12 +209,12 @@ export function DashboardView({
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className={descClass}>No players yet</div>
+                <div className={descClass}>{t('dashboard.players.empty')}</div>
                 <button
                   onClick={handlePlayersClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
                 >
-                  Add your first player
+                  {t('dashboard.players.add_first')}
                 </button>
               </div>
             )}
@@ -214,24 +224,25 @@ export function DashboardView({
         {/* Section Jeux récents */}
         <div className={cardClass}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={titleClass}>Recent Games</h2>
+            <h2 className={titleClass}>{t('dashboard.section.games')}</h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handleGamesClick}
+                  aria-label="View all games"
                   className="text-teal-400 hover:text-teal-300 transition-colors"
                 >
                   <GameController className="w-5 h-5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>View All Games</p>
+                <p>{t('dashboard.tooltip.view_games')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {hasGames ? (
-              recentGames.map((game) => (
+              recentGames.map((game, index) => (
                 <button
                   key={game.game_id}
                   onClick={() => handleGameStatsClick(game.game_id)}
@@ -242,6 +253,8 @@ export function DashboardView({
                       src={game.image}
                       alt={game.name}
                       className="w-full h-16 object-cover"
+                      loading={index === 0 ? undefined : 'lazy'}
+                      fetchPriority={index === 0 ? 'high' : undefined}
                     />
                     <div className="p-2">
                       <div className={labelClass + " truncate"}>
@@ -256,12 +269,12 @@ export function DashboardView({
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className={descClass}>No games yet</div>
+                <div className={descClass}>{t('dashboard.games.empty')}</div>
                 <button
                   onClick={handleGamesClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
                 >
-                  Add your first game
+                  {t('dashboard.games.add_first')}
                 </button>
               </div>
             )}
@@ -270,7 +283,7 @@ export function DashboardView({
 
         {/* Recent Activity */}
         <div className={cardClass}>
-          <h2 className={titleClass + " mb-4"}>Recent Activity</h2>
+          <h2 className={titleClass + " mb-4"}>{t('dashboard.section.activity')}</h2>
           <div className="space-y-3">
             <button
               onClick={handleActivityClick}
@@ -280,7 +293,7 @@ export function DashboardView({
                 <Play className="w-4 h-4" />
               </div>
               <div className="flex-1 text-left">
-                <div className={labelClass}>New game started</div>
+                <div className={labelClass}>{t('dashboard.activity.game_started')}</div>
                 <div className={descClass}>5 minutes ago</div>
               </div>
             </button>
@@ -292,7 +305,7 @@ export function DashboardView({
                 <Users className="w-4 h-4" />
               </div>
               <div className="flex-1 text-left">
-                <div className={labelClass}>Player joined</div>
+                <div className={labelClass}>{t('dashboard.activity.player_joined')}</div>
                 <div className={descClass}>12 minutes ago</div>
               </div>
             </button>
@@ -308,11 +321,11 @@ export function DashboardView({
                 className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 <Play className="w-8 h-8 mb-2" />
-                <span className="font-medium">New Game</span>
+                <span className="font-medium">{t('dashboard.actions.new_game')}</span>
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Start a New Game Session</p>
+              <p>{t('dashboard.actions.new_game.tooltip')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -322,11 +335,11 @@ export function DashboardView({
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 <Plus className="w-8 h-8 mb-2" />
-                <span className="font-medium">Add Player</span>
+                <span className="font-medium">{t('dashboard.actions.add_player')}</span>
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Go to Players Page</p>
+              <p>{t('dashboard.actions.add_player.tooltip')}</p>
             </TooltipContent>
           </Tooltip>
         </div>

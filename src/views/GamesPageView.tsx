@@ -34,6 +34,7 @@ import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/typ
 import { AddGameDialog, EditGameDialog, DeleteGameDialog } from '@/components/dialogs';
 import { Card, CardContent } from '@/components/ui/card';
 import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/utils/gameHelpers';
+import { useLabels } from '@/hooks/useLabels';
 
 interface GamesPageViewProps {
   games: Game[];
@@ -67,33 +68,33 @@ interface GamesPageViewProps {
 }
 
 
-function getGameModesBadges(game: Game): React.ReactElement[] {
+function getGameModesBadges(game: Game, t: (key: string) => string): React.ReactElement[] {
   const modes: React.ReactElement[] = [];
   if (game.supports_competitive) {
     modes.push(
       <Badge key="competitive" variant="outline" className="border-red-400/30 text-red-400 text-xs">
-        <Sword className="w-3 h-3 mr-1" />Compétitif
+        <Sword className="w-3 h-3 mr-1" />{t('games.card.modes.competitive')}
       </Badge>
     );
   }
   if (game.supports_cooperative) {
     modes.push(
       <Badge key="cooperative" variant="outline" className="border-blue-400/30 text-blue-400 text-xs">
-        <Shield className="w-3 h-3 mr-1" />Coopératif
+        <Shield className="w-3 h-3 mr-1" />{t('games.card.modes.cooperative')}
       </Badge>
     );
   }
   if (game.supports_campaign) {
     modes.push(
       <Badge key="campaign" variant="outline" className="border-purple-400/30 text-purple-400 text-xs">
-        <Crown className="w-3 h-3 mr-1" />Campagne
+        <Crown className="w-3 h-3 mr-1" />{t('games.card.modes.campaign')}
       </Badge>
     );
   }
   if (game.supports_hybrid) {
     modes.push(
       <Badge key="hybrid" variant="outline" className="border-orange-400/30 text-orange-400 text-xs">
-        <Target className="w-3 h-3 mr-1" />Hybride
+        <Target className="w-3 h-3 mr-1" />{t('games.card.modes.hybrid')}
       </Badge>
     );
   }
@@ -124,12 +125,12 @@ function CharacterRow({ character }: { character: GameCharacter }) {
   );
 }
 
-function ExpandedDetails({ game }: { game: Game }) {
+function ExpandedDetails({ game, t }: { game: Game; t: (key: string) => string }) {
   return (
     <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
       {game.expansions && game.expansions.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-purple-300 mb-1">Expansions</h4>
+          <h4 className="text-sm font-medium text-purple-300 mb-1">{t('games.card.section.expansions')}</h4>
           <Textarea
             value={(game.expansions || []).map(formatExpansion).join(', ')}
             readOnly
@@ -140,7 +141,7 @@ function ExpandedDetails({ game }: { game: Game }) {
       )}
       {game.characters && game.characters.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-orange-300 mb-1">Characters/Roles</h4>
+          <h4 className="text-sm font-medium text-orange-300 mb-1">{t('games.card.section.characters')}</h4>
           <div className="space-y-1">
             {game.characters.map(character => (
               <CharacterRow key={character.character_key} character={character} />
@@ -163,10 +164,12 @@ interface GameCardProps {
   cardClass: string;
   titleClass: string;
   descClass: string;
+  isFirst?: boolean;
 }
 
 
-const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, darkMode, cardClass, titleClass, descClass }: GameCardProps) {
+const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, darkMode, cardClass, titleClass, descClass, isFirst }: GameCardProps) {
+  const { t } = useLabels();
   const { ghostBtn: ghostBtnClass, meta: metaClass, credit: creditClass, dropdownItem: dropdownItemClass } = getGameCardStyles(darkMode);
 
   return (
@@ -180,6 +183,8 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                   src={game.thumbnail || game.image}
                   alt={game.name}
                   className="w-full h-full object-cover rounded-l-lg"
+                  fetchPriority={isFirst ? 'high' : undefined}
+                  loading={isFirst ? undefined : 'lazy'}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
@@ -204,15 +209,15 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                 <div className="flex flex-wrap gap-2 mb-2">
                   {game.is_expansion && (
                     <Badge variant="outline" className="border-amber-500/40 text-amber-400 text-xs">
-                      Extension
+                      {t('games.card.expansion')}
                     </Badge>
                   )}
                   <Badge variant="secondary" className={darkMode ? "bg-teal-600/20 text-teal-300 text-xs" : "bg-teal-100 text-teal-700 text-xs"}>
                     {game.category}
                   </Badge>
-                  {getGameModesBadges(game)}
+                  {getGameModesBadges(game, t)}
                   <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
-                    {game.min_players === game.max_players ? `${game.min_players}` : `${game.min_players}-${game.max_players}`} players
+                    {game.min_players === game.max_players ? `${game.min_players}` : `${game.min_players}-${game.max_players}`} {t('games.card.players')}
                   </Badge>
                   <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
                     <Clock className="w-3 h-3 mr-1" />
@@ -239,7 +244,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                   )}
                   {game.weight > 0 && (
                     <div className="flex items-center space-x-1">
-                      <span>Weight:</span>
+                      <span>{t('games.card.weight')}</span>
                       <div className="flex">{getWeightStars(game.weight)}</div>
                     </div>
                   )}
@@ -253,12 +258,12 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                   <div className="mt-2 flex items-center space-x-2 text-xs">
                     {game.expansions?.length > 0 && (
                       <Badge variant="outline" className="border-purple-500/30 text-purple-300">
-                        {game.expansions.length} expansion{game.expansions.length > 1 ? 's' : ''}
+                        {game.expansions.length} {game.expansions.length > 1 ? t('games.card.expansion.count_plural') : t('games.card.expansion.count')}
                       </Badge>
                     )}
                     {game.characters?.length > 0 && (
                       <Badge variant="outline" className="border-orange-500/30 text-orange-300">
-                        {game.characters.length} character{game.characters.length > 1 ? 's' : ''}
+                        {game.characters.length} {game.characters.length > 1 ? t('games.card.character.count_plural') : t('games.card.character.count')}
                       </Badge>
                     )}
                     <button
@@ -266,6 +271,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         e.stopPropagation();
                         setExpandedGame(expandedGame === game.game_id ? null : game.game_id);
                       }}
+                      aria-label={expandedGame === game.game_id ? 'Collapse game details' : 'Expand game details'}
                       className="text-white/60 hover:text-white transition-colors"
                     >
                       {expandedGame === game.game_id ? <CaretUp className="w-4 h-4" /> : <CaretDown className="w-4 h-4" />}
@@ -273,7 +279,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                   </div>
                 )}
 
-                {expandedGame === game.game_id && <ExpandedDetails game={game} />}
+                {expandedGame === game.game_id && <ExpandedDetails game={game} t={t} />}
               </div>
 
               {/* Actions */}
@@ -286,7 +292,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         <Eye className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent><p>View Details</p></TooltipContent>
+                    <TooltipContent><p>{t('games.tooltip.view_details')}</p></TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -294,7 +300,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         <ChartLineUp className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent><p>View Game Stats</p></TooltipContent>
+                    <TooltipContent><p>{t('games.tooltip.view_stats')}</p></TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -302,7 +308,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         <PencilSimple className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Edit Game</p></TooltipContent>
+                    <TooltipContent><p>{t('games.tooltip.edit')}</p></TooltipContent>
                   </Tooltip>
                   <DeleteGameDialog
                     game={game}
@@ -325,20 +331,20 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700 text-white">
                       <DropdownMenuItem onClick={() => onNavigation('game-detail', game.game_id, 'games')} className={`cursor-pointer ${dropdownItemClass}`}>
-                        <Eye className="w-4 h-4 mr-2" />View Details
+                        <Eye className="w-4 h-4 mr-2" />{t('games.menu.view_details')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onNavigation('stats', game.game_id, 'games')} className="hover:bg-teal-500/20 cursor-pointer text-teal-400">
-                        <ChartLineUp className="w-4 h-4 mr-2" />View Stats
+                        <ChartLineUp className="w-4 h-4 mr-2" />{t('games.menu.view_stats')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onEditGame(game)} className={`cursor-pointer ${dropdownItemClass}`}>
-                        <PencilSimple className="w-4 h-4 mr-2" />Edit Game
+                        <PencilSimple className="w-4 h-4 mr-2" />{t('games.menu.edit')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onNavigation('game-expansions', game.game_id, 'games')} className={`cursor-pointer ${dropdownItemClass}`}>
-                        <Crown className="w-4 h-4 mr-2" />Manage Expansions
+                        <Crown className="w-4 h-4 mr-2" />{t('games.menu.expansions')}
                       </DropdownMenuItem>
                       {(game.has_characters || game.characters?.length > 0) && (
                         <DropdownMenuItem onClick={() => onNavigation('game-characters', game.game_id, 'games')} className={`cursor-pointer ${dropdownItemClass}`}>
-                          <Users className="w-4 h-4 mr-2" />Manage Characters
+                          <Users className="w-4 h-4 mr-2" />{t('games.menu.characters')}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator className="bg-slate-600" />
@@ -347,7 +353,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         onDeleteGame={onDeleteGame}
                         trigger={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className={`cursor-pointer ${darkMode ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-100 text-red-600'}`}>
-                            <Trash className="w-4 h-4 mr-2" />Delete Game
+                            <Trash className="w-4 h-4 mr-2" />{t('games.menu.delete')}
                           </DropdownMenuItem>
                         }
                       />
@@ -364,6 +370,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
 });
 
 export function GamesPageView(props: GamesPageViewProps) {
+  const { t } = useLabels();
   const {
     games,
     totalGames,
@@ -405,12 +412,12 @@ export function GamesPageView(props: GamesPageViewProps) {
       {/* Header */}
       <div className="px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => onNavigation('dashboard')} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+          <button onClick={() => onNavigation('dashboard')} aria-label="Go back" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-2xl font-bold">Games</h1>
+          <h1 className="text-2xl font-bold">{t('games.page.title')}</h1>
           <div className="flex space-x-2">
-            <button onClick={() => onNavigation('stats', undefined, 'games')} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <button onClick={() => onNavigation('stats', undefined, 'games')} aria-label="View games stats" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
               <ChartLineUp className="w-6 h-6" />
             </button>
             <AddGameDialog
@@ -449,7 +456,7 @@ export function GamesPageView(props: GamesPageViewProps) {
             name="games-search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search games, designers, publishers..."
+            placeholder={t('games.search.placeholder')}
             className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
           />
         </div>
@@ -458,19 +465,19 @@ export function GamesPageView(props: GamesPageViewProps) {
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className={statCardClass}>
             <div className={darkMode ? "text-2xl font-bold text-emerald-400" : "text-2xl font-bold text-emerald-700"}>{totalGames}</div>
-            <div className={statSubClass}>Total Games</div>
+            <div className={statSubClass}>{t('games.stats.total')}</div>
           </div>
           <div className={statCardClass}>
             <div className={darkMode ? "text-2xl font-bold text-blue-400" : "text-2xl font-bold text-blue-700"}>
               {[...new Set(safeGames.map(g => g.category || 'Unknown'))].length}
             </div>
-            <div className={statSubClass}>Categories</div>
+            <div className={statSubClass}>{t('games.stats.categories')}</div>
           </div>
           <div className={statCardClass}>
             <div className={darkMode ? "text-2xl font-bold text-purple-400" : "text-2xl font-bold text-purple-700"}>
               {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
             </div>
-            <div className={statSubClass}>Avg Rating</div>
+            <div className={statSubClass}>{t('games.stats.avg_rating')}</div>
           </div>
         </div>
       </div>
@@ -478,10 +485,11 @@ export function GamesPageView(props: GamesPageViewProps) {
       {/* Games Grid */}
       <div className="px-4 pb-32">
         <div className="grid grid-cols-1 gap-4">
-          {safeGames.map((game) => (
+          {safeGames.map((game, index) => (
             <GameCard
               key={game.game_id}
               game={game}
+              isFirst={index === 0}
               expandedGame={expandedGame}
               setExpandedGame={setExpandedGame}
               onNavigation={onNavigation}
@@ -498,7 +506,7 @@ export function GamesPageView(props: GamesPageViewProps) {
         {games.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 text-white/20 mx-auto mb-4" />
-            <p className="text-white/60">No games found</p>
+            <p className="text-white/60">{t('games.empty')}</p>
           </div>
         )}
       </div>
