@@ -2,12 +2,7 @@
 
 import type { BGGGame, BGGSearchResult } from '@/types';
 export type { BGGGame, BGGExpansion, BGGCharacter, BGGSearchResult } from '@/types';
-
-async function request<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error(`BGG error: ${res.status}`);
-  return res.json() as Promise<T>;
-}
+import { request } from './api/request';
 
 class BGGApiService {
   async searchGames(query: string): Promise<BGGSearchResult[]> {

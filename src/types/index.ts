@@ -18,6 +18,7 @@ export type {
   BGGExpansion,
   BGGCharacter,
   BGGSearchResult,
+  LocaleInfo,
 } from '../../shared/types';
 
 // ── Frontend-only types ──────────────────────────────────────────────────────

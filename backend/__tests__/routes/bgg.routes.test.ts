@@ -23,10 +23,9 @@ beforeEach(() => {
 afterEach(() => conn.close())
 
 describe('GET /api/v1/bgg/search', () => {
-  it('sans q → retourne []', async () => {
+  it('sans q → 400', async () => {
     const res = await request(app).get('/api/v1/bgg/search').set(headers)
-    expect(res.status).toBe(200)
-    expect(res.body).toEqual([])
+    expect(res.status).toBe(400)
   })
 
   it('q sans résultat → []', async () => {

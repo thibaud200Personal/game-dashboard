@@ -20,6 +20,7 @@ import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
 import { withUpdatedAbility, withRemovedAbility, formatExpansion } from '@/utils/gameHelpers';
+import { useLabels } from '@/hooks/useLabels';
 
 interface FormData {
   name: string
@@ -99,6 +100,7 @@ export default function AddGameDialog({
   serverError,
   disabled
 }: AddGameDialogProps) {
+  const { t } = useLabels();
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   const validateForm = (): boolean => {
@@ -106,33 +108,33 @@ export default function AddGameDialog({
 
     // Game name validation (required)
     if (!formData.name.trim()) {
-      newErrors.name = 'Game name is required';
+      newErrors.name = t('games.form.validation.name_required');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Game name must be at least 2 characters long';
+      newErrors.name = t('games.form.validation.name_min');
     }
 
     // Image URL validation (if provided)
     if (formData.image && formData.image.trim()) {
       const urlPattern = /^https?:\/\/.+/i;
       if (!urlPattern.test(formData.image.trim())) {
-        newErrors.image = 'Please enter a valid image URL (https://...)';
+        newErrors.image = t('games.form.validation.image_url');
       }
     }
 
     // Players validation
     if (formData.min_players < 1) {
-      newErrors.min_players = 'Minimum players must be at least 1';
+      newErrors.min_players = t('games.form.validation.min_players');
     }
     if (formData.max_players < 1) {
-      newErrors.max_players = 'Maximum players must be at least 1';
+      newErrors.max_players = t('games.form.validation.max_players_min');
     }
     if (formData.max_players < formData.min_players) {
-      newErrors.max_players = 'Maximum players cannot be less than minimum players';
+      newErrors.max_players = t('games.form.validation.max_players_range');
     }
 
     // Age validation
     if (formData.age_min < 1 || formData.age_min > 99) {
-      newErrors.age_min = 'Age must be between 1 and 99';
+      newErrors.age_min = t('games.form.validation.age');
     }
 
     // Year validation
@@ -143,12 +145,12 @@ export default function AddGameDialog({
 
     // BGG Rating validation
     if (formData.bgg_rating < 0 || formData.bgg_rating > 10) {
-      newErrors.bgg_rating = 'BGG Rating must be between 0 and 10';
+      newErrors.bgg_rating = t('games.form.validation.bgg_rating');
     }
 
     // Weight validation
     if (formData.weight < 0 || formData.weight > 5) {
-      newErrors.weight = 'Weight must be between 0 and 5';
+      newErrors.weight = t('games.form.validation.weight');
     }
 
     setErrors(newErrors);
@@ -237,7 +239,7 @@ export default function AddGameDialog({
       }
     }}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700">
+        <Button aria-label="Open add game dialog" className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700">
           <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -245,7 +247,7 @@ export default function AddGameDialog({
         `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
       }>
         <DialogHeader>
-          <DialogTitle>Add New Game</DialogTitle>
+          <DialogTitle>{t('games.add_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
             Add a new game to your collection by filling out the details below.
           </DialogDescription>
@@ -437,8 +439,8 @@ export default function AddGameDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value="Beginner">Débutant</SelectItem>
-                  <SelectItem value="Intermediate">Intermédiaire</SelectItem>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
                   <SelectItem value="Expert">Expert</SelectItem>
                 </SelectContent>
               </Select>
@@ -458,11 +460,11 @@ export default function AddGameDialog({
                   />
                   <Label htmlFor="supports-competitive" className="text-sm flex items-center">
                     <Sword className="w-3 h-3 mr-1 text-red-400" />
-                    Compétitif
+                    {t('games.card.modes.competitive')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="supports-cooperative"
                     checked={formData.supports_cooperative}
                     onCheckedChange={(checked) => onFormDataChange({ supports_cooperative: checked as boolean })}
@@ -470,11 +472,11 @@ export default function AddGameDialog({
                   />
                   <Label htmlFor="supports-cooperative" className="text-sm flex items-center">
                     <Shield className="w-3 h-3 mr-1 text-blue-400" />
-                    Coopératif
+                    {t('games.card.modes.cooperative')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="supports-campaign"
                     checked={formData.supports_campaign}
                     onCheckedChange={(checked) => onFormDataChange({ supports_campaign: checked as boolean })}
@@ -482,11 +484,11 @@ export default function AddGameDialog({
                   />
                   <Label htmlFor="supports-campaign" className="text-sm flex items-center">
                     <Crown className="w-3 h-3 mr-1 text-purple-400" />
-                    Campagne
+                    {t('games.card.modes.campaign')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="supports-hybrid"
                     checked={formData.supports_hybrid}
                     onCheckedChange={(checked) => onFormDataChange({ supports_hybrid: checked as boolean })}
@@ -494,7 +496,7 @@ export default function AddGameDialog({
                   />
                   <Label htmlFor="supports-hybrid" className="text-sm flex items-center">
                     <Target className="w-3 h-3 mr-1 text-orange-400" />
-                    Hybride
+                    {t('games.card.modes.hybrid')}
                   </Label>
                 </div>
               </div>
@@ -708,6 +710,7 @@ export default function AddGameDialog({
                   <Button
                     type="button"
                     onClick={() => removeCharacter(charIndex)}
+                    aria-label="Remove character"
                     variant="outline"
                     className="border-red-500 text-red-400 hover:bg-red-500/20"
                   >
@@ -744,6 +747,7 @@ export default function AddGameDialog({
                       <Button
                         type="button"
                         onClick={() => removeAbility(charIndex, abilityIndex)}
+                        aria-label="Remove ability"
                         variant="outline"
                         className="border-red-500 text-red-400 hover:bg-red-500/20 h-8 w-8 p-0"
                       >
@@ -762,7 +766,7 @@ export default function AddGameDialog({
             <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
           )}
           <Button onClick={handleAddGame} disabled={!!disabled} className="w-full bg-emerald-600 hover:bg-emerald-700">
-            Add Game
+            {t('games.add_dialog.submit')}
           </Button>
         </div>
       </DialogContent>

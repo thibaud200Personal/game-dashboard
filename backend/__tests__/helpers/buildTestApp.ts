@@ -21,32 +21,40 @@ import { createSessionRouter } from '../../routes/sessions'
 import { createStatsRouter } from '../../routes/stats'
 import { createDataRouter } from '../../routes/data'
 import { createBggRouter } from '../../routes/bgg'
+import { LabelsRepository } from '../../repositories/LabelsRepository'
+import { LabelsService } from '../../services/LabelsService'
+import { createLabelsRouter } from '../../routes/labels'
+import { RefreshTokenRepository } from '../../repositories/RefreshTokenRepository'
 
 export const TEST_JWT_SECRET = 'test-secret-at-least-32-chars-long!!'
 export const TEST_ADMIN_PASS = 'adminpass'
 export const TEST_USER_PASS  = 'userpass'
 
 export function buildTestApp() {
-  const conn        = new DatabaseConnection(':memory:')
-  const authService = new AuthService(TEST_JWT_SECRET, TEST_ADMIN_PASS, TEST_USER_PASS)
-  const authenticate = createAuthMiddleware(authService)
+  const conn             = new DatabaseConnection(':memory:')
+  const refreshTokenRepo = new RefreshTokenRepository(conn.db)
+  const authService      = new AuthService(TEST_JWT_SECRET, TEST_ADMIN_PASS, TEST_USER_PASS, refreshTokenRepo)
+  const authenticate     = createAuthMiddleware(authService)
 
   const playerRepo  = new PlayerRepository(conn.db)
   const gameRepo    = new GameRepository(conn.db)
   const sessionRepo = new SessionRepository(conn.db)
   const statsRepo   = new StatsRepository(conn.db)
   const bggRepo     = new BGGRepository(conn.db)
+  const labelsRepo  = new LabelsRepository(conn.db)
 
   const playerService  = new PlayerService(playerRepo)
   const gameService    = new GameService(gameRepo)
   const sessionService = new SessionService(conn.db, sessionRepo)
   const statsService   = new StatsService(statsRepo)
+  const labelsService  = new LabelsService(labelsRepo)
 
   const app = express()
   app.use(express.json())
   app.use(cookieParser())
 
   app.use('/api/v1/auth',    createAuthRouter(authService))
+  app.use('/api/v1/labels',  createLabelsRouter(labelsService))
   app.use('/api/v1/players', authenticate, createPlayerRouter(playerService))
   app.use('/api/v1/games',   authenticate, createGameRouter(gameService))
   app.use('/api/v1/sessions',authenticate, createSessionRouter(sessionService))
@@ -55,7 +63,7 @@ export function buildTestApp() {
   app.use('/api/v1/bgg',     authenticate, createBggRouter(bggRepo))
   app.use(errorHandler)
 
-  return { app, conn, authService, bggRepo }
+  return { app, conn, authService, bggRepo, refreshTokenRepo }
 }
 
 /** Returns an admin token in Authorization: Bearer <token> header format */

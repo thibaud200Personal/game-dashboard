@@ -6,6 +6,7 @@ import {
   Star,
   ChartBar
 } from '@phosphor-icons/react';
+import { useLabels } from '@/hooks/useLabels';
 
 interface Player {
   player_id: number
@@ -101,6 +102,7 @@ export default function PlayerStatsView({
   currentView: _currentView,
   darkMode
 }: PlayerStatsViewProps) {
+  const { t } = useLabels();
   const isDark = darkMode;
   const labelClass = isDark ? "text-white/60 text-sm" : "text-slate-500 text-sm";
   const titleClass = isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900";
@@ -118,29 +120,30 @@ export default function PlayerStatsView({
           <div className={cardClass}>
             <div className="flex items-center space-x-4 mb-6">
               <img
-                src={selectedPlayer.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
-                alt={selectedPlayer.player_name}
+                src={selectedPlayer.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face&fm=webp&q=70`}
+                alt=""
                 className="w-16 h-16 rounded-full object-cover"
+                loading="lazy"
               />
               <div>
                 <h2 className={titleClass}>{selectedPlayer.player_name}</h2>
-                <p className={labelClass}>Player Profile</p>
+                <p className={labelClass}>{t('stats.player.profile')}</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={selectedPlayer.wins} label="Wins" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={selectedPlayer.games_played} label="Games Played" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><Star className="w-5 h-5" /></div>} value={selectedPlayer.total_score} label="Total Score" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center"><ChartBar className="w-5 h-5" /></div>} value={selectedPlayer.average_score} label="Avg Score" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+            <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={selectedPlayer.wins} label={t('stats.player.stat.wins')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+            <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={selectedPlayer.games_played} label={t('stats.player.stat.games_played')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+            <StatCard icon={<div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><Star className="w-5 h-5" /></div>} value={selectedPlayer.total_score} label={t('stats.player.stat.total_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+            <StatCard icon={<div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center"><ChartBar className="w-5 h-5" /></div>} value={selectedPlayer.average_score} label={t('stats.player.stat.avg_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
           </div>
 
           {selectedPlayer.favorite_game && (
             <div className={cardClass}>
               <h3 className={sectionTitleClass.replace('mb-4', 'mb-2')}>
                 <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                Favorite Game
+                {t('stats.player.favorite_game')}
               </h3>
               <div className="text-xl font-medium">{selectedPlayer.favorite_game}</div>
             </div>
@@ -148,8 +151,8 @@ export default function PlayerStatsView({
         </>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={stats.totalPlayers} label="Total Players" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-          <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={stats.avgScore} label="Avg Score" cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+          <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={stats.totalPlayers} label={t('stats.player.stat.total_players')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+          <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={stats.avgScore} label={t('stats.player.stat.avg_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
         </div>
       )}
 
@@ -158,7 +161,7 @@ export default function PlayerStatsView({
         <div className={cardSmClass}>
           <h2 className={sectionTitleClass}>
             <Star className="w-5 h-5 mr-2 text-yellow-400" />
-            Top Players
+            {t('stats.player.top_players')}
           </h2>
           <div className="space-y-3">
             {topPlayers.map((player, index) => (
@@ -167,9 +170,10 @@ export default function PlayerStatsView({
                   {index + 1}
                 </div>
                 <img
-                  src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
-                  alt={player.player_name}
+                  src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&fm=webp&q=70`}
+                  alt=""
                   className="w-8 h-8 rounded-full object-cover"
+                  loading="lazy"
                 />
                 <div className="flex-1">
                   <div className={valueClass + " font-medium"}>{player.player_name}</div>
@@ -202,7 +206,7 @@ export default function PlayerStatsView({
                 labelClass={labelClass}
               />
             )) : (
-              <div className="text-center py-4 text-white/60">No recent games found</div>
+              <div className="text-center py-4 text-white/60">{t('stats.player.recent.empty')}</div>
             )}
           </div>
         </div>
@@ -213,7 +217,7 @@ export default function PlayerStatsView({
         <div className={cardSmClass}>
           <h2 className={sectionTitleClass}>
             <Clock className="w-5 h-5 mr-2 text-blue-400" />
-            Recent Activity
+            {t('stats.player.activity.title')}
           </h2>
           <div className="space-y-3">
             {recentActivity.map((activity, index) => (
@@ -240,7 +244,7 @@ export default function PlayerStatsView({
         </h2>
         <div className={labelClass + " text-center py-8"}>
           <ChartBar className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p>Detailed charts coming soon...</p>
+          <p>{t('stats.player.performance.coming_soon')}</p>
         </div>
       </div>
     </div>

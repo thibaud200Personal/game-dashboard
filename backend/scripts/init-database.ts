@@ -1,4 +1,5 @@
-import DatabaseManager from '../database/DatabaseManager';
+import { DatabaseConnection } from '../database/DatabaseConnection';
+import * as path from 'path';
 import winston from 'winston';
 
 // Logger setup
@@ -10,20 +11,21 @@ const logger = winston.createLogger({
   ]
 });
 
-async function initializeDatabase() {
+function initializeDatabase() {
   logger.info('Initializing database...');
 
   try {
-    const db = new DatabaseManager();
+    const dbPath = process.env.DB_PATH ?? path.join(__dirname, '../database/board_game_score.db');
+    const db = new DatabaseConnection(dbPath);
     logger.info('Database initialized successfully!');
 
-    // Verify initialization by getting counts
-    const playerStats = db.getPlayerStats() as { total_players: number };
-    const gameStats = db.getGameStats() as { total_games: number };
+    // Verify initialization by checking schema_version
+    const migrations = db.db.prepare('SELECT COUNT(*) as count FROM schema_version').get() as { count: number };
+    const labels = db.db.prepare('SELECT COUNT(*) as count FROM labels').get() as { count: number };
 
     logger.info('Database contents:');
-    logger.info(`- Players: ${playerStats.total_players}`);
-    logger.info(`- Games: ${gameStats.total_games}`);
+    logger.info(`- Migrations applied: ${migrations.count}`);
+    logger.info(`- Labels seeded: ${labels.count}`);
 
     db.close();
     logger.info('Database connection closed.');

@@ -253,3 +253,8 @@ export interface BGGGame {
   is_expansion: boolean
   base_game_id?: number
 }
+
+export interface LocaleInfo {
+  locale: string
+  name: string
+}

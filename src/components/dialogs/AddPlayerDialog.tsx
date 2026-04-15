@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { PlayerFormData } from '@/types';
+import { useLabels } from '@/hooks/useLabels';
 
 interface AddPlayerDialogProps {
   isOpen: boolean;
@@ -25,26 +26,26 @@ interface ValidationErrors {
 
 const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
 
-function validateAddPlayerForm(formData: PlayerFormData): ValidationErrors {
+function validateAddPlayerForm(formData: PlayerFormData, t: (key: string) => string): ValidationErrors {
   const errors: ValidationErrors = {};
 
   if (!formData.player_name.trim()) {
-    errors.player_name = 'Le nom du joueur est requis';
+    errors.player_name = t('players.form.validation.name_required');
   } else if (formData.player_name.trim().length < 2) {
-    errors.player_name = 'Le nom doit contenir au moins 2 caractères';
+    errors.player_name = t('players.form.validation.name_min');
   } else if (formData.player_name.trim().length > 50) {
-    errors.player_name = 'Le nom ne peut pas dépasser 50 caractères';
+    errors.player_name = t('players.form.validation.name_max');
   }
 
   const pseudoVal = formData.pseudo.trim();
   if (pseudoVal.length > 0 && pseudoVal.length < 2) {
-    errors.pseudo = 'Le pseudo doit contenir au moins 2 caractères';
+    errors.pseudo = t('players.form.validation.pseudo_min');
   } else if (pseudoVal.length > 50) {
-    errors.pseudo = 'Le pseudo ne peut pas dépasser 50 caractères';
+    errors.pseudo = t('players.form.validation.pseudo_max');
   }
 
   if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
-    errors.avatar = 'URL d\'image invalide (jpg, jpeg, png, gif, webp)';
+    errors.avatar = t('players.form.validation.avatar_url');
   }
 
   return errors;
@@ -68,6 +69,7 @@ export function AddPlayerDialog({
   darkMode = true,
   serverError
 }: AddPlayerDialogProps) {
+  const { t } = useLabels();
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [pseudoTouched, setPseudoTouched] = useState(false);
 
@@ -77,7 +79,7 @@ export function AddPlayerDialog({
   };
 
   const handleAdd = () => {
-    const newErrors = validateAddPlayerForm(formData);
+    const newErrors = validateAddPlayerForm(formData, t);
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
       onAdd();
@@ -107,13 +109,13 @@ export function AddPlayerDialog({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className={darkMode ? "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700" : "bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 text-blue-700"}>
+        <Button aria-label="Open add player dialog" className={darkMode ? "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700" : "bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 text-blue-700"}>
           <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className={darkMode ? "bg-slate-800 border-white/20" : "bg-white border-slate-200 text-slate-900"}>
         <DialogHeader>
-          <DialogTitle className={darkMode ? "text-white" : "text-blue-700"}>Add New Player</DialogTitle>
+          <DialogTitle className={darkMode ? "text-white" : "text-blue-700"}>{t('players.add_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-500"}>
             Create a new player profile by filling out the form below.
           </DialogDescription>
@@ -156,22 +158,22 @@ export function AddPlayerDialog({
             {errors.avatar && <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>}
           </div>
           <div>
-            <Label htmlFor="favorite_game" className={darkMode ? "text-white" : "text-blue-700"}>Favorite Game</Label>
+            <Label htmlFor="favorite_game" className={darkMode ? "text-white" : "text-blue-700"}>{t('players.form.favorite_game.label')}</Label>
             <Input
               id="favorite_game"
               name="favorite_game"
               value={formData.favorite_game}
               onChange={(e) => handleInputChange('favorite_game', e.target.value)}
               className={darkMode ? "bg-white/10 border-white/20 text-white" : "bg-slate-100 border-slate-300 text-slate-900"}
-              placeholder="Enter favorite game (optional)"
+              placeholder={t('players.form.favorite_game.placeholder')}
             />
           </div>
           {serverError && (
             <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
           )}
           <div className="flex gap-4">
-            <Button onClick={handleAdd} className="flex-1">Ajouter</Button>
-            <Button variant="outline" onClick={onCancel} className="flex-1">Annuler</Button>
+            <Button onClick={handleAdd} className="flex-1">{t('common.buttons.add')}</Button>
+            <Button variant="outline" onClick={onCancel} className="flex-1">{t('common.buttons.cancel')}</Button>
           </div>
         </div>
       </DialogContent>
