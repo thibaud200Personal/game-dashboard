@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { DatabaseConnection } from '../../../database/DatabaseConnection'
 import { PlayerRepository } from '../../../repositories/PlayerRepository'
 import { GameRepository } from '../../../repositories/GameRepository'
-import { SessionRepository } from '../../../repositories/SessionRepository'
-import { SessionService } from '../../../services/SessionService'
+import { PlayRepository } from '../../../repositories/PlayRepository'
+import { PlayService } from '../../../services/PlayService'
 
 let conn: DatabaseConnection
-let service: SessionService
+let service: PlayService
 let playerId: number
 let gameId: number
 
@@ -14,8 +14,8 @@ beforeEach(() => {
   conn = new DatabaseConnection(':memory:')
   const playerRepo = new PlayerRepository(conn.db)
   const gameRepo = new GameRepository(conn.db)
-  const sessionRepo = new SessionRepository(conn.db)
-  service = new SessionService(conn.db, sessionRepo)
+  const playRepo = new PlayRepository(conn.db)
+  service = new PlayService(conn.db, playRepo)
 
   playerId = playerRepo.create({ player_name: 'Bob', pseudo: 'bob' })
   gameId = gameRepo.create({
@@ -28,17 +28,18 @@ beforeEach(() => {
 
 afterEach(() => conn.close())
 
-describe('SessionService', () => {
-  it('creates session and session_players atomically', () => {
+describe('PlayService', () => {
+  it('creates play and players_play atomically', () => {
     const result = service.createSession({
       game_id: gameId,
       session_type: 'competitive',
       players: [{ player_id: playerId, score: 10, is_winner: true }],
     })
-    expect(result.session_id).toBeTruthy()
+    const playId = (result as any).play_id
+    expect(playId).toBeTruthy()
     const players = conn.db
-      .prepare('SELECT * FROM session_players WHERE session_id = ?')
-      .all(result.session_id)
+      .prepare('SELECT * FROM players_play WHERE play_id = ?')
+      .all(playId)
     expect(players).toHaveLength(1)
   })
 
@@ -50,21 +51,21 @@ describe('SessionService', () => {
         players: [{ player_id: 9999, score: 10, is_winner: false }],
       })
     ).toThrow()
-    const sessions = conn.db
-      .prepare('SELECT COUNT(*) as n FROM game_sessions')
+    const plays = conn.db
+      .prepare('SELECT COUNT(*) as n FROM game_plays')
       .get() as { n: number }
-    expect(sessions.n).toBe(0)
+    expect(plays.n).toBe(0)
   })
 
-  it('getAllSessions returns all sessions', () => {
+  it('getAllSessions returns all plays', () => {
     service.createSession({ game_id: gameId, session_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
     expect(service.getAllSessions()).toHaveLength(1)
   })
 
-  it('deleteSession removes session and cascades to players', () => {
-    const session = service.createSession({ game_id: gameId, session_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
-    service.deleteSession(session.session_id)
-    const sp = conn.db.prepare('SELECT COUNT(*) as n FROM session_players').get() as { n: number }
+  it('deleteSession removes play and cascades to players', () => {
+    const play = service.createSession({ game_id: gameId, session_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
+    service.deleteSession((play as any).play_id)
+    const sp = conn.db.prepare('SELECT COUNT(*) as n FROM players_play').get() as { n: number }
     expect(sp.n).toBe(0)
   })
 })

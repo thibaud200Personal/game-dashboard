@@ -1,20 +1,20 @@
 import { Router } from 'express'
-import type { SessionService } from '../services/SessionService'
+import type { PlayService } from '../services/PlayService'
 import { validateBody } from '../validation/middleware'
 import { CreateSessionSchema } from '../validation/schemas'
 
-export function createSessionRouter(sessionService: SessionService): Router {
+export function createPlayRouter(playService: PlayService): Router {
   const router = Router()
 
-  router.get('/', (_req, res) => res.json(sessionService.getAllSessions()))
+  router.get('/', (_req, res) => res.json(playService.getAllSessions()))
 
   router.post('/', validateBody(CreateSessionSchema), (req, res) => {
-    const session = sessionService.createSession(req.body)
+    const session = playService.createSession(req.body)
     res.status(201).json(session)
   })
 
   router.delete('/:id', (req, res) => {
-    sessionService.deleteSession(Number(req.params.id))
+    playService.deleteSession(Number(req.params.id))
     res.status(204).send()
   })
 

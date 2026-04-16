@@ -7,16 +7,16 @@ export class StatsRepository {
   getDashboard(): DashboardStats {
     const players  = (this.db.prepare('SELECT COUNT(*) as n FROM players').get() as { n: number }).n
     const games    = (this.db.prepare('SELECT COUNT(*) as n FROM games WHERE is_expansion = 0').get() as { n: number }).n
-    const sessions = (this.db.prepare('SELECT COUNT(*) as n FROM game_sessions').get() as { n: number }).n
-    const avgRow   = this.db.prepare(
-      'SELECT COALESCE(AVG(duration_minutes), 0) as avg FROM game_sessions WHERE duration_minutes IS NOT NULL'
+    const plays  = (this.db.prepare('SELECT COUNT(*) as n FROM game_plays').get() as { n: number }).n
+    const avgRow = this.db.prepare(
+      'SELECT COALESCE(AVG(duration_minutes), 0) as avg FROM game_plays WHERE duration_minutes IS NOT NULL'
     ).get() as { avg: number }
 
     return {
       total_players: players,
       total_games: games,
-      total_sessions: sessions,
-      average_session_duration: Math.round(avgRow.avg),
+      total_plays: plays,
+      average_play_duration: Math.round(avgRow.avg),
     }
   }
 

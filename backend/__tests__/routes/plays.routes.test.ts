@@ -1,4 +1,4 @@
-// backend/__tests__/routes/sessions.routes.test.ts
+// backend/__tests__/routes/plays.routes.test.ts
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
 import { buildTestApp, authHeader } from '../helpers/buildTestApp'
@@ -28,45 +28,46 @@ beforeEach(async () => {
 })
 afterEach(() => conn.close())
 
-describe('GET /api/v1/sessions', () => {
+describe('GET /api/v1/plays', () => {
   it('retourne [] sur DB vide', async () => {
-    const res = await request(app).get('/api/v1/sessions').set(headers)
+    const res = await request(app).get('/api/v1/plays').set(headers)
     expect(res.status).toBe(200)
     expect(res.body).toEqual([])
   })
 })
 
-describe('POST /api/v1/sessions', () => {
-  it('crée une session → 201', async () => {
-    const res = await request(app).post('/api/v1/sessions').set(headers).send({
+describe('POST /api/v1/plays', () => {
+  it('crée un play → 201', async () => {
+    const res = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
       session_type: 'competitive',
       players: [{ player_id: playerId, score: 42, is_winner: true }],
     })
     expect(res.status).toBe(201)
-    expect(res.body.session_id).toBeTruthy()
+    expect((res.body as any).play_id).toBeTruthy()
   })
 
   it('player_id inexistant → rollback + 500', async () => {
-    const res = await request(app).post('/api/v1/sessions').set(headers).send({
+    const res = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
       session_type: 'competitive',
       players: [{ player_id: 9999, score: 0, is_winner: false }],
     })
     expect(res.status).toBe(500)
-    // La session ne doit pas avoir été créée
-    const list = await request(app).get('/api/v1/sessions').set(headers)
+    // Le play ne doit pas avoir été créé
+    const list = await request(app).get('/api/v1/plays').set(headers)
     expect(list.body).toHaveLength(0)
   })
 })
 
-describe('DELETE /api/v1/sessions/:id', () => {
-  it('supprime la session → 204', async () => {
-    const created = await request(app).post('/api/v1/sessions').set(headers).send({
+describe('DELETE /api/v1/plays/:id', () => {
+  it('supprime le play → 204', async () => {
+    const created = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
       session_type: 'competitive',
       players: [{ player_id: playerId, score: 10, is_winner: true }],
     })
-    expect((await request(app).delete(`/api/v1/sessions/${created.body.session_id}`).set(headers)).status).toBe(204)
+    const playId = (created.body as any).play_id
+    expect((await request(app).delete(`/api/v1/plays/${playId}`).set(headers)).status).toBe(204)
   })
 })

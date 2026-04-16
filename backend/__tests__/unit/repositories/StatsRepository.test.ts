@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { DatabaseConnection } from '../../../database/DatabaseConnection'
 import { PlayerRepository } from '../../../repositories/PlayerRepository'
 import { GameRepository } from '../../../repositories/GameRepository'
-import { SessionRepository } from '../../../repositories/SessionRepository'
+import { PlayRepository } from '../../../repositories/PlayRepository'
 import { StatsRepository } from '../../../repositories/StatsRepository'
 
 let conn: DatabaseConnection
@@ -22,14 +22,14 @@ beforeEach(() => {
   conn = new DatabaseConnection(':memory:')
   const playerRepo  = new PlayerRepository(conn.db)
   const gameRepo    = new GameRepository(conn.db)
-  const sessionRepo = new SessionRepository(conn.db)
+  const playRepo    = new PlayRepository(conn.db)
   statsRepo = new StatsRepository(conn.db)
 
   playerId = playerRepo.create({ player_name: 'Alice', pseudo: 'alice' })
   gameId   = gameRepo.create(baseGame)
 
-  const sessionId = sessionRepo.insertSession({ game_id: gameId, session_type: 'competitive' })
-  sessionRepo.insertSessionPlayers(sessionId, [{ player_id: playerId, score: 42, is_winner: true }])
+  const playId = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+  playRepo.insertPlayPlayers(playId, [{ player_id: playerId, score: 42, is_winner: true }])
 })
 
 afterEach(() => conn.close())
@@ -39,8 +39,8 @@ describe('StatsRepository.getDashboard', () => {
     const d = statsRepo.getDashboard()
     expect(d.total_players).toBe(1)
     expect(d.total_games).toBe(1)
-    expect(d.total_sessions).toBe(1)
-    expect(typeof d.average_session_duration).toBe('number')
+    expect(d.total_plays).toBe(1)
+    expect(typeof d.average_play_duration).toBe('number')
   })
 
   it('ne compte pas les expansions dans total_games', () => {

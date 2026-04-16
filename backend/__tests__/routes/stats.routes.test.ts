@@ -25,7 +25,7 @@ beforeEach(async () => {
   })
   playerId = p.body.player_id
   gameId   = g.body.game_id
-  await request(app).post('/api/v1/sessions').set(headers).send({
+  await request(app).post('/api/v1/plays').set(headers).send({
     game_id: gameId, session_type: 'competitive',
     players: [{ player_id: playerId, score: 10, is_winner: true }],
   })
@@ -37,7 +37,7 @@ describe('GET /api/v1/stats/dashboard', () => {
     const res = await request(app).get('/api/v1/stats/dashboard').set(headers)
     expect(res.status).toBe(200)
     expect(res.body.total_players).toBe(1)
-    expect(res.body.total_sessions).toBe(1)
+    expect(res.body.total_plays).toBe(1)
   })
 })
 

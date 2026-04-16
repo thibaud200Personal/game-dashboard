@@ -7,17 +7,17 @@ import { createAuthMiddleware } from '../../middleware/auth'
 import { errorHandler } from '../../middleware/errorHandler'
 import { PlayerRepository } from '../../repositories/PlayerRepository'
 import { GameRepository } from '../../repositories/GameRepository'
-import { SessionRepository } from '../../repositories/SessionRepository'
+import { PlayRepository } from '../../repositories/PlayRepository'
 import { StatsRepository } from '../../repositories/StatsRepository'
 import { BGGRepository } from '../../repositories/BGGRepository'
 import { PlayerService } from '../../services/PlayerService'
 import { GameService } from '../../services/GameService'
-import { SessionService } from '../../services/SessionService'
+import { PlayService } from '../../services/PlayService'
 import { StatsService } from '../../services/StatsService'
 import { createAuthRouter } from '../../routes/auth'
 import { createPlayerRouter } from '../../routes/players'
 import { createGameRouter } from '../../routes/games'
-import { createSessionRouter } from '../../routes/sessions'
+import { createPlayRouter } from '../../routes/plays'
 import { createStatsRouter } from '../../routes/stats'
 import { createDataRouter } from '../../routes/data'
 import { createBggRouter } from '../../routes/bgg'
@@ -38,14 +38,14 @@ export function buildTestApp() {
 
   const playerRepo  = new PlayerRepository(conn.db)
   const gameRepo    = new GameRepository(conn.db)
-  const sessionRepo = new SessionRepository(conn.db)
+  const playRepo    = new PlayRepository(conn.db)
   const statsRepo   = new StatsRepository(conn.db)
   const bggRepo     = new BGGRepository(conn.db)
   const labelsRepo  = new LabelsRepository(conn.db)
 
   const playerService  = new PlayerService(playerRepo)
   const gameService    = new GameService(gameRepo)
-  const sessionService = new SessionService(conn.db, sessionRepo)
+  const playService    = new PlayService(conn.db, playRepo)
   const statsService   = new StatsService(statsRepo)
   const labelsService  = new LabelsService(labelsRepo)
 
@@ -57,7 +57,7 @@ export function buildTestApp() {
   app.use('/api/v1/labels',  createLabelsRouter(labelsService))
   app.use('/api/v1/players', authenticate, createPlayerRouter(playerService))
   app.use('/api/v1/games',   authenticate, createGameRouter(gameService))
-  app.use('/api/v1/sessions',authenticate, createSessionRouter(sessionService))
+  app.use('/api/v1/plays',   authenticate, createPlayRouter(playService))
   app.use('/api/v1/stats',   authenticate, createStatsRouter(statsService))
   app.use('/api/v1/data',    authenticate, createDataRouter(conn.db))
   app.use('/api/v1/bgg',     authenticate, createBggRouter(bggRepo))
