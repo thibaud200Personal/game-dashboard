@@ -219,7 +219,7 @@ Migration séquentielle, feature par feature. Les tests doivent passer avant de 
 7. `features/settings/`
 8. `features/stats/`
 9. Supprimer les anciens dossiers (`src/components/`, `src/views/`, `src/hooks/`)
-10. Mettre à jour CLAUDE.md, FRONTEND.md, DEVELOPMENT.md
+10. Mettre à jour la documentation : CLAUDE.md, `docs/architecture/FRONTEND.md`, `docs/guides/CONTRIBUTING.md`, `docs/guides/DEVELOPMENT.md`, `README.md`, `ROADMAP.md`
 
 À chaque étape : déplacer les fichiers → mettre à jour les imports → vérifier que les tests passent.
 
