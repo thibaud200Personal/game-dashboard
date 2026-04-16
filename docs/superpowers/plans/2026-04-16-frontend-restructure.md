@@ -19,11 +19,11 @@
 | Avant | Après |
 |---|---|
 | Table `game_sessions` | `game_plays` |
-| Table `session_players` | `play_players` |
+| Table `session_players` | `players_play` |
 | Colonne `session_id` | `play_id` |
 | Colonne `session_date` | `play_date` |
 | Colonne `session_type` | `play_type` |
-| Colonne `session_player_id` | `play_player_id` |
+| Colonne `session_player_id` | `players_play_id` |
 | Type TS `GameSession` | `GamePlay` |
 | Type TS `SessionPlayer` | `PlayPlayer` |
 | Type TS `CreateSessionRequest` | `CreatePlayRequest` |
@@ -55,16 +55,16 @@ Créer `backend/database/migrations/013_rename_sessions_to_plays.sql` avec le co
 
 -- 1. Renommer les tables
 ALTER TABLE game_sessions RENAME TO game_plays;
-ALTER TABLE session_players RENAME TO play_players;
+ALTER TABLE session_players RENAME TO players_play;
 
 -- 2. Renommer les colonnes de game_plays
 ALTER TABLE game_plays RENAME COLUMN session_id   TO play_id;
 ALTER TABLE game_plays RENAME COLUMN session_date TO play_date;
 ALTER TABLE game_plays RENAME COLUMN session_type TO play_type;
 
--- 3. Renommer les colonnes de play_players
-ALTER TABLE play_players RENAME COLUMN session_player_id TO play_player_id;
-ALTER TABLE play_players RENAME COLUMN session_id        TO play_id;
+-- 3. Renommer les colonnes de players_play
+ALTER TABLE players_play RENAME COLUMN session_player_id TO players_play_id;
+ALTER TABLE players_play RENAME COLUMN session_id        TO play_id;
 
 -- 4. Mettre à jour les index
 DROP INDEX IF EXISTS idx_game_sessions_game_id;
@@ -74,8 +74,8 @@ DROP INDEX IF EXISTS idx_session_players_player_id;
 
 CREATE INDEX IF NOT EXISTS idx_game_plays_game_id      ON game_plays(game_id);
 CREATE INDEX IF NOT EXISTS idx_game_plays_date         ON game_plays(play_date);
-CREATE INDEX IF NOT EXISTS idx_play_players_play_id    ON play_players(play_id);
-CREATE INDEX IF NOT EXISTS idx_play_players_player_id  ON play_players(player_id);
+CREATE INDEX IF NOT EXISTS idx_players_play_play_id    ON players_play(play_id);
+CREATE INDEX IF NOT EXISTS idx_players_play_player_id  ON players_play(player_id);
 
 -- 5. Recréer les vues (elles référençaient les anciens noms)
 DROP VIEW IF EXISTS player_statistics;
@@ -96,7 +96,7 @@ SELECT
     (COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) * 100.0 /
      NULLIF(COUNT(DISTINCT sp.play_id), 0))                                                AS win_percentage
 FROM players p
-LEFT JOIN play_players sp ON p.player_id = sp.player_id
+LEFT JOIN players_play sp ON p.player_id = sp.player_id
 GROUP BY p.player_id;
 
 CREATE VIEW game_statistics AS
@@ -113,10 +113,10 @@ SELECT
     g.created_at,
     COUNT(DISTINCT gp.play_id)                                                   AS times_played,
     (SELECT COUNT(DISTINCT pp.player_id)
-     FROM play_players pp
+     FROM players_play pp
      WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS unique_players,
     (SELECT COALESCE(AVG(pp.score), 0)
-     FROM play_players pp
+     FROM players_play pp
      WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS average_score,
     (SELECT COALESCE(AVG(gp2.duration_minutes), 0)
      FROM game_plays gp2 WHERE gp2.game_id = g.game_id)                          AS average_duration
@@ -137,7 +137,7 @@ Si les migrations sont dans un sous-dossier différent de `database/migrations/`
 
 - [ ] **Step 3 : Mettre à jour `backend/database/schema.sql`**
 
-Ce fichier est le schéma idempotent de référence. Mettre à jour toutes les occurrences de `game_sessions`/`session_players`/colonnes `session_*` pour refléter le nouvel état final (game_plays, play_players, play_id, play_date, play_type, play_player_id).
+Ce fichier est le schéma idempotent de référence. Mettre à jour toutes les occurrences de `game_sessions`/`session_players`/colonnes `session_*` pour refléter le nouvel état final (game_plays, players_play, play_id, play_date, play_type, players_play_id).
 
 - [ ] **Step 4 : Commit**
 
@@ -165,12 +165,12 @@ git mv backend/repositories/SessionRepository.ts backend/repositories/PlayReposi
 
 Dans `backend/repositories/PlayRepository.ts` :
 - Renommer la classe : `SessionRepository` → `PlayRepository`
-- Remplacer toutes les occurrences SQL : `game_sessions` → `game_plays`, `session_players` → `play_players`
-- Renommer colonnes dans les requêtes : `session_id` → `play_id`, `session_date` → `play_date`, `session_type` → `play_type`, `session_player_id` → `play_player_id`
+- Remplacer toutes les occurrences SQL : `game_sessions` → `game_plays`, `session_players` → `players_play`
+- Renommer colonnes dans les requêtes : `session_id` → `play_id`, `session_date` → `play_date`, `session_type` → `play_type`, `session_player_id` → `players_play_id`
 - Mettre à jour les types dans les paramètres de méthode : `GameSession` → `GamePlay`, `CreateSessionRequest` → `CreatePlayRequest` (les types seront mis à jour en Task 0.2)
 
 ```bash
-sed -i "s|game_sessions|game_plays|g; s|session_players|play_players|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|session_player_id|play_player_id|g; s|SessionRepository|PlayRepository|g" backend/repositories/PlayRepository.ts
+sed -i "s|game_sessions|game_plays|g; s|session_players|players_play|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|session_player_id|players_play_id|g; s|SessionRepository|PlayRepository|g" backend/repositories/PlayRepository.ts
 ```
 
 Vérifier manuellement le résultat — les colonnes `player_id` ne doivent PAS être altérées (le sed `session_id → play_id` ne touche que `session_id`, pas `player_id`).
@@ -198,7 +198,7 @@ sed -i "s|SessionService|PlayService|g; s|session_id|play_id|g; s|GameSession|Ga
 - [ ] **Step 4 : Mettre à jour `StatsRepository.ts`**
 
 ```bash
-sed -i "s|game_sessions|game_plays|g; s|session_players|play_players|g; s|session_id|play_id|g" backend/repositories/StatsRepository.ts
+sed -i "s|game_sessions|game_plays|g; s|session_players|players_play|g; s|session_id|play_id|g" backend/repositories/StatsRepository.ts
 ```
 
 - [ ] **Step 5 : Mettre à jour `server.ts`**
@@ -240,8 +240,8 @@ git mv "backend/__tests__/unit/services/SessionService.test.ts" "backend/__tests
 Mettre à jour le contenu des tests :
 
 ```bash
-sed -i "s|SessionRepository|PlayRepository|g; s|SessionService|PlayService|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|play_players|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g; s|/sessions|/plays|g" backend/__tests__/routes/plays.routes.test.ts
-sed -i "s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|play_players|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/__tests__/unit/repositories/PlayRepository.test.ts
+sed -i "s|SessionRepository|PlayRepository|g; s|SessionService|PlayService|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|players_play|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g; s|/sessions|/plays|g" backend/__tests__/routes/plays.routes.test.ts
+sed -i "s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|players_play|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/__tests__/unit/repositories/PlayRepository.test.ts
 sed -i "s|SessionService|PlayService|g; s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/__tests__/unit/services/PlayService.test.ts
 ```
 
@@ -319,7 +319,7 @@ export interface GamePlay {
   // ...
 }
 export interface PlayPlayer {
-  play_player_id?: number
+  players_play_id?: number
   play_id: number
   // ...
 }
