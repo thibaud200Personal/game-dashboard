@@ -1,12 +1,414 @@
-# Restructuration feature-based du frontend
+# Restructuration feature-based du frontend + renommage sessions → plays
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Réorganiser `src/` d'une architecture par type de fichier (components/views/hooks) vers une architecture feature-based (features/games/, features/players/, etc.) avec `src/shared/` pour les modules transversaux.
+**Goal:** (1) Renommer `sessions` → `plays` dans toute la stack (DB, backend, types, frontend) pour éviter la confusion avec les sessions utilisateur JWT. (2) Réorganiser `src/` vers une architecture feature-based avec `src/shared/` pour les modules transversaux.
 
 **Architecture:** Chaque feature est autonome : container + vue + hook + API + dialogs + tests co-localisés. Les modules transversaux (shadcn UI, auth, i18n, hooks partagés) vivent dans `src/shared/`. Aucune feature n'importe depuis une autre feature (sauf `features/bgg/` qui est une feature utilitaire).
 
-**Tech Stack:** React 19, TypeScript, Vite (alias `@/` → `src/`, `@shared` → `/shared` pour les types partagés front+back), Vitest, MSW, React Query v5
+**Tech Stack:** React 19, TypeScript, Vite (alias `@/` → `src/`, `@shared` → `/shared` pour les types partagés front+back), Vitest, MSW, React Query v5, Express 5, SQLite (better-sqlite3)
+
+---
+
+## Phase 0 : Renommage sessions → plays (full stack)
+
+> Faire cette phase en entier AVANT la restructuration feature-based. Les tests backend ET frontend doivent passer avant de passer à la Phase 1.
+
+### Correspondance des renommages
+
+| Avant | Après |
+|---|---|
+| Table `game_sessions` | `game_plays` |
+| Table `session_players` | `play_players` |
+| Colonne `session_id` | `play_id` |
+| Colonne `session_date` | `play_date` |
+| Colonne `session_type` | `play_type` |
+| Colonne `session_player_id` | `play_player_id` |
+| Type TS `GameSession` | `GamePlay` |
+| Type TS `SessionPlayer` | `PlayPlayer` |
+| Type TS `CreateSessionRequest` | `CreatePlayRequest` |
+| Champ stats `total_sessions` | `total_plays` |
+| Champ stats `average_session_duration` | `average_play_duration` |
+| `SessionRepository` | `PlayRepository` |
+| `SessionService` | `PlayService` |
+| Route `/api/v1/sessions` | `/api/v1/plays` |
+| Fichier `routes/sessions.ts` | `routes/plays.ts` |
+| Fichier `sessionApi.ts` | `playApi.ts` |
+| `useNewGamePage.ts` | `useNewPlayPage.ts` |
+| `NewGamePage.tsx` | `NewPlayPage.tsx` |
+| `NewGameView.tsx` | `NewPlayView.tsx` |
+
+---
+
+### Task 0 : Migration DB — renommer les tables et colonnes
+
+**Fichiers :**
+- Créer : `backend/database/migrations/013_rename_sessions_to_plays.sql`
+
+- [ ] **Step 1 : Créer le fichier de migration**
+
+Créer `backend/database/migrations/013_rename_sessions_to_plays.sql` avec le contenu suivant :
+
+```sql
+-- Migration 013: Renommage sessions → plays
+-- Raison : "session" est réservé aux sessions utilisateur JWT, une partie de jeu s'appelle "play"
+
+-- 1. Renommer les tables
+ALTER TABLE game_sessions RENAME TO game_plays;
+ALTER TABLE session_players RENAME TO play_players;
+
+-- 2. Renommer les colonnes de game_plays
+ALTER TABLE game_plays RENAME COLUMN session_id   TO play_id;
+ALTER TABLE game_plays RENAME COLUMN session_date TO play_date;
+ALTER TABLE game_plays RENAME COLUMN session_type TO play_type;
+
+-- 3. Renommer les colonnes de play_players
+ALTER TABLE play_players RENAME COLUMN session_player_id TO play_player_id;
+ALTER TABLE play_players RENAME COLUMN session_id        TO play_id;
+
+-- 4. Mettre à jour les index
+DROP INDEX IF EXISTS idx_game_sessions_game_id;
+DROP INDEX IF EXISTS idx_game_sessions_date;
+DROP INDEX IF EXISTS idx_session_players_session_id;
+DROP INDEX IF EXISTS idx_session_players_player_id;
+
+CREATE INDEX IF NOT EXISTS idx_game_plays_game_id      ON game_plays(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_plays_date         ON game_plays(play_date);
+CREATE INDEX IF NOT EXISTS idx_play_players_play_id    ON play_players(play_id);
+CREATE INDEX IF NOT EXISTS idx_play_players_player_id  ON play_players(player_id);
+
+-- 5. Recréer les vues (elles référençaient les anciens noms)
+DROP VIEW IF EXISTS player_statistics;
+DROP VIEW IF EXISTS game_statistics;
+
+CREATE VIEW player_statistics AS
+SELECT
+    p.player_id,
+    p.player_name,
+    p.pseudo,
+    p.avatar,
+    p.favorite_game,
+    p.created_at,
+    COUNT(DISTINCT sp.play_id)                                                             AS games_played,
+    COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END)                                          AS wins,
+    COALESCE(SUM(sp.score), 0)                                                             AS total_score,
+    COALESCE(AVG(sp.score), 0)                                                             AS average_score,
+    (COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) * 100.0 /
+     NULLIF(COUNT(DISTINCT sp.play_id), 0))                                                AS win_percentage
+FROM players p
+LEFT JOIN play_players sp ON p.player_id = sp.player_id
+GROUP BY p.player_id;
+
+CREATE VIEW game_statistics AS
+SELECT
+    g.game_id,
+    g.name,
+    g.image,
+    g.min_players,
+    g.max_players,
+    g.difficulty,
+    g.category,
+    g.year_published,
+    g.bgg_rating,
+    g.created_at,
+    COUNT(DISTINCT gp.play_id)                                                   AS times_played,
+    (SELECT COUNT(DISTINCT pp.player_id)
+     FROM play_players pp
+     WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS unique_players,
+    (SELECT COALESCE(AVG(pp.score), 0)
+     FROM play_players pp
+     WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS average_score,
+    (SELECT COALESCE(AVG(gp2.duration_minutes), 0)
+     FROM game_plays gp2 WHERE gp2.game_id = g.game_id)                          AS average_duration
+FROM games g
+LEFT JOIN game_plays gp ON g.game_id = gp.game_id
+GROUP BY g.game_id;
+```
+
+- [ ] **Step 2 : Vérifier que `runMigrations()` applique automatiquement le fichier 013**
+
+`DatabaseConnection.ts` applique les migrations dans l'ordre numérique. Vérifier que la migration est bien détectée :
+
+```bash
+cd backend && grep -n "runMigrations\|migrations" database/DatabaseConnection.ts | head -10
+```
+
+Si les migrations sont dans un sous-dossier différent de `database/migrations/`, ajuster le chemin.
+
+- [ ] **Step 3 : Mettre à jour `backend/database/schema.sql`**
+
+Ce fichier est le schéma idempotent de référence. Mettre à jour toutes les occurrences de `game_sessions`/`session_players`/colonnes `session_*` pour refléter le nouvel état final (game_plays, play_players, play_id, play_date, play_type, play_player_id).
+
+- [ ] **Step 4 : Commit**
+
+```bash
+git add backend/database/migrations/013_rename_sessions_to_plays.sql backend/database/schema.sql
+git commit -m "feat(db): migration 013 — renommer sessions → plays (table + colonnes + vues)"
+```
+
+---
+
+### Task 0.1 : Backend — renommer Repository, Service, Routes
+
+**Fichiers :**
+- Renommer + modifier : `backend/repositories/SessionRepository.ts` → `PlayRepository.ts`
+- Renommer + modifier : `backend/services/SessionService.ts` → `PlayService.ts`
+- Renommer + modifier : `backend/routes/sessions.ts` → `plays.ts`
+- Modifier : `backend/server.ts`
+- Modifier : `backend/repositories/StatsRepository.ts`
+
+- [ ] **Step 1 : Renommer et mettre à jour `PlayRepository.ts`**
+
+```bash
+git mv backend/repositories/SessionRepository.ts backend/repositories/PlayRepository.ts
+```
+
+Dans `backend/repositories/PlayRepository.ts` :
+- Renommer la classe : `SessionRepository` → `PlayRepository`
+- Remplacer toutes les occurrences SQL : `game_sessions` → `game_plays`, `session_players` → `play_players`
+- Renommer colonnes dans les requêtes : `session_id` → `play_id`, `session_date` → `play_date`, `session_type` → `play_type`, `session_player_id` → `play_player_id`
+- Mettre à jour les types dans les paramètres de méthode : `GameSession` → `GamePlay`, `CreateSessionRequest` → `CreatePlayRequest` (les types seront mis à jour en Task 0.2)
+
+```bash
+sed -i "s|game_sessions|game_plays|g; s|session_players|play_players|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|session_player_id|play_player_id|g; s|SessionRepository|PlayRepository|g" backend/repositories/PlayRepository.ts
+```
+
+Vérifier manuellement le résultat — les colonnes `player_id` ne doivent PAS être altérées (le sed `session_id → play_id` ne touche que `session_id`, pas `player_id`).
+
+```bash
+grep -n "play_id\|player_id" backend/repositories/PlayRepository.ts | head -20
+# Vérifier que player_id n'a pas été transformé en playler_id ou autre
+```
+
+- [ ] **Step 2 : Renommer et mettre à jour `PlayService.ts`**
+
+```bash
+git mv backend/services/SessionService.ts backend/services/PlayService.ts
+sed -i "s|SessionService|PlayService|g; s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/services/PlayService.ts
+sed -i "s|./repositories/SessionRepository|./repositories/PlayRepository|g; s|SessionRepository|PlayRepository|g" backend/services/PlayService.ts
+```
+
+- [ ] **Step 3 : Renommer et mettre à jour `routes/plays.ts`**
+
+```bash
+git mv backend/routes/sessions.ts backend/routes/plays.ts
+sed -i "s|SessionService|PlayService|g; s|session_id|play_id|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/routes/plays.ts
+```
+
+- [ ] **Step 4 : Mettre à jour `StatsRepository.ts`**
+
+```bash
+sed -i "s|game_sessions|game_plays|g; s|session_players|play_players|g; s|session_id|play_id|g" backend/repositories/StatsRepository.ts
+```
+
+- [ ] **Step 5 : Mettre à jour `server.ts`**
+
+Dans `backend/server.ts`, mettre à jour :
+
+```ts
+// Supprimer
+import { SessionRepository } from './repositories/SessionRepository'
+import { SessionService } from './services/SessionService'
+import { createSessionRouter } from './routes/sessions'
+
+// Ajouter
+import { PlayRepository } from './repositories/PlayRepository'
+import { PlayService } from './services/PlayService'
+import { createPlayRouter } from './routes/plays'
+```
+
+```ts
+// Supprimer
+const sessionRepo    = new SessionRepository(dbConn.db)
+const sessionService = new SessionService(dbConn.db, sessionRepo)
+app.use('/api/v1/sessions', authenticate, createSessionRouter(sessionService))
+
+// Ajouter
+const playRepo    = new PlayRepository(dbConn.db)
+const playService = new PlayService(dbConn.db, playRepo)
+app.use('/api/v1/plays', authenticate, createPlayRouter(playService))
+```
+
+- [ ] **Step 6 : Renommer les fichiers de tests backend**
+
+```bash
+git mv "backend/__tests__/routes/sessions.routes.test.ts" "backend/__tests__/routes/plays.routes.test.ts"
+git mv "backend/__tests__/unit/repositories/SessionRepository.test.ts" "backend/__tests__/unit/repositories/PlayRepository.test.ts"
+git mv "backend/__tests__/unit/services/SessionService.test.ts" "backend/__tests__/unit/services/PlayService.test.ts"
+```
+
+Mettre à jour le contenu des tests :
+
+```bash
+sed -i "s|SessionRepository|PlayRepository|g; s|SessionService|PlayService|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|play_players|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g; s|/sessions|/plays|g" backend/__tests__/routes/plays.routes.test.ts
+sed -i "s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|session_date|play_date|g; s|session_type|play_type|g; s|game_sessions|game_plays|g; s|session_players|play_players|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/__tests__/unit/repositories/PlayRepository.test.ts
+sed -i "s|SessionService|PlayService|g; s|SessionRepository|PlayRepository|g; s|session_id|play_id|g; s|GameSession|GamePlay|g; s|CreateSessionRequest|CreatePlayRequest|g" backend/__tests__/unit/services/PlayService.test.ts
+```
+
+Mettre à jour également les imports dans ces fichiers :
+
+```bash
+sed -i "s|../../../routes/sessions|../../../routes/plays|g" backend/__tests__/routes/plays.routes.test.ts
+sed -i "s|../../../../repositories/SessionRepository|../../../../repositories/PlayRepository|g" backend/__tests__/unit/repositories/PlayRepository.test.ts
+sed -i "s|../../../../services/SessionService|../../../../services/PlayService|g; s|../../../../repositories/SessionRepository|../../../../repositories/PlayRepository|g" backend/__tests__/unit/services/PlayService.test.ts
+```
+
+- [ ] **Step 7 : Lancer les tests backend**
+
+```bash
+cd backend && npm run test:run
+```
+
+Résultat attendu : tous les tests passent.
+
+- [ ] **Step 8 : Commit**
+
+```bash
+git add -A
+git commit -m "refactor(backend): renommer SessionRepository/Service/Route → Play*"
+```
+
+---
+
+### Task 0.2 : Shared types + frontend API
+
+**Fichiers :**
+- Modifier : `shared/types/index.d.ts`
+- Renommer + modifier : `src/services/api/sessionApi.ts` → `src/services/api/playApi.ts`
+- Modifier : `src/hooks/useNewPlayPage.ts`
+- Modifier : `src/hooks/useGameStatsPage.ts`
+- Modifier : `src/services/ApiService.ts` (legacy, sera supprimé en Task 9)
+
+- [ ] **Step 1 : Mettre à jour `shared/types/index.d.ts`**
+
+Renommer les interfaces et champs :
+
+```ts
+// Avant
+export interface GameSession {
+  session_id: number
+  // ...
+  session_date: Date
+  // ...
+  session_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  // ...
+}
+export interface SessionPlayer {
+  session_player_id?: number
+  session_id: number
+  // ...
+}
+export interface CreateSessionRequest {
+  // ...
+  session_date?: string
+  // ...
+  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  // ...
+}
+// Dans PlayerStats / GameStats :
+  total_sessions: number
+  average_session_duration: number
+
+// Après
+export interface GamePlay {
+  play_id: number
+  // ...
+  play_date: Date
+  // ...
+  play_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  // ...
+}
+export interface PlayPlayer {
+  play_player_id?: number
+  play_id: number
+  // ...
+}
+export interface CreatePlayRequest {
+  // ...
+  play_date?: string
+  // ...
+  play_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  // ...
+}
+// Dans PlayerStats / GameStats :
+  total_plays: number
+  average_play_duration: number
+```
+
+Faire la modification directement dans `shared/types/index.d.ts`.
+
+- [ ] **Step 2 : Renommer `sessionApi.ts` → `playApi.ts`**
+
+```bash
+git mv src/services/api/sessionApi.ts src/services/api/playApi.ts
+```
+
+Dans `src/services/api/playApi.ts` :
+
+```ts
+// Avant
+import type { GameSession, CreateSessionRequest } from '@shared/types';
+const BASE = '/api/v1/sessions';
+export const sessionApi = {
+  getAll:  (): Promise<GameSession[]> => request<GameSession[]>(BASE),
+  create:  (data: CreateSessionRequest): Promise<GameSession> =>
+    request<GameSession>(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }),
+};
+
+// Après
+import type { GamePlay, CreatePlayRequest } from '@shared/types';
+const BASE = '/api/v1/plays';
+export const playApi = {
+  getAll:  (): Promise<GamePlay[]> => request<GamePlay[]>(BASE),
+  create:  (data: CreatePlayRequest): Promise<GamePlay> =>
+    request<GamePlay>(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }),
+};
+```
+
+- [ ] **Step 3 : Mettre à jour `useNewPlayPage.ts`**
+
+```bash
+sed -i "s|sessionApi|playApi|g; s|from '../services/api/sessionApi'|from '../services/api/playApi'|g; s|play_date|play_date|g; s|play_type|play_type|g; s|GamePlay|GamePlay|g; s|CreatePlayRequest|CreatePlayRequest|g" src/hooks/useNewPlayPage.ts
+```
+
+- [ ] **Step 4 : Mettre à jour `useGameStatsPage.ts`**
+
+Ce fichier a une interface locale `GameSession` avec `session_type`. Remplacer par `GamePlay`/`play_type` :
+
+```bash
+sed -i "s|session_id|play_id|g; s|session_type|play_type|g; s|GameSession|GamePlay|g" src/hooks/useGameStatsPage.ts
+```
+
+- [ ] **Step 5 : Mettre à jour `ApiService.ts` (legacy)**
+
+```bash
+sed -i "s|GameSession|GamePlay|g; s|/sessions|/plays|g; s|session_id|play_id|g" src/services/ApiService.ts
+```
+
+- [ ] **Step 6 : Vérifier qu'il ne reste aucune référence à l'ancien naming**
+
+```bash
+grep -r "GameSession\|SessionPlayer\|CreateSessionRequest\|sessionApi\|/api/v1/sessions\|session_date\|session_type\|session_player_id\|total_sessions\|average_session_duration" src shared backend --include="*.ts" --include="*.tsx" | grep -v "node_modules\|\.git\|migrations/0[0-9][0-9]_\|schema.sql\|queries.sql\|sample_data\|verify_schema"
+# Résultat attendu : aucune ligne (les anciens fichiers de migration sont OK à garder pour l'historique)
+```
+
+- [ ] **Step 7 : Lancer tous les tests (frontend + backend)**
+
+```bash
+npm run test:run
+cd backend && npm run test:run
+```
+
+Résultat attendu : tous les tests passent.
+
+- [ ] **Step 8 : Commit**
+
+```bash
+git add -A
+git commit -m "refactor: renommer GameSession → GamePlay + sessionApi → playApi (full stack)"
+```
+
+---
 
 ---
 
@@ -572,46 +974,46 @@ git commit -m "refactor: déplacer players vers features/players/"
 
 ---
 
-## Task 7 : `features/sessions/`
+## Task 7 : `features/plays/`
 
-**Fichiers déplacés :**
-- `src/components/NewGamePage.tsx` → `src/features/sessions/NewGamePage.tsx`
-- `src/views/NewGameView.tsx` → `src/features/sessions/NewGameView.tsx`
-- `src/hooks/useNewGamePage.ts` → `src/features/sessions/useNewGamePage.ts`
-- `src/services/api/sessionApi.ts` → `src/features/sessions/sessionApi.ts`
-- `src/__tests__/flows/SessionsPage.flow.test.tsx` → `src/features/sessions/__tests__/SessionsPage.flow.test.tsx`
-- `src/__tests__/hooks/useNewGamePage.test.ts` → `src/features/sessions/__tests__/useNewGamePage.test.ts`
+**Fichiers déplacés** (noms déjà mis à jour par la Phase 0) :
+- `src/components/NewPlayPage.tsx` → `src/features/plays/NewPlayPage.tsx`
+- `src/views/NewPlayView.tsx` → `src/features/plays/NewPlayView.tsx`
+- `src/hooks/useNewPlayPage.ts` → `src/features/plays/useNewPlayPage.ts`
+- `src/services/api/playApi.ts` → `src/features/plays/playApi.ts`
+- `src/__tests__/flows/PlaysPage.flow.test.tsx` → `src/features/plays/__tests__/PlaysPage.flow.test.tsx`
+- `src/__tests__/hooks/useNewPlayPage.test.ts` → `src/features/plays/__tests__/useNewPlayPage.test.ts`
 
 - [ ] **Step 1 : Créer les dossiers**
 
 ```bash
-mkdir -p src/features/sessions/__tests__
+mkdir -p src/features/plays/__tests__
 ```
 
 - [ ] **Step 2 : Déplacer les fichiers**
 
 ```bash
-git mv src/components/NewGamePage.tsx src/features/sessions/NewGamePage.tsx
-git mv src/views/NewGameView.tsx src/features/sessions/NewGameView.tsx
-git mv src/hooks/useNewGamePage.ts src/features/sessions/useNewGamePage.ts
-git mv src/services/api/sessionApi.ts src/features/sessions/sessionApi.ts
-git mv src/__tests__/flows/SessionsPage.flow.test.tsx src/features/sessions/__tests__/SessionsPage.flow.test.tsx
-git mv src/__tests__/hooks/useNewGamePage.test.ts src/features/sessions/__tests__/useNewGamePage.test.ts
+git mv src/components/NewPlayPage.tsx src/features/plays/NewPlayPage.tsx
+git mv src/views/NewPlayView.tsx src/features/plays/NewPlayView.tsx
+git mv src/hooks/useNewPlayPage.ts src/features/plays/useNewPlayPage.ts
+git mv src/services/api/playApi.ts src/features/plays/playApi.ts
+git mv src/__tests__/flows/PlaysPage.flow.test.tsx src/features/plays/__tests__/PlaysPage.flow.test.tsx
+git mv src/__tests__/hooks/useNewPlayPage.test.ts src/features/plays/__tests__/useNewPlayPage.test.ts
 ```
 
 - [ ] **Step 3 : Mettre à jour les imports dans les fichiers déplacés**
 
 ```bash
-sed -i "s|@/services/api/sessionApi|@/features/sessions/sessionApi|g" src/features/sessions/useNewGamePage.ts
-sed -i "s|@/services/api/playerApi|@/features/players/playerApi|g" src/features/sessions/useNewGamePage.ts
-sed -i "s|@/services/api/gameApi|@/features/games/gameApi|g" src/features/sessions/useNewGamePage.ts
+sed -i "s|@/services/api/playApi|@/features/plays/playApi|g" src/features/plays/useNewPlayPage.ts
+sed -i "s|@/services/api/playerApi|@/features/players/playerApi|g" src/features/plays/useNewPlayPage.ts
+sed -i "s|@/services/api/gameApi|@/features/games/gameApi|g" src/features/plays/useNewPlayPage.ts
 ```
 
-- [ ] **Step 4 : Vérifier les imports croisés dans NewGamePage/NewGameView**
+- [ ] **Step 4 : Vérifier les imports croisés dans NewPlayPage/NewPlayView**
 
 ```bash
-grep "from '@/" src/features/sessions/NewGamePage.tsx
-grep "from '@/" src/features/sessions/NewGameView.tsx
+grep "from '@/" src/features/plays/NewPlayPage.tsx
+grep "from '@/" src/features/plays/NewPlayView.tsx
 ```
 
 Corriger tout import vers un ancien chemin `@/hooks/`, `@/components/`, `@/views/`.
@@ -619,10 +1021,10 @@ Corriger tout import vers un ancien chemin `@/hooks/`, `@/components/`, `@/views
 - [ ] **Step 5 : Mettre à jour App.tsx**
 
 ```tsx
-// avant
-const NewGamePage = lazy(() => import('./components/NewGamePage'));
+// avant (nom issu de Phase 0)
+const NewPlayPage = lazy(() => import('./components/NewPlayPage'));
 // après
-const NewGamePage = lazy(() => import('./features/sessions/NewGamePage'));
+const NewPlayPage = lazy(() => import('./features/plays/NewPlayPage'));
 ```
 
 - [ ] **Step 6 : Lancer les tests**
@@ -637,7 +1039,7 @@ Résultat attendu : tous les tests passent.
 
 ```bash
 git add -A
-git commit -m "refactor: déplacer sessions vers features/sessions/"
+git commit -m "refactor: déplacer plays vers features/plays/"
 ```
 
 ---
@@ -672,7 +1074,7 @@ git mv src/__tests__/hooks/useDashboard.test.ts src/features/dashboard/__tests__
 ```bash
 sed -i "s|@/services/api/gameApi|@/features/games/gameApi|g" src/features/dashboard/useDashboard.ts
 sed -i "s|@/services/api/playerApi|@/features/players/playerApi|g" src/features/dashboard/useDashboard.ts
-sed -i "s|@/services/api/sessionApi|@/features/sessions/sessionApi|g" src/features/dashboard/useDashboard.ts
+sed -i "s|@/services/api/playApi|@/features/plays/playApi|g" src/features/dashboard/useDashboard.ts
 ```
 
 - [ ] **Step 4 : Vérifier les imports de DashboardView**
@@ -1006,7 +1408,7 @@ Navigation via React Router v7. Server state managed exclusively by React Query.
   - `games/` — Liste des jeux + dialogs. Sous-dossiers : `detail/`, `expansions/`, `characters/`
   - `bgg/` — Feature utilitaire : BGGSearch + bggApi (utilisé par games et settings)
   - `players/` — Liste des joueurs + dialogs
-  - `sessions/` — Création de session (NewGamePage)
+  - `plays/` — Création de partie (NewPlayPage)
   - `stats/` — Page stats (shell). Sous-dossiers : `game/`, `player/`
   - `settings/` — Page paramètres (langue, import BGG, data)
 - **`src/shared/`** — Modules transversaux :
