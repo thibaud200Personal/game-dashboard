@@ -10,8 +10,8 @@ vi.mock('@/shared/services/api/labelsApi', () => ({
   },
 }));
 
-vi.mock('@/shared/hooks/useLocale', () => ({
-  useLocale: () => ['en', vi.fn()],
+vi.mock('@/shared/contexts/LocaleContext', () => ({
+  useLocaleContext: () => ({ locale: 'en', setLocale: vi.fn() }),
   getStoredLocale: () => 'en',
 }));
 

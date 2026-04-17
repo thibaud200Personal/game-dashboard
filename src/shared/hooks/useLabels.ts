@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { labelsApi } from '@/shared/services/api/labelsApi';
-import { getStoredLocale } from '@/shared/hooks/useLocale';
+import { useLocaleContext } from '@/shared/contexts/LocaleContext';
 import enFallback from '@/shared/i18n/en.json';
 
 export function useLabels() {
-  const locale = getStoredLocale();
+  const { locale } = useLocaleContext();
 
   const { data, isLoading } = useQuery<Record<string, string>>({
     queryKey: ['labels', locale],

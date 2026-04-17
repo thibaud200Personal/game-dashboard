@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { AuthProvider, useAuth } from './shared/contexts/AuthContext';
 import { DarkModeProvider } from './shared/contexts/DarkModeContext';
+import { LocaleProvider } from './shared/contexts/LocaleContext';
 
 const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
@@ -64,6 +65,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <LocaleProvider>
       <AuthProvider>
         <DarkModeProvider>
           <TooltipProvider>
@@ -73,6 +75,7 @@ export default function App() {
           </TooltipProvider>
         </DarkModeProvider>
       </AuthProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

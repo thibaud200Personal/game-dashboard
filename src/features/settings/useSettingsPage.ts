@@ -3,7 +3,7 @@ import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useDarkMode } from '@/shared/contexts/DarkModeContext';
 import { request } from '@/shared/services/api/request';
-import { useLocale } from '@/shared/hooks/useLocale';
+import { useLocaleContext } from '@/shared/contexts/LocaleContext';
 import { useApiReachable } from '@/shared/hooks/useApiReachable';
 import { useLocales } from '@/shared/hooks/useLocales';
 
@@ -12,7 +12,7 @@ export const useSettingsPage = () => {
   const { logout, role } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
 
-  const [locale, setLocale] = useLocale();
+  const { locale, setLocale } = useLocaleContext();
   const { isReachable, triggerRetry } = useApiReachable();
   const { locales } = useLocales(isReachable);
   const [showTooltips, setShowTooltips] = useState(true);
