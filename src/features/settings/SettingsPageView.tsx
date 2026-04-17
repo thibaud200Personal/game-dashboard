@@ -36,7 +36,6 @@ interface SettingsPageViewProps {
   bggImportError: string | null;
   handleImportBggCatalog: (file: File) => void;
   isEnriching: boolean;
-  enrichError: string | null;
   handleEnrichNames: () => void;
   onLogout: () => void;
   isAdmin: boolean;
@@ -240,9 +239,6 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                   </span>
                 </Button>
               </label>
-              {props.enrichError && (
-                <p className="text-xs text-red-400 mt-1">{props.enrichError}</p>
-              )}
               <Button
                 variant="outline"
                 className="w-full justify-start"
