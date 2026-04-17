@@ -2,7 +2,7 @@
 
 Ce document présente l'état d'avancement et les prochaines étapes pour l'application Board Game Dashboard. La roadmap est organisée pour séparer clairement ce qui est **terminé** de ce qui **reste à faire**.
 
-**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (163/163 backend ✅, 74/74 frontend ✅ — cible ~126 frontend). Les gaps restants sont des finitions techniques.
+**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (163/163 backend ✅, 134/134 frontend ✅). Les gaps restants sont des finitions techniques.
 
 **🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets boardGameScore et board-game-scorekeep plutôt que de repartir de zéro.
 
@@ -11,6 +11,8 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 ## 🧹 Dette Technique — Active
 
 - **`vitest.config.ts` backend — variables d'env de test** : `server.ts` exécute `createAuthService()` et `getDb()` au niveau module (effets de bord à l'import). Contourné en extrayant `logger` dans `backend/logger.ts` pour éviter que les routes importent `server.ts`. La vraie solution propre : ajouter `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` dans `backend/vitest.config.ts` — ainsi les tests ne dépendent pas de la structure des imports et `server.ts` peut s'initialiser normalement sans `.env` local.
+- **MSW handler manquant** : `GET /api/v1/labels?locale=en` non intercepté dans certains tests (GamesPage, PlayersPage, StatsPages) — warning MSW à l'exécution, pas de test qui fail.
+- **Stats joueur (#23/#31)** : recent activity et performance overview vides — pas de endpoint `GET /api/v1/stats/players/:id/recent-plays` côté backend.
 
 ---
 
