@@ -1,10 +1,8 @@
 import React from 'react';
 import {
   ArrowLeft,
-  Bell,
   Moon,
   Globe,
-  FloppyDisk,
   Info,
   Download,
   Upload,
@@ -18,20 +16,16 @@ import { useLabels } from '@/shared/hooks/useLabels';
 
 interface SettingsPageViewProps {
   currentView: string;
-  notifications: boolean;
   darkMode: boolean;
   locale: string;
   locales: Array<{ locale: string; name: string }>;
   isApiReachable: boolean;
   handleRetryConnection: () => void;
-  autoSave: boolean;
   showTooltips: boolean;
   handleBackClick: () => void;
   onNavigation: (view: string) => void;
-  handleNotificationsChange: (enabled: boolean) => void;
   handleDarkModeChange: (enabled: boolean) => void;
   handleLanguageChange: (lang: string) => void;
-  handleAutoSaveChange: (enabled: boolean) => void;
   handleShowTooltipsChange: (enabled: boolean) => void;
   handleExportData: () => void;
   handleImportData: () => void;
@@ -95,20 +89,6 @@ export function SettingsPageView(props: SettingsPageViewProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Bell className="w-5 h-5 text-blue-400" />
-                <div>
-                  <div className={labelClass}>{t('settings.notifications.label')}</div>
-                  <div className={descClass}>{t('settings.notifications.desc')}</div>
-                </div>
-              </div>
-              <Switch 
-                checked={props.notifications} 
-                onCheckedChange={props.handleNotificationsChange}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
                 <Moon className="w-5 h-5 text-purple-400" />
                 <div>
                   <div className={labelClass}>{t('settings.dark_mode.label')}</div>
@@ -161,20 +141,6 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <FloppyDisk className="w-5 h-5 text-orange-400" />
-                <div>
-                  <div className={labelClass}>{t('settings.auto_save.label')}</div>
-                  <div className={descClass}>{t('settings.auto_save.desc')}</div>
-                </div>
-              </div>
-              <Switch 
-                checked={props.autoSave} 
-                onCheckedChange={props.handleAutoSaveChange}
-              />
             </div>
 
             <div className="flex items-center justify-between">

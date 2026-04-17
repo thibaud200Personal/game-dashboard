@@ -10,11 +10,9 @@ export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();
   const { logout, role } = useAuth();
 
-  const [notifications, setNotifications] = useState(true);
   const [locale, setLocale] = useLocale();
   const { isReachable, triggerRetry } = useApiReachable();
   const { locales } = useLocales(isReachable);
-  const [autoSave, setAutoSave] = useState(true);
   const [showTooltips, setShowTooltips] = useState(true);
 
   const [bggCatalogImportedAt, setBggCatalogImportedAt] = useState<string | null>(null);
@@ -61,11 +59,9 @@ export const useSettingsPage = () => {
   return {
     currentView: 'settings',
     darkMode: true,
-    notifications,
     locale,
     locales,
     isApiReachable: isReachable,
-    autoSave,
     showTooltips,
     bggCatalogImportedAt,
     bggCatalogCount,
@@ -73,11 +69,9 @@ export const useSettingsPage = () => {
     bggImportError,
     handleBackClick: () => onNavigation('dashboard'),
     onNavigation,
-    handleNotificationsChange: setNotifications,
     handleDarkModeChange: (_enabled: boolean) => {},
     handleLanguageChange: setLocale,
     handleRetryConnection: triggerRetry,
-    handleAutoSaveChange: setAutoSave,
     handleShowTooltipsChange: setShowTooltips,
     isDataExporting,
     isDataImporting,

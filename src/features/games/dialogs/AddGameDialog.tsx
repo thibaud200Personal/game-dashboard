@@ -621,19 +621,19 @@ export default function AddGameDialog({
             <div className="flex items-center gap-6 mb-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="is_expansion"
-                  checked={formData.is_expansion ?? false}
-                  onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked })}
-                />
-                <Label htmlFor="is_expansion">Est une extension</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
                   id="has_expansion"
                   checked={formData.has_expansion}
                   onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked })}
                 />
                 <Label htmlFor="has_expansion">A des extensions</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="is_expansion"
+                  checked={formData.is_expansion ?? false}
+                  onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked })}
+                />
+                <Label htmlFor="is_expansion">Est une extension</Label>
               </div>
             </div>
             {/* Expansions Display - show if checkbox is checked */}

@@ -20,9 +20,6 @@ interface ValidationErrors {
   player_name?: string;
   pseudo?: string;
   avatar?: string;
-  games_played?: string;
-  wins?: string;
-  total_score?: string;
 }
 
 const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
@@ -48,20 +45,6 @@ function validatePlayerForm(formData: PlayerFormData): ValidationErrors {
 
   if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
     errors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
-  }
-
-  if (formData.games_played < 0) {
-    errors.games_played = 'Games played cannot be negative';
-  }
-
-  if (formData.wins < 0) {
-    errors.wins = 'Wins cannot be negative';
-  } else if (formData.wins > formData.games_played) {
-    errors.wins = 'Wins cannot exceed games played';
-  }
-
-  if (formData.total_score < 0) {
-    errors.total_score = 'Total score cannot be negative';
   }
 
   return errors;
@@ -158,44 +141,6 @@ export function EditPlayerDialog({
               className={darkMode ? "bg-white/10 border-white/20 text-white" : "bg-slate-100 border-slate-300 text-slate-900"}
               placeholder="Enter favorite game"
             />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="edit_games_played" className={darkMode ? "text-white" : "text-blue-700"}>Games Played</Label>
-              <Input
-                id="edit_games_played"
-                type="number"
-                min="0"
-                value={formData.games_played}
-                onChange={(e) => handleInputChange('games_played', parseInt(e.target.value) || 0)}
-                className={getInputClass('games_played', errors, darkMode)}
-              />
-              {errors.games_played && <p className="text-red-400 text-sm mt-1">{errors.games_played}</p>}
-            </div>
-            <div>
-              <Label htmlFor="edit_wins" className={darkMode ? "text-white" : "text-blue-700"}>Wins</Label>
-              <Input
-                id="edit_wins"
-                type="number"
-                min="0"
-                value={formData.wins}
-                onChange={(e) => handleInputChange('wins', parseInt(e.target.value) || 0)}
-                className={getInputClass('wins', errors, darkMode)}
-              />
-              {errors.wins && <p className="text-red-400 text-sm mt-1">{errors.wins}</p>}
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="edit_total_score" className={darkMode ? "text-white" : "text-blue-700"}>Total Score</Label>
-            <Input
-              id="edit_total_score"
-              type="number"
-              min="0"
-              value={formData.total_score}
-              onChange={(e) => handleInputChange('total_score', parseInt(e.target.value) || 0)}
-              className={getInputClass('total_score', errors, darkMode)}
-            />
-            {errors.total_score && <p className="text-red-400 text-sm mt-1">{errors.total_score}</p>}
           </div>
           {serverError && (
             <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
