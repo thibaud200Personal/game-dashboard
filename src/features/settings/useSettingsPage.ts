@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useDarkMode } from '@/shared/contexts/DarkModeContext';
@@ -6,11 +7,13 @@ import { request } from '@/shared/services/api/request';
 import { useLocaleContext } from '@/shared/contexts/LocaleContext';
 import { useApiReachable } from '@/shared/hooks/useApiReachable';
 import { useLocales } from '@/shared/hooks/useLocales';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();
   const { logout, role } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
+  const { t } = useLabels();
 
   const { locale, setLocale } = useLocaleContext();
   const { isReachable, triggerRetry } = useApiReachable();
@@ -21,6 +24,7 @@ export const useSettingsPage = () => {
   const [bggCatalogCount, setBggCatalogCount] = useState<number | null>(null);
   const [isBggImporting, setIsBggImporting] = useState(false);
   const [bggImportError, setBggImportError] = useState<string | null>(null);
+  const [isEnriching, setIsEnriching] = useState(false);
 
   const [isDataExporting, setIsDataExporting] = useState(false);
   const [isDataImporting, setIsDataImporting] = useState(false);
@@ -126,6 +130,18 @@ export const useSettingsPage = () => {
       }
     },
     handleImportBggCatalog,
+    isEnriching,
+    handleEnrichNames: async () => {
+      setIsEnriching(true);
+      try {
+        await request<{ enriched: number }>('/api/v1/bgg/enrich-names', { method: 'POST' });
+        toast.success(t('settings.data.bgg_enrich_success'));
+      } catch {
+        toast.error(t('settings.data.bgg_enrich_error'));
+      } finally {
+        setIsEnriching(false);
+      }
+    },
     onLogout: logout,
     isAdmin: role === 'admin',
   };

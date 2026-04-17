@@ -204,12 +204,14 @@ npm run test:run        # One-shot (backend)
 ### Structure
 
 ```
-src/__tests__/
+src/shared/__tests__/
 ├── unit/
 │   ├── technical/      → fonctions pures, utils, formatters
 │   └── functional/     → hooks et composants
 ├── integration/        → flux complets avec MSW
-└── fixtures/           → données réalistes (Gloomhaven, Wingspan, Catan)
+├── fixtures/           → données réalistes (Gloomhaven, Wingspan, Catan)
+├── mocks/              → MSW handlers + server setup
+└── utils/              → test-utils.tsx (render helpers)
 
 backend/__tests__/
 ├── unit/

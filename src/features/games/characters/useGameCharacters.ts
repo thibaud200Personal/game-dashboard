@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { GameCharacter, Game } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 export interface UseGameCharactersProps {
   game: Game;
@@ -13,6 +14,7 @@ export interface UseGameCharactersProps {
 }
 
 export function useGameCharacters(props: UseGameCharactersProps) {
+  const { t } = useLabels();
   const {
     game,
     onNavigation,
@@ -48,7 +50,7 @@ export function useGameCharacters(props: UseGameCharactersProps) {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.character_key.trim()) {
-      toast.error('Le nom et la clé du personnage sont requis');
+      toast.error(t('character.toast.name_key_required'));
       return;
     }
 
@@ -62,20 +64,19 @@ export function useGameCharacters(props: UseGameCharactersProps) {
       };
 
       await onAddCharacter(game.game_id, characterData);
-      toast.success('Personnage ajouté avec succès');
+      toast.success(t('character.toast.added'));
       setIsAddDialogOpen(false);
       resetForm();
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de l\'ajout du personnage');
+      toast.error(t('character.toast.add_error'));
     }
   };
 
   const handleEditCharacter = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingCharacter || !formData.name.trim() || !formData.character_key.trim()) {
-      toast.error('Le nom et la clé du personnage sont requis');
+      toast.error(t('character.toast.name_key_required'));
       return;
     }
 
@@ -89,22 +90,20 @@ export function useGameCharacters(props: UseGameCharactersProps) {
       };
 
       await onUpdateCharacter(editingCharacter.character_id!, characterData);
-      toast.success('Personnage modifié avec succès');
+      toast.success(t('character.toast.updated'));
       setEditingCharacter(null);
       resetForm();
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de la modification du personnage');
+      toast.error(t('character.toast.update_error'));
     }
   };
 
   const handleDeleteCharacter = async (characterId: number) => {
     try {
       await onDeleteCharacter(characterId);
-      toast.success('Personnage supprimé avec succès');
+      toast.success(t('character.toast.deleted'));
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de la suppression du personnage');
+      toast.error(t('character.toast.delete_error'));
     }
   };
 

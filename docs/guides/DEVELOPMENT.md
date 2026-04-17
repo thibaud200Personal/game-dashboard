@@ -135,11 +135,25 @@ import { queryKeys } from '@/shared/services/api/queryKeys'
 import './Component.css'
 ```
 
-## 7. Enums et labels — convention FR/EN
+## 7. Internationalisation — useLabels + t()
 
-Les valeurs stockées en BDD sont en anglais (`Beginner`, `Intermediate`, `Expert`, `competitive`...). Les labels affichés sont traduits via des maps centralisées dans `shared/utils/formatters.ts`.
+Tous les textes affichés passent par `useLabels`. Les labels sont stockés en BDD (table `labels`) et chargés via `GET /api/v1/labels?locale=<locale>`.
 
-Ne pas ajouter de traductions en dur dans chaque dialog. Attendre l'implémentation i18n globale (Phase 3).
+```tsx
+// Dans n'importe quel composant
+const { t } = useLabels()
+<h1>{t('games.page.title')}</h1>
+```
+
+**Règle** : aucune chaîne visible par l'utilisateur en dur dans le JSX.
+
+**Ajouter un label :**
+1. Ajouter la clé dans `src/shared/i18n/en.json` (fallback offline)
+2. Créer une migration SQL : `INSERT OR IGNORE INTO labels (key, locale, value) VALUES ...` pour chaque locale (`en`, `fr`, etc.)
+
+**Changer de langue :** via `setLocale()` de `LocaleContext` — invalide le cache `['labels']` sans refresh.
+
+Les valeurs stockées en BDD (`Beginner`, `competitive`, etc.) sont toujours en anglais. Leur traduction pour l'affichage se fait via `t()` avec une clé dédiée, ou via les maps dans `shared/utils/formatters.ts`.
 
 ## 8. Backend — pattern Repository/Service
 
@@ -159,7 +173,7 @@ export class PlayerRepository {
 ### Service : logique métier + transactions
 
 ```ts
-// services/PlayService.ts
+// services/PlayService.ts — transactions confinées au service
 createPlay(payload: CreatePlayRequest): GamePlay {
   return this.db.transaction(() => {
     const playId = this.playRepo.insertPlay(payload)

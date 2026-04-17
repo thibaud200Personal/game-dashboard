@@ -25,14 +25,14 @@ src/
 ├── shared/                      → modules transversaux (utilisés par 2+ features)
 │   ├── components/ui/           → composants shadcn/ui (ne pas éditer manuellement)
 │   ├── components/              → Layout.tsx, BottomNavigation.tsx
-│   ├── contexts/                → AuthContext.tsx
+│   ├── contexts/                → AuthContext.tsx, DarkModeContext.tsx, LocaleContext.tsx
 │   ├── services/api/            → request.ts, queryKeys.ts, authApi.ts, labelsApi.ts, statsApi.ts
-│   ├── hooks/                   → useLabels, useLocale, useLocales, useApiReachable, useNavigationAdapter, use-mobile
+│   ├── hooks/                   → useLabels, useLocales, useApiReachable, useNavigationAdapter, use-mobile
 │   ├── i18n/                    → en.json (fallback offline)
 │   ├── utils/                   → gameHelpers.ts
 │   ├── lib/                     → utils.ts (cn helper shadcn)
 │   └── styles/                  → theme.css
-├── __tests__/                   → infrastructure de test partagée (mocks/, fixtures/, utils/)
+│   └── __tests__/               → infrastructure de test partagée (mocks/, fixtures/, utils/)
 ├── App.tsx                      → shell : Router + QueryClient + providers
 ├── main.tsx
 ├── ErrorFallback.tsx
@@ -68,32 +68,44 @@ GamesPage.tsx    →  hooks → GamesPageView.tsx
 `App.tsx` est un shell pur. Il ne contient aucun état de navigation.
 
 ```tsx
-// App.tsx
+// App.tsx — shell pur, providers globaux + routes
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<AuthGuard />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/players" element={<PlayersPage />} />
-            <Route path="/games" element={<GamesPage />} />
-            <Route path="/games/:id" element={<GameDetailPage />} />
-            <Route path="/games/:id/expansions" element={<GameExpansionsPage />} />
-            <Route path="/games/:id/characters" element={<GameCharactersPage />} />
-            <Route path="/plays/new" element={<NewPlayPage />} />
-            <Route path="/stats" element={<StatsPage />} />
-            <Route path="/stats/players/:id" element={<PlayerStatsPage />} />
-            <Route path="/stats/games/:id" element={<GameStatsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <LocaleProvider>           {/* langue + invalidation cache labels */}
+        <AuthProvider>
+          <DarkModeProvider>     {/* dark mode (localStorage + class html) */}
+            <TooltipProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route element={<AuthGuard />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/players" element={<PlayersPage />} />
+                    <Route path="/games" element={<GamesPage />} />
+                    <Route path="/games/:id" element={<GameDetailPage />} />
+                    <Route path="/games/:id/expansions" element={<GameExpansionsPage />} />
+                    <Route path="/games/:id/characters" element={<GameCharactersPage />} />
+                    <Route path="/plays/new" element={<NewPlayPage />} />
+                    <Route path="/stats" element={<StatsPage />} />
+                    <Route path="/stats/players/:id" element={<PlayerStatsPage />} />
+                    <Route path="/stats/games/:id" element={<GameStatsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </DarkModeProvider>
+        </AuthProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   )
 }
 ```
+
+**Providers globaux :**
+- `LocaleProvider` — lit/écrit `localStorage.locale`, invalide le cache React Query `['labels']` à chaque changement. Doit envelopper `AuthProvider` (le login peut utiliser des labels traduits)
+- `DarkModeProvider` — lit/écrit `localStorage.darkMode`, applique la classe `dark` sur `<html>`
 
 ### Navigation contextuelle mobile
 
@@ -246,6 +258,29 @@ const { role } = useAuth()
 // Dans Settings :
 {role === 'admin' && <BGGCatalogImport />}
 ```
+
+## Internationalisation (i18n)
+
+Tous les textes affichés à l'utilisateur passent par le hook `useLabels`.
+
+```tsx
+const { t } = useLabels()
+// Utilisation :
+<h1>{t('dashboard.title')}</h1>
+<Button>{t('games.add')}</Button>
+```
+
+**Flux :**
+1. `LocaleContext` expose `locale` (stocké dans `localStorage`) et `setLocale`
+2. `useLabels` fait `GET /api/v1/labels?locale=<locale>` via React Query (clé `['labels', locale]`)
+3. Si l'API est inaccessible, fallback sur `src/shared/i18n/en.json`
+4. Changer la langue via `setLocale()` invalide le cache et recharge les labels sans refresh
+
+**Ajouter un label :**
+- Ajouter la clé dans `src/shared/i18n/en.json` (fallback offline)
+- Créer une migration SQL : `INSERT INTO labels (key, locale, value) VALUES ...` pour chaque locale
+
+**Règle :** aucune chaîne de caractères visible par l'utilisateur en dur dans le JSX. Toujours passer par `t()`.
 
 ## Ajouter une page — checklist
 
