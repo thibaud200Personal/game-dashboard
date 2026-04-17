@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { DatabaseConnection } from '../../../database/DatabaseConnection'
 import { PlayerRepository } from '../../../repositories/PlayerRepository'
 import { GameRepository } from '../../../repositories/GameRepository'
-import { SessionRepository } from '../../../repositories/SessionRepository'
+import { PlayRepository } from '../../../repositories/PlayRepository'
 import { StatsRepository } from '../../../repositories/StatsRepository'
 import { StatsService } from '../../../services/StatsService'
 
@@ -16,7 +16,7 @@ beforeEach(() => {
   conn = new DatabaseConnection(':memory:')
   const playerRepo  = new PlayerRepository(conn.db)
   const gameRepo    = new GameRepository(conn.db)
-  const sessionRepo = new SessionRepository(conn.db)
+  const playRepo    = new PlayRepository(conn.db)
   service = new StatsService(new StatsRepository(conn.db))
 
   playerId = playerRepo.create({ player_name: 'Alice', pseudo: 'alice' })
@@ -26,8 +26,8 @@ beforeEach(() => {
     supports_campaign: false, supports_hybrid: false,
     has_expansion: false, has_characters: false, is_expansion: false,
   })
-  const sid = sessionRepo.insertSession({ game_id: gameId, session_type: 'competitive' })
-  sessionRepo.insertSessionPlayers(sid, [{ player_id: playerId, score: 10, is_winner: true }])
+  const pid = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
+  playRepo.insertPlayPlayers(pid, [{ player_id: playerId, score: 10, is_winner: true }])
 })
 afterEach(() => conn.close())
 
@@ -35,7 +35,7 @@ describe('StatsService.getDashboard', () => {
   it('retourne les totaux corrects', () => {
     const d = service.getDashboard()
     expect(d.total_players).toBe(1)
-    expect(d.total_sessions).toBe(1)
+    expect(d.total_plays).toBe(1)
   })
 })
 

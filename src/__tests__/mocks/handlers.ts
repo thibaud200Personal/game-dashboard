@@ -63,13 +63,13 @@ export const handlers = [
     return HttpResponse.json({ expansion_id: 99, game_id: 1, ...body }, { status: 201 });
   }),
 
-  // ── Sessions ──────────────────────────────────────────────────────────────
-  http.get('/api/v1/sessions', () => HttpResponse.json(mockSessions)),
-  http.post('/api/v1/sessions', async ({ request }) => {
+  // ── Plays ─────────────────────────────────────────────────────────────────
+  http.get('/api/v1/plays', () => HttpResponse.json(mockSessions)),
+  http.post('/api/v1/plays', async ({ request }) => {
     const body = await request.json() as Record<string, unknown>;
-    return HttpResponse.json({ session_id: 99, ...body }, { status: 201 });
+    return HttpResponse.json({ play_id: 99, ...body }, { status: 201 });
   }),
-  http.delete('/api/v1/sessions/:id', () => new HttpResponse(null, { status: 204 })),
+  http.delete('/api/v1/plays/:id', () => new HttpResponse(null, { status: 204 })),
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   http.get('/api/v1/stats/dashboard', () => HttpResponse.json(mockDashboard)),

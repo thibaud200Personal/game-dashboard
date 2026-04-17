@@ -132,7 +132,8 @@ import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 // 3. Imports internes absolus
 import { Player } from '@/types'
-import { playerApi } from '@/services/api/playerApi'
+import { playerApi } from '@/features/players/playerApi'
+import { queryKeys } from '@/shared/services/api/queryKeys'
 // 4. Imports relatifs
 import './Component.css'
 ```
@@ -170,12 +171,22 @@ test: ajouter les tests d'intégration SessionService
 
 ## Ajouter une page frontend
 
-1. Créer le hook `src/hooks/use<PageName>Page.ts`
-2. Créer le container `src/components/<PageName>.tsx`
-3. Créer la view `src/views/<PageName>View.tsx`
-4. Ajouter la route dans `src/App.tsx`
-5. Ajouter les clés de cache dans `src/services/api/queryKeys.ts`
-6. Écrire les tests
+L'architecture est **feature-based** : chaque fonctionnalité est co-localisée dans `src/features/<nom>/`.
+
+1. Créer le dossier `src/features/<nom>/`
+2. Créer le hook `src/features/<nom>/use<NomPage>.ts`
+3. Créer le container `src/features/<nom>/<NomPage>.tsx`
+4. Créer la view `src/features/<nom>/<NomPage>View.tsx`
+5. Si dialogs nécessaires : créer `src/features/<nom>/dialogs/`
+6. Si nouveau domaine API : créer `src/features/<nom>/<nom>Api.ts`
+7. Ajouter la route dans `src/App.tsx`
+8. Ajouter les clés de cache dans `src/shared/services/api/queryKeys.ts`
+9. Écrire les tests (hook + composant + intégration)
+
+**Règles d'architecture :**
+- Une feature n'importe **jamais** depuis une autre feature (exception : `features/bgg/` est importable par `features/games/` et `features/settings/`)
+- Tout module utilisé par 2+ features → `src/shared/`
+- Ne pas créer de fichiers dans les anciens dossiers `src/components/`, `src/views/`, `src/hooks/` (supprimés)
 
 ## Tests
 

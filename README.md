@@ -19,7 +19,7 @@ Application web de suivi de scores et de gestion de collection de jeux de socié
 - **Joueurs** — CRUD, statistiques (parties, victoires, scores), avatars
 - **Jeux** — CRUD, import automatique depuis BoardGameGeek, 4 modes (compétitif / coopératif / campagne / hybride)
 - **Extensions & Personnages** — gestion par jeu, avatars, capacités
-- **Sessions** — enregistrement des parties, scoring, historique
+- **Parties (Plays)** — enregistrement des parties, scoring, historique
 - **Statistiques** — dashboard global, stats par joueur et par jeu
 - **BGG Search** — recherche et import depuis l'API BoardGameGeek
 
@@ -54,20 +54,30 @@ npm run test:coverage  # avec couverture
 ```
 game-dashboard/
 ├── src/
-│   ├── components/      # Containers (logique métier)
-│   │   ├── dialogs/     # Dialogs CRUD (barrel export)
-│   │   └── ui/          # Composants shadcn/ui
-│   ├── views/           # Presenters (JSX pur)
-│   ├── hooks/           # Logique extraite en hooks
-│   ├── services/        # ApiService.ts + bggApi.ts
-│   ├── types/           # Interfaces TypeScript
-│   └── docs/            # Documentation technique
+│   ├── features/        # Features co-localisées (container + view + hook + api + dialogs)
+│   │   ├── auth/        # LoginPage
+│   │   ├── bgg/         # BGGSearch + bggApi
+│   │   ├── dashboard/   # Dashboard
+│   │   ├── games/       # GamesPage + detail/ + expansions/ + characters/
+│   │   ├── players/     # PlayersPage + dialogs
+│   │   ├── plays/       # NewPlayPage + playApi
+│   │   ├── settings/    # SettingsPage
+│   │   └── stats/       # StatsPage shell + game/ + player/
+│   ├── shared/          # Modules transversaux (2+ features)
+│   │   ├── components/  # Layout, BottomNavigation
+│   │   ├── components/ui/ # Composants shadcn/ui (ne pas éditer manuellement)
+│   │   ├── contexts/    # AuthContext
+│   │   ├── services/api/ # request, queryKeys, authApi, labelsApi, statsApi
+│   │   ├── hooks/       # useLabels, useLocale, useApiReachable, etc.
+│   │   └── i18n/        # en.json (fallback offline)
+│   └── types/           # Réexporte shared/types uniquement
 │
 └── backend/
     ├── server.ts
-    ├── api/             # Contrôleurs
+    ├── routes/          # Handlers HTTP par domaine
     ├── services/        # Logique métier
-    ├── database/        # Schema, migrations, DatabaseManager
+    ├── repositories/    # Requêtes SQL par entité
+    ├── database/        # DatabaseConnection + migrations/
     └── validation/      # Schémas Zod + middleware
 ```
 

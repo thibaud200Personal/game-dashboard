@@ -5,13 +5,13 @@ export type {
   Game,
   GameExpansion,
   GameCharacter,
-  GameSession,
-  SessionPlayer,
+  GamePlay,
+  PlayPlayer,
   CreatePlayerRequest,
   UpdatePlayerRequest,
   CreateGameRequest,
   UpdateGameRequest,
-  CreateSessionRequest,
+  CreatePlayRequest,
   DashboardStats,
   GameStatistics,
   BGGGame,
@@ -77,13 +77,13 @@ export interface GameFormData {
 }
 
 
-// Session creation (frontend-side extended payload with cooperative fields)
-export interface CreateSessionPayload {
+// Play creation (frontend-side extended payload with cooperative fields)
+export interface CreatePlayPayload {
   game_id: number
-  session_date?: Date
+  play_date?: Date
   duration_minutes?: number | null
   winner_player_id?: number | null
-  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  play_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
   notes?: string | null
   players: Array<{
     player_id: number

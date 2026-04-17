@@ -2,37 +2,55 @@
 
 ## Vue d'ensemble
 
-Application React 19 en TypeScript, organisée selon le pattern Container/Presenter. Navigation via React Router v7. Données serveur gérées exclusivement par React Query.
+Application React 19 en TypeScript, organisée selon une architecture **feature-based** (fonctionnalités co-localisées). Navigation via React Router v7. Données serveur gérées exclusivement par React Query.
 
 ## Structure des fichiers
 
 ```
 src/
-├── components/              → containers (logique + état)
-│   ├── dialogs/             → boîtes de dialogue modulaires
-│   └── ui/                  → composants shadcn/ui (ne pas éditer manuellement)
-├── views/                   → presenters (JSX pur, aucune logique)
-│   ├── games/
-│   └── players/
-├── hooks/                   → état et logique par page
-│   └── games/               → hooks spécifiques aux jeux
-├── services/
-│   └── api/                 → un fichier par domaine
-│       ├── playerApi.ts
-│       ├── gameApi.ts
-│       ├── sessionApi.ts
-│       ├── statsApi.ts
-│       ├── authApi.ts
-│       ├── bggApi.ts
-│       └── queryKeys.ts     → clés React Query centralisées
-├── styles/
-├── types/                   → réexporte shared/types (ne pas dupliquer)
-└── App.tsx                  → shell : Router + QueryClient + providers
+├── features/                    → features co-localisées
+│   ├── auth/                    → LoginPage
+│   ├── bgg/                     → BGGSearch + bggApi (importable par games et settings)
+│   ├── dashboard/               → Dashboard, DashboardView, useDashboard
+│   ├── games/                   → GamesPage, GamesPageView, useGamesPage, gameApi, dialogs/
+│   │   ├── detail/              → GameDetailPage, GameDetailView, useGameDetail, GamePageRoute
+│   │   ├── expansions/          → GameExpansionsPage, GameExpansionsView, useGameExpansions, dialogs/
+│   │   └── characters/          → GameCharactersPage, GameCharactersView, useGameCharacters, dialogs/
+│   ├── players/                 → PlayersPage, PlayersPageView, usePlayersPage, playerApi, dialogs/
+│   ├── plays/                   → NewPlayPage, NewPlayView, useNewPlayPage, playApi
+│   ├── settings/                → SettingsPage, SettingsPageView, useSettingsPage
+│   └── stats/                   → StatsPage (shell)
+│       ├── game/                → GameStatsView, useGameStatsPage
+│       └── player/              → PlayerStatsView, usePlayerStatsPage
+├── shared/                      → modules transversaux (utilisés par 2+ features)
+│   ├── components/ui/           → composants shadcn/ui (ne pas éditer manuellement)
+│   ├── components/              → Layout.tsx, BottomNavigation.tsx
+│   ├── contexts/                → AuthContext.tsx
+│   ├── services/api/            → request.ts, queryKeys.ts, authApi.ts, labelsApi.ts, statsApi.ts
+│   ├── hooks/                   → useLabels, useLocale, useLocales, useApiReachable, useNavigationAdapter, use-mobile
+│   ├── i18n/                    → en.json (fallback offline)
+│   ├── utils/                   → gameHelpers.ts
+│   ├── lib/                     → utils.ts (cn helper shadcn)
+│   └── styles/                  → theme.css
+├── __tests__/                   → infrastructure de test partagée (mocks/, fixtures/, utils/)
+├── App.tsx                      → shell : Router + QueryClient + providers
+├── main.tsx
+├── ErrorFallback.tsx
+└── types/                       → réexporte shared/types uniquement
 ```
+
+## Règles d'architecture
+
+- **Isolation des features** : une feature n'importe **jamais** depuis une autre feature.
+  - Exception unique : `features/bgg/` est importable par `features/games/` et `features/settings/` (feature utilitaire partagée).
+- **Promotion vers shared** : tout module utilisé par 2+ features doit être déplacé dans `src/shared/`.
+- **Alias de chemins** :
+  - `@/` → `src/` (imports intra-feature et vers shared)
+  - `@shared/` → `/shared` (types partagés front+back — à ne pas confondre avec `@/shared/`)
 
 ## Pattern Container/Presenter
 
-Séparation stricte entre logique et présentation.
+Séparation stricte entre logique et présentation, co-localisés dans la même feature.
 
 ```
 Page (container)            View (presenter)
@@ -43,7 +61,7 @@ GamesPage.tsx    →  hooks → GamesPageView.tsx
   appels API                   aucun appel API
 ```
 
-**Règle** : si un composant dans `views/` contient un `useQuery`, `useMutation` ou un appel direct à une API, c'est une erreur de placement.
+**Règle** : si un composant `View` contient un `useQuery`, `useMutation` ou un appel direct à une API, c'est une erreur de placement.
 
 ## Navigation — React Router v7
 
@@ -64,7 +82,7 @@ export default function App() {
             <Route path="/games/:id" element={<GameDetailPage />} />
             <Route path="/games/:id/expansions" element={<GameExpansionsPage />} />
             <Route path="/games/:id/characters" element={<GameCharactersPage />} />
-            <Route path="/sessions/new" element={<NewGamePage />} />
+            <Route path="/plays/new" element={<NewPlayPage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/stats/players/:id" element={<PlayerStatsPage />} />
             <Route path="/stats/games/:id" element={<GameStatsPage />} />
@@ -79,7 +97,7 @@ export default function App() {
 
 ### Navigation contextuelle mobile
 
-Le `navigationContext` est remplacé par `location.state` pour les cas où l'origine doit être connue :
+`location.state` est utilisé pour les cas où l'origine doit être connue :
 
 ```ts
 // Depuis un jeu, aller aux stats en gardant le contexte
@@ -122,7 +140,7 @@ export const queryKeys = {
     expansions: (id: number) => ['games', id, 'expansions'] as const,
     characters: (id: number) => ['games', id, 'characters'] as const,
   },
-  sessions: { all: ['sessions'] as const },
+  plays: { all: ['plays'] as const },
   stats: {
     players: ['stats', 'players'] as const,
     playerDetail: (id: number) => ['stats', 'players', id] as const,
@@ -136,10 +154,10 @@ export const queryKeys = {
 
 ## Hooks
 
-Un hook par page. Responsabilité : données + état local de la page.
+Un hook par page, co-localisé dans sa feature. Responsabilité : données + état local de la page.
 
 ```ts
-// hooks/useGamesPage.ts
+// features/games/useGamesPage.ts
 export function useGamesPage() {
   const { data: games = [], isLoading } = useQuery({
     queryKey: queryKeys.games.all,
@@ -231,10 +249,12 @@ const { role } = useAuth()
 
 ## Ajouter une page — checklist
 
-1. Créer le hook `src/hooks/use<PageName>Page.ts`
-2. Créer le container `src/components/<PageName>.tsx`
-3. Créer la view `src/views/<PageName>View.tsx`
-4. Ajouter la route dans `App.tsx`
-5. Ajouter les entrées dans `queryKeys.ts` si nouvelles données
-6. Créer `src/services/api/<domain>Api.ts` si nouveau domaine
-7. Écrire les tests : hook (unit/functional) + composant (unit/functional) + flux complet (integration)
+1. Créer le dossier `src/features/<nom>/`
+2. Créer le hook `src/features/<nom>/use<NomPage>.ts`
+3. Créer le container `src/features/<nom>/<NomPage>.tsx`
+4. Créer la view `src/features/<nom>/<NomPage>View.tsx`
+5. Si dialogs nécessaires, créer `src/features/<nom>/dialogs/`
+6. Si API nécessaire, créer `src/features/<nom>/<nom>Api.ts`
+7. Ajouter la route dans `App.tsx`
+8. Ajouter les entrées dans `src/shared/services/api/queryKeys.ts` si nouvelles données
+9. Écrire les tests : hook (unit/functional) + composant (unit/functional) + flux complet (integration)
