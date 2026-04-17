@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useGamesPage } from '@/features/games/useGamesPage';
-import { mockGames } from '@/__tests__/utils/test-utils';
+import { mockGames } from '@/shared/__tests__/utils/test-utils';
 
 vi.mock('@/features/games/gameApi', () => ({
   gameApi: {

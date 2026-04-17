@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useNewGamePage } from '@/features/plays/useNewPlayPage';
-import { createHookWrapper } from '@/__tests__/utils/test-utils';
+import { createHookWrapper } from '@/shared/__tests__/utils/test-utils';
 
 vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
   useNavigationAdapter: () => vi.fn(),

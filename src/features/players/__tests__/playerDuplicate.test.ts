@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import { server } from '@/__tests__/mocks/server';
+import { server } from '@/shared/__tests__/mocks/server';
 import { playerApi } from '../playerApi';
 
 describe('Détection doublon pseudo joueur', () => {

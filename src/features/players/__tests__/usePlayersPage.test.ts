@@ -2,8 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePlayersPage } from '@/features/players/usePlayersPage';
-import { createHookWrapper } from '@/__tests__/utils/test-utils';
-import { mockPlayers } from '@/__tests__/fixtures';
+import { createHookWrapper } from '@/shared/__tests__/utils/test-utils';
+import { mockPlayers } from '@/shared/__tests__/fixtures';
 
 vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
   useNavigationAdapter: () => vi.fn(),

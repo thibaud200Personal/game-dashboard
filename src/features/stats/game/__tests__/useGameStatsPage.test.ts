@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGameStatsPage } from '@/features/stats/game/useGameStatsPage';
-import { mockGames, mockPlayers } from '@/__tests__/fixtures';
+import { mockGames, mockPlayers } from '@/shared/__tests__/fixtures';
 
 describe('useGameStatsPage', () => {
   it('initialise avec selectedGame=null (stats globales)', () => {

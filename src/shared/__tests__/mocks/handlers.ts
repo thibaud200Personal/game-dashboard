@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import {
   mockPlayers, mockGames, mockSessions,
   mockDashboard, mockGameStats,
-} from '@/__tests__/fixtures';
+} from '@/shared/__tests__/fixtures';
 
 // BGG game full details (used by BGGService / bggApi tests)
 const mockWingspan = {

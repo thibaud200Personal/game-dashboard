@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useLabels } from '@/shared/hooks/useLabels';
-import { createHookWrapper } from '@/__tests__/utils/test-utils';
+import { createHookWrapper } from '@/shared/__tests__/utils/test-utils';
 
 vi.mock('@/shared/services/api/labelsApi', () => ({
   labelsApi: {
