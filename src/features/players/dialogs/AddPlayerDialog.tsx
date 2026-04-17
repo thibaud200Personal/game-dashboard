@@ -113,7 +113,7 @@ export function AddPlayerDialog({
           <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={darkMode ? "bg-slate-800 border-white/20" : "bg-white border-slate-200 text-slate-900"}>
+      <DialogContent className={darkMode ? "bg-slate-800 border-white/20" : "bg-white border-slate-200 text-slate-900"} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? "text-white" : "text-blue-700"}>{t('players.add_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-500"}>

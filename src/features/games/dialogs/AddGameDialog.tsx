@@ -245,7 +245,7 @@ export default function AddGameDialog({
       </DialogTrigger>
       <DialogContent className={
         `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
-      }>
+      } onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{t('games.add_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>

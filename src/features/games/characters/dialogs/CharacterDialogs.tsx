@@ -130,7 +130,7 @@ export function AddCharacterDialog({
 }: AddCharacterDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"}>
+      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? "text-white" : "text-slate-900"}>Ajouter un personnage</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-700/70"}>
@@ -168,7 +168,7 @@ export function EditCharacterDialog({
 }: EditCharacterDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"}>
+      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? "text-white" : "text-slate-900"}>Modifier le personnage</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-700/70"}>

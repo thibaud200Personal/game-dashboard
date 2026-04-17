@@ -118,7 +118,7 @@ export function AddExpansionDialog({
 }: AddExpansionDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"}>
+      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? "text-white" : "text-slate-900"}>Ajouter une extension</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-700/70"}>
@@ -156,7 +156,7 @@ export function EditExpansionDialog({
 }: EditExpansionDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"}>
+      <DialogContent className={darkMode ? "bg-slate-800 border-slate-700 max-w-md mx-4" : "bg-white border-slate-200 max-w-md mx-4"} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? "text-white" : "text-slate-900"}>Modifier l'extension</DialogTitle>
           <DialogDescription className={darkMode ? "text-white/70" : "text-slate-700/70"}>

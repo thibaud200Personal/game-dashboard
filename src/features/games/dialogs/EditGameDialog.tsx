@@ -143,7 +143,7 @@ export default function EditGameDialog({
     }}>
       <DialogContent className={
         `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
-      }>
+      } onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className={darkMode ? 'text-white' : 'text-blue-700'}>{t('games.edit_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
