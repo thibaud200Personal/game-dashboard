@@ -9,7 +9,7 @@ const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
 const NewGamePage  = lazy(() => import('./features/plays/NewPlayPage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
-const SettingsPage   = lazy(() => import('./components/SettingsPage'));
+const SettingsPage   = lazy(() => import('./features/settings/SettingsPage'));
 const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
 const Layout         = lazy(() => import('./shared/components/Layout'));
 const GamePageRoute  = lazy(() => import('./features/games/detail/GamePageRoute'));

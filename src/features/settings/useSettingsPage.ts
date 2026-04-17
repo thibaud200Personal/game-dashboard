@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useAuth } from '@/shared/contexts/AuthContext';
-import apiService from '@/services/ApiService';
+import { request } from '@/shared/services/api/request';
 import { useLocale } from '@/shared/hooks/useLocale';
 import { useApiReachable } from '@/shared/hooks/useApiReachable';
 import { useLocales } from '@/shared/hooks/useLocales';
@@ -27,8 +27,11 @@ export const useSettingsPage = () => {
   const [isDataResetting, setIsDataResetting] = useState(false);
   const [dataOpError, setDataOpError] = useState<string | null>(null);
 
+  const getBggCatalogStatus = () =>
+    request<{ count: number; bgg_catalog_imported_at: string | null }>('/api/v1/bgg/import-status');
+
   useEffect(() => {
-    apiService.getBggCatalogStatus().then(s => {
+    getBggCatalogStatus().then(s => {
       setBggCatalogCount(s.count);
       setBggCatalogImportedAt(s.bgg_catalog_imported_at);
     }).catch(() => {});
@@ -38,9 +41,14 @@ export const useSettingsPage = () => {
     setIsBggImporting(true);
     setBggImportError(null);
     try {
-      const result = await apiService.importBggCatalog(file);
+      const text = await file.text();
+      const result = await request<{ count: number }>('/api/v1/bgg/import-catalog', {
+        method: 'POST',
+        body: text,
+        headers: { 'Content-Type': 'text/plain' },
+      });
       setBggCatalogCount(result.count);
-      apiService.getBggCatalogStatus().then(s => {
+      getBggCatalogStatus().then(s => {
         setBggCatalogCount(s.count);
         setBggCatalogImportedAt(s.bgg_catalog_imported_at);
       }).catch(() => {});
@@ -80,7 +88,9 @@ export const useSettingsPage = () => {
       setIsDataExporting(true);
       setDataOpError(null);
       try {
-        const blob = await apiService.exportData();
+        const res = await fetch('/api/v1/data/export', { credentials: 'include' });
+        if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+        const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -97,7 +107,8 @@ export const useSettingsPage = () => {
       setIsDataImporting(true);
       setDataOpError(null);
       try {
-        await apiService.importData(file);
+        const text = await file.text();
+        await request<{ ok: boolean }>('/api/v1/data/import', { method: 'POST', body: text });
       } catch (err) {
         setDataOpError(err instanceof Error ? err.message : 'Erreur import');
       } finally {
@@ -108,7 +119,7 @@ export const useSettingsPage = () => {
       setIsDataResetting(true);
       setDataOpError(null);
       try {
-        await apiService.resetData();
+        await request<{ ok: boolean }>('/api/v1/data/reset', { method: 'POST' });
       } catch (err) {
         setDataOpError(err instanceof Error ? err.message : 'Erreur reset');
       } finally {
