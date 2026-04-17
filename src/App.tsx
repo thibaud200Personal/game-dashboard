@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { AuthProvider, useAuth } from './shared/contexts/AuthContext';
+import { DarkModeProvider } from './shared/contexts/DarkModeContext';
 
 const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
@@ -64,11 +65,13 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
+        <DarkModeProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </DarkModeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

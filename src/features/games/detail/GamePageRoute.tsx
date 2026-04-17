@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
+import { useDarkMode } from '@/shared/contexts/DarkModeContext';
 import GameDetailPage from './GameDetailPage';
 import GameExpansionsPage from '../expansions/GameExpansionsPage';
 import GameCharactersPage from '../characters/GameCharactersPage';
@@ -15,6 +16,7 @@ export default function GamePageRoute({ subRoute }: { subRoute: SubRoute }) {
   const gameId = Number(id);
   const onNavigation = useNavigationAdapter();
   const queryClient = useQueryClient();
+  const { darkMode } = useDarkMode();
 
   const { data: game } = useQuery({
     queryKey: queryKeys.games.detail(gameId),
@@ -43,7 +45,7 @@ export default function GamePageRoute({ subRoute }: { subRoute: SubRoute }) {
   if (!game) return null;
 
   const noop = async () => {};
-  const base = { game, onNavigation, darkMode: true, navigationSource: 'games' };
+  const base = { game, onNavigation, darkMode, navigationSource: 'games' };
 
   if (subRoute === 'expansions') {
     return <GameExpansionsPage

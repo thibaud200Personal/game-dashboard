@@ -27,6 +27,8 @@ export const useNewGamePage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.plays.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.dashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.players.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats.players });
     },
   });
 

@@ -6,7 +6,7 @@ export function useApiReachable() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/health', { credentials: 'include' })
+    fetch('/api/v1/health', { credentials: 'include' })
       .then(res => { if (!cancelled) setIsReachable(res.ok); })
       .catch(() => { if (!cancelled) setIsReachable(false); });
     return () => { cancelled = true; };

@@ -453,7 +453,7 @@ export default function EditGameDialog({
                 <Checkbox
                   id="edit-has_expansion"
                   checked={formData.has_expansion}
-                  onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked })}
+                  onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked, ...(checked ? { is_expansion: false } : {}) })}
                 />
                 <Label htmlFor="edit-has_expansion">Has expansions</Label>
               </div>
@@ -461,7 +461,7 @@ export default function EditGameDialog({
                 <Checkbox
                   id="edit-is_expansion"
                   checked={formData.is_expansion ?? false}
-                  onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked })}
+                  onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked, ...(checked ? { has_expansion: false } : {}) })}
                 />
                 <Label htmlFor="edit-is_expansion">Est une extension</Label>
               </div>

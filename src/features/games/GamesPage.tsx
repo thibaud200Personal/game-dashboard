@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useGamesPage } from './useGamesPage';
 import { GamesPageView } from './GamesPageView';
+import { useDarkMode } from '@/shared/contexts/DarkModeContext';
 import type { BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 
 export default function GamesPage() {
   const [expandedGame, setExpandedGame] = useState<number | null>(null);
   const [isBGGSearchOpen, setIsBGGSearchOpen] = useState(false);
+  const { darkMode } = useDarkMode();
 
   const {
     games,
@@ -69,7 +71,7 @@ export default function GamesPage() {
       setBGGSearchOpen={setIsBGGSearchOpen}
       setExpandedGame={setExpandedGame}
       setEditDialogOpen={handleEditDialogOpen}
-      darkMode={true}
+      darkMode={darkMode}
       addGameError={addGameError}
       isAddDuplicate={isAddDuplicate}
       updateGameError={updateGameError}

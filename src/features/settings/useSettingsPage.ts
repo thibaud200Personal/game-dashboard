@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useAuth } from '@/shared/contexts/AuthContext';
+import { useDarkMode } from '@/shared/contexts/DarkModeContext';
 import { request } from '@/shared/services/api/request';
 import { useLocale } from '@/shared/hooks/useLocale';
 import { useApiReachable } from '@/shared/hooks/useApiReachable';
@@ -9,6 +10,7 @@ import { useLocales } from '@/shared/hooks/useLocales';
 export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();
   const { logout, role } = useAuth();
+  const { darkMode, toggleDarkMode } = useDarkMode();
 
   const [locale, setLocale] = useLocale();
   const { isReachable, triggerRetry } = useApiReachable();
@@ -58,7 +60,7 @@ export const useSettingsPage = () => {
 
   return {
     currentView: 'settings',
-    darkMode: true,
+    darkMode,
     locale,
     locales,
     isApiReachable: isReachable,
@@ -69,7 +71,7 @@ export const useSettingsPage = () => {
     bggImportError,
     handleBackClick: () => onNavigation('dashboard'),
     onNavigation,
-    handleDarkModeChange: (_enabled: boolean) => {},
+    handleDarkModeChange: toggleDarkMode,
     handleLanguageChange: setLocale,
     handleRetryConnection: triggerRetry,
     handleShowTooltipsChange: setShowTooltips,

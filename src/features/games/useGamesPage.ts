@@ -190,10 +190,7 @@ export const useGamesPage = () => {
     try {
       await updateMutation.mutateAsync({
         id: editingGame.game_id,
-        data: {
-          ...formData,
-          players: `${formData.min_players}-${formData.max_players}`,
-        },
+        data: { ...formData },
       });
       resetForm();
       setEditingGame(null);
