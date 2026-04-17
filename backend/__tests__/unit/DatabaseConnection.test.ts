@@ -51,7 +51,7 @@ describe('DatabaseConnection', () => {
     expect(cols).not.toContain('game_type')
   })
 
-  it('game_sessions accepts hybrid session_type', () => {
+  it('game_plays accepts hybrid play_type', () => {
     conn.db.exec(`INSERT INTO players (player_name, pseudo) VALUES ('Alice', 'alice')`)
     conn.db.exec(`
       INSERT INTO games (name, min_players, max_players,
@@ -60,7 +60,7 @@ describe('DatabaseConnection', () => {
       VALUES ('Gloomhaven', 1, 4, 1, 0, 1, 1, 1, 1, 0)
     `)
     expect(() => {
-      conn.db.exec(`INSERT INTO game_sessions (game_id, session_type) VALUES (1, 'hybrid')`)
+      conn.db.exec(`INSERT INTO game_plays (game_id, play_type) VALUES (1, 'hybrid')`)
     }).not.toThrow()
   })
 

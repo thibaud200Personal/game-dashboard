@@ -1,18 +1,18 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TooltipProvider } from '@/shared/components/ui/tooltip';
+import { AuthProvider, useAuth } from './shared/contexts/AuthContext';
 
-const Dashboard    = lazy(() => import('./components/Dashboard'));
-const PlayersPage  = lazy(() => import('./components/PlayersPage'));
-const GamesPage    = lazy(() => import('./components/GamesPage'));
-const NewGamePage  = lazy(() => import('./components/NewGamePage'));
-const StatsPage    = lazy(() => import('./components/StatsPage'));
-const SettingsPage   = lazy(() => import('./components/SettingsPage'));
-const LoginPage      = lazy(() => import('./components/LoginPage'));
-const Layout         = lazy(() => import('./components/Layout'));
-const GamePageRoute  = lazy(() => import('./components/GamePageRoute'));
+const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
+const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
+const GamesPage    = lazy(() => import('./features/games/GamesPage'));
+const NewPlayPage  = lazy(() => import('./features/plays/NewPlayPage'));
+const StatsPage    = lazy(() => import('./features/stats/StatsPage'));
+const SettingsPage   = lazy(() => import('./features/settings/SettingsPage'));
+const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
+const Layout         = lazy(() => import('./shared/components/Layout'));
+const GamePageRoute  = lazy(() => import('./features/games/detail/GamePageRoute'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,7 +47,7 @@ function AppRoutes() {
           <Route index element={<Dashboard />} />
           <Route path="players" element={<PlayersPage />} />
           <Route path="games" element={<GamesPage />} />
-          <Route path="sessions/new" element={<NewGamePage />} />
+          <Route path="plays/new" element={<NewPlayPage />} />
           <Route path="games/:id" element={<GamePageRoute subRoute="detail" />} />
           <Route path="games/:id/expansions" element={<GamePageRoute subRoute="expansions" />} />
           <Route path="games/:id/characters" element={<GamePageRoute subRoute="characters" />} />

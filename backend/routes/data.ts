@@ -10,8 +10,8 @@ interface ExportedData {
   games: unknown[]
   game_expansions: unknown[]
   game_characters: unknown[]
-  game_sessions: unknown[]
-  session_players: unknown[]
+  game_plays: unknown[]
+  players_play: unknown[]
 }
 
 export function createDataRouter(db: Database.Database): Router {
@@ -26,8 +26,8 @@ export function createDataRouter(db: Database.Database): Router {
       games:           db.prepare('SELECT * FROM games').all(),
       game_expansions: db.prepare('SELECT * FROM game_expansions').all(),
       game_characters: db.prepare('SELECT * FROM game_characters').all(),
-      game_sessions:   db.prepare('SELECT * FROM game_sessions').all(),
-      session_players: db.prepare('SELECT * FROM session_players').all(),
+      game_plays:      db.prepare('SELECT * FROM game_plays').all(),
+      players_play:    db.prepare('SELECT * FROM players_play').all(),
     }
     res
       .setHeader('Content-Disposition', `attachment; filename="board-game-dashboard-${data.exported_at.slice(0, 10)}.json"`)
@@ -44,7 +44,7 @@ export function createDataRouter(db: Database.Database): Router {
     }
 
     const tables: (keyof Omit<ExportedData, 'exported_at' | 'version'>)[] = [
-      'players', 'games', 'game_expansions', 'game_characters', 'game_sessions', 'session_players',
+      'players', 'games', 'game_expansions', 'game_characters', 'game_plays', 'players_play',
     ]
 
     db.transaction(() => {
@@ -71,8 +71,8 @@ export function createDataRouter(db: Database.Database): Router {
   // POST /api/v1/data/reset — admin only
   router.post('/reset', requireRole('admin'), (_req: AuthRequest, res) => {
     db.transaction(() => {
-      db.prepare('DELETE FROM session_players').run()
-      db.prepare('DELETE FROM game_sessions').run()
+      db.prepare('DELETE FROM players_play').run()
+      db.prepare('DELETE FROM game_plays').run()
       db.prepare('DELETE FROM game_characters').run()
       db.prepare('DELETE FROM game_expansions').run()
       db.prepare('DELETE FROM games').run()

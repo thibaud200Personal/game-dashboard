@@ -21,12 +21,12 @@ Injection de dépendance : les repositories reçoivent `DatabaseConnection` en p
 Les transactions qui couvrent plusieurs tables restent dans la couche service :
 
 ```ts
-// SessionService.ts
-createSession(payload) {
+// PlayService.ts
+createPlay(payload) {
   return this.db.transaction(() => {
-    const session = this.sessionRepo.insertSession(payload)
-    this.sessionRepo.insertSessionPlayers(session.session_id, payload.players)
-    return session
+    const playId = this.playRepo.insertPlay(payload)
+    this.playRepo.insertPlayPlayers(playId, payload.players)
+    return this.playRepo.findById(playId)!
   })()
 }
 ```

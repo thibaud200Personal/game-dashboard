@@ -76,20 +76,20 @@ export interface GameCharacter {
   abilities?: string[]
 }
 
-export interface GameSession {
-  session_id: number
+export interface GamePlay {
+  play_id: number
   game_id: number
-  session_date: Date
+  play_date: Date
   duration_minutes?: number
   winner_player_id?: number
-  session_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  play_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
   notes?: string
   created_at: Date
 }
 
-export interface SessionPlayer {
-  session_player_id?: number
-  session_id: number
+export interface PlayPlayer {
+  players_play_id?: number
+  play_id: number
   player_id: number
   character_id?: number
   score: number
@@ -149,12 +149,12 @@ export interface CreateGameRequest {
 
 export interface UpdateGameRequest extends Partial<CreateGameRequest> {}
 
-export interface CreateSessionRequest {
+export interface CreatePlayRequest {
   game_id: number
-  session_date?: string
+  play_date?: string
   duration_minutes?: number
   winner_player_id?: number
-  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  play_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
   notes?: string
   players: Array<{
     player_id: number
@@ -170,8 +170,8 @@ export interface CreateSessionRequest {
 export interface DashboardStats {
   total_players: number
   total_games: number
-  total_sessions: number
-  average_session_duration: number
+  total_plays: number
+  average_play_duration: number
 }
 
 export interface GameStatistics {

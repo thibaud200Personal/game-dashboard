@@ -60,3 +60,4 @@ eslint.audit.config.js
 shared/**/*.js
 shared/**/*.js.map
 shared/**/*.d.ts.map
+.worktrees/

@@ -8,7 +8,7 @@ import {
   getMedalClass,
   withUpdatedAbility,
   withRemovedAbility,
-} from '@/utils/gameHelpers';
+} from '@/shared/utils/gameHelpers';
 import type { Game, GameCharacter, GameExpansion } from '@/types';
 
 // Minimal Game stub for getCredit tests

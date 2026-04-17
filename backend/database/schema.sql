@@ -75,31 +75,31 @@ CREATE TABLE game_characters (
     FOREIGN KEY (game_id) REFERENCES games(game_id) ON DELETE CASCADE
 );
 
--- Game sessions table
-CREATE TABLE game_sessions (
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+-- Game plays table
+CREATE TABLE game_plays (
+    play_id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_id INTEGER NOT NULL,
-    session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    play_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     duration_minutes INTEGER,
     winner_player_id INTEGER,
-    session_type TEXT CHECK(session_type IN ('competitive', 'cooperative', 'campaign')) DEFAULT 'competitive',
+    play_type TEXT CHECK(play_type IN ('competitive', 'cooperative', 'campaign', 'hybrid')) DEFAULT 'competitive',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (game_id) REFERENCES games(game_id) ON DELETE CASCADE,
     FOREIGN KEY (winner_player_id) REFERENCES players(player_id) ON DELETE SET NULL
 );
 
--- Session players (who played in each session)
-CREATE TABLE session_players (
-    session_player_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id INTEGER NOT NULL,
+-- Players play (who played in each play)
+CREATE TABLE players_play (
+    players_play_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    play_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     character_id INTEGER,
     score INTEGER DEFAULT 0,
     placement INTEGER,
     is_winner BOOLEAN DEFAULT FALSE,
     notes TEXT,
-    FOREIGN KEY (session_id) REFERENCES game_sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (play_id) REFERENCES game_plays(play_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (character_id) REFERENCES game_characters(character_id) ON DELETE SET NULL
 );
@@ -127,10 +127,10 @@ CREATE INDEX idx_games_bgg_id ON games(bgg_id);
 CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
 CREATE INDEX idx_game_expansions_game_id ON game_expansions(game_id);
 CREATE INDEX idx_game_characters_game_id ON game_characters(game_id);
-CREATE INDEX idx_game_sessions_game_id ON game_sessions(game_id);
-CREATE INDEX idx_game_sessions_date ON game_sessions(session_date);
-CREATE INDEX idx_session_players_session_id ON session_players(session_id);
-CREATE INDEX idx_session_players_player_id ON session_players(player_id);
+CREATE INDEX idx_game_plays_game_id ON game_plays(game_id);
+CREATE INDEX idx_game_plays_date ON game_plays(play_date);
+CREATE INDEX idx_players_play_play_id ON players_play(play_id);
+CREATE INDEX idx_players_play_player_id ON players_play(player_id);
 
 -- Triggers to update timestamps
 CREATE TRIGGER update_players_timestamp 
@@ -147,24 +147,25 @@ CREATE TRIGGER update_games_timestamp
 
 -- Views for dynamic statistics
 CREATE VIEW player_statistics AS
-SELECT 
+SELECT
     p.player_id,
     p.player_name,
+    p.pseudo,
     p.avatar,
-    COUNT(DISTINCT sp.session_id) as games_played,
-    COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) as wins,
-    COALESCE(SUM(sp.score), 0) as total_score,
-    COALESCE(AVG(sp.score), 0) as average_score,
-    (COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) * 100.0 / 
-     NULLIF(COUNT(DISTINCT sp.session_id), 0)) as win_percentage,
     p.favorite_game,
-    p.created_at
+    p.created_at,
+    COUNT(DISTINCT sp.play_id)                                                             AS games_played,
+    COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END)                                          AS wins,
+    COALESCE(SUM(sp.score), 0)                                                             AS total_score,
+    COALESCE(AVG(sp.score), 0)                                                             AS average_score,
+    (COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) * 100.0 /
+     NULLIF(COUNT(DISTINCT sp.play_id), 0))                                                AS win_percentage
 FROM players p
-LEFT JOIN session_players sp ON p.player_id = sp.player_id
-GROUP BY p.player_id, p.player_name, p.avatar, p.favorite_game, p.created_at;
+LEFT JOIN players_play sp ON p.player_id = sp.player_id
+GROUP BY p.player_id;
 
 CREATE VIEW game_statistics AS
-SELECT 
+SELECT
     g.game_id,
     g.name,
     g.image,
@@ -174,13 +175,18 @@ SELECT
     g.category,
     g.year_published,
     g.bgg_rating,
-    COUNT(DISTINCT gs.session_id) as times_played,
-    (SELECT COUNT(DISTINCT sp.player_id) FROM session_players sp WHERE sp.session_id IN (SELECT session_id FROM game_sessions WHERE game_id = g.game_id)) as unique_players,
-    (SELECT AVG(sp.score) FROM session_players sp WHERE sp.session_id IN (SELECT session_id FROM game_sessions WHERE game_id = g.game_id)) as average_score,
-    (SELECT AVG(gs_inner.duration_minutes) FROM game_sessions gs_inner WHERE gs_inner.game_id = g.game_id) as average_duration,
-    g.created_at
+    g.created_at,
+    COUNT(DISTINCT gp.play_id)                                                   AS times_played,
+    (SELECT COUNT(DISTINCT pp.player_id)
+     FROM players_play pp
+     WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS unique_players,
+    (SELECT COALESCE(AVG(pp.score), 0)
+     FROM players_play pp
+     WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) AS average_score,
+    (SELECT COALESCE(AVG(gp2.duration_minutes), 0)
+     FROM game_plays gp2 WHERE gp2.game_id = g.game_id)                          AS average_duration
 FROM games g
-LEFT JOIN game_sessions gs ON g.game_id = gs.game_id
+LEFT JOIN game_plays gp ON g.game_id = gp.game_id
 GROUP BY g.game_id;
 
 -- Sample data insertion
