@@ -127,6 +127,17 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 </details>
 
+<details>
+<summary><b>Refactoring feature-based + renommage sessions→plays (branche `refactor/feature-architecture`, avril 2026)</b></summary>
+
+- ✅ **Migration DB 013** — renommage `game_sessions` → `game_plays`, `session_players` → `play_players`, colonnes `session_*` → `play_*`
+- ✅ **Backend sessions→plays** — `SessionRepository/Service/Route` renommés en `PlayRepository/Service/Route`, endpoint `/api/v1/plays`
+- ✅ **Types partagés** — `GameSession` → `GamePlay`, `CreateSessionPayload` → `CreatePlayPayload`
+- ✅ **Architecture feature-based frontend** — `src/features/<nom>/` avec container + view + hook + api + dialogs co-localisés. `src/shared/` pour les modules transversaux (2+ features). Règle d'isolation : pas d'imports croisés entre features (exception : `features/bgg/` importable par `features/games/` et `features/settings/`)
+- ✅ **Suppression anciens dossiers** — `src/components/`, `src/views/`, `src/hooks/`, `src/services/api/` (hors shared) supprimés
+
+</details>
+
 </details>
 
 ---

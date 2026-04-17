@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './shared/contexts/AuthContext';
 
 const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));

@@ -33,24 +33,29 @@ async createPlayer(data: any): Promise<any>
 
 Exception documentée : middleware d'erreur Express 5 (`error: any`) — convention Express imposée par la signature à 4 paramètres.
 
-## 2. Pattern Container/Presenter
+## 2. Pattern Container/Presenter (feature-based)
+
+Chaque feature est organisée en : `<Nom>Page.tsx` (container) + `<Nom>View.tsx` (presenter) + `use<Nom>Page.ts` (hook), co-localisés dans `src/features/<nom>/`.
 
 ```
-GamesPage (container)        GamesPageView (presenter)
-─────────────────────        ──────────────────────────
-useGamesPage() hook     →    Props uniquement
-logique + état               JSX pur
-appels API via hooks          aucun useQuery / useMutation
+features/games/
+  GamesPage.tsx (container)        GamesPageView.tsx (presenter)
+  ─────────────────────────        ─────────────────────────────
+  useGamesPage() hook         →    Props uniquement
+  logique + état                   JSX pur
+  appels API via hooks             aucun useQuery / useMutation
 ```
 
-Un composant dans `views/` qui fait un appel API est une erreur de placement — déplacer la logique dans le hook.
+Un composant `View` qui fait un appel API est une erreur de placement — déplacer la logique dans le hook.
+
+**Règle d'isolation** : une feature n'importe jamais depuis une autre feature. Exception : `features/bgg/` est importable par `features/games/` et `features/settings/`.
 
 ## 3. State management — React Query
 
 React Query est la **seule** source de vérité pour les données serveur. Pas de `useState` pour des données qui viennent du backend.
 
 ```ts
-// hooks/usePlayersPage.ts
+// features/players/usePlayersPage.ts
 export function usePlayersPage() {
   const { data: players = [], isLoading } = useQuery({
     queryKey: queryKeys.players.all,
@@ -121,12 +126,12 @@ interface AddPlayerDialogProps {
 import React, { useState, useCallback } from 'react'
 // 2. Bibliothèques externes
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/components/ui/button'
 // 3. Imports internes absolus
 import { Player } from '@/types'
-import { playerApi } from '@/services/api/playerApi'
-import { queryKeys } from '@/services/api/queryKeys'
-// 4. Imports relatifs
+import { playerApi } from '@/features/players/playerApi'
+import { queryKeys } from '@/shared/services/api/queryKeys'
+// 4. Imports relatifs (dans la même feature uniquement)
 import './Component.css'
 ```
 
