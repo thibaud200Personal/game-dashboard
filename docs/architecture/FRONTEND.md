@@ -104,9 +104,8 @@ export default function App() {
 ```
 
 **Providers globaux :**
-- `LocaleProvider` — doit envelopper `AuthProvider` (le login peut utiliser des labels traduits)
+- `LocaleProvider` — lit/écrit `localStorage.locale`, invalide le cache React Query `['labels']` à chaque changement. Doit envelopper `AuthProvider` (le login peut utiliser des labels traduits)
 - `DarkModeProvider` — lit/écrit `localStorage.darkMode`, applique la classe `dark` sur `<html>`
-- `LocaleProvider` — lit/écrit `localStorage.locale`, invalide le cache React Query `['labels']` à chaque changement
 
 ### Navigation contextuelle mobile
 
