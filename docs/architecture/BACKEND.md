@@ -36,7 +36,7 @@ backend/
 │   └── RefreshTokenRepository.ts
 ├── database/
 │   ├── DatabaseConnection.ts    → connexion SQLite + runner migrations
-│   └── migrations/              → fichiers SQL numérotés (001 → 014)
+│   └── migrations/              → fichiers SQL numérotés (001 → 015)
 ├── middleware/
 │   ├── auth.ts                  → vérification JWT (cookie + Bearer)
 │   ├── requireRole.ts           → guard admin/user

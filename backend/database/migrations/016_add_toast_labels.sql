@@ -1,0 +1,37 @@
+-- Migration 016: Add i18n labels for toast notifications (characters, expansions, plays)
+INSERT OR IGNORE INTO labels (key, locale, value) VALUES
+  -- Characters
+  ('character.toast.name_key_required', 'en', 'Character name and key are required'),
+  ('character.toast.name_key_required', 'fr', 'Le nom et la clé du personnage sont requis'),
+  ('character.toast.added',             'en', 'Character added'),
+  ('character.toast.added',             'fr', 'Personnage ajouté avec succès'),
+  ('character.toast.add_error',         'en', 'Failed to add character'),
+  ('character.toast.add_error',         'fr', 'Erreur lors de l''ajout du personnage'),
+  ('character.toast.updated',           'en', 'Character updated'),
+  ('character.toast.updated',           'fr', 'Personnage modifié avec succès'),
+  ('character.toast.update_error',      'en', 'Failed to update character'),
+  ('character.toast.update_error',      'fr', 'Erreur lors de la modification du personnage'),
+  ('character.toast.deleted',           'en', 'Character deleted'),
+  ('character.toast.deleted',           'fr', 'Personnage supprimé avec succès'),
+  ('character.toast.delete_error',      'en', 'Failed to delete character'),
+  ('character.toast.delete_error',      'fr', 'Erreur lors de la suppression du personnage'),
+  -- Expansions
+  ('expansion.toast.name_required',     'en', 'Expansion name is required'),
+  ('expansion.toast.name_required',     'fr', 'Le nom de l''extension est requis'),
+  ('expansion.toast.added',             'en', 'Expansion added'),
+  ('expansion.toast.added',             'fr', 'Extension ajoutée avec succès'),
+  ('expansion.toast.add_error',         'en', 'Failed to add expansion'),
+  ('expansion.toast.add_error',         'fr', 'Erreur lors de l''ajout de l''extension'),
+  ('expansion.toast.updated',           'en', 'Expansion updated'),
+  ('expansion.toast.updated',           'fr', 'Extension modifiée avec succès'),
+  ('expansion.toast.update_error',      'en', 'Failed to update expansion'),
+  ('expansion.toast.update_error',      'fr', 'Erreur lors de la modification de l''extension'),
+  ('expansion.toast.deleted',           'en', 'Expansion deleted'),
+  ('expansion.toast.deleted',           'fr', 'Extension supprimée avec succès'),
+  ('expansion.toast.delete_error',      'en', 'Failed to delete expansion'),
+  ('expansion.toast.delete_error',      'fr', 'Erreur lors de la suppression de l''extension'),
+  -- Plays
+  ('play.toast.created',                'en', 'Play recorded'),
+  ('play.toast.created',                'fr', 'Partie enregistrée avec succès'),
+  ('play.toast.create_error',           'en', 'Failed to record play'),
+  ('play.toast.create_error',           'fr', 'Erreur lors de l''enregistrement de la partie');

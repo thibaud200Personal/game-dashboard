@@ -6,11 +6,13 @@ import { playerApi } from '@/features/players/playerApi';
 import { playApi } from './playApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
+import { useLabels } from '@/shared/hooks/useLabels';
 import type { CreatePlayPayload } from '@/types';
 
 export const useNewGamePage = () => {
   const onNavigation = useNavigationAdapter();
   const queryClient = useQueryClient();
+  const { t } = useLabels();
 
   const { data: games = [] } = useQuery({
     queryKey: queryKeys.games.all,
@@ -149,11 +151,11 @@ export const useNewGamePage = () => {
         notes: payload.notes ?? undefined,
         players: payload.players,
       });
-      toast.success('Game play created successfully!');
+      toast.success(t('play.toast.created'));
       resetForm();
       return { success: true };
     } catch {
-      toast.error('Failed to create game play');
+      toast.error(t('play.toast.create_error'));
       return { success: false };
     } finally {
       setIsSubmitting(false);

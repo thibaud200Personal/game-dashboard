@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { GameExpansion, Game } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 export interface UseGameExpansionsProps {
   game: Game;
@@ -13,6 +14,7 @@ export interface UseGameExpansionsProps {
 }
 
 export function useGameExpansions(props: UseGameExpansionsProps) {
+  const { t } = useLabels();
   const {
     game,
     onNavigation,
@@ -46,7 +48,7 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      toast.error('Le nom de l\'extension est requis');
+      toast.error(t('expansion.toast.name_required'));
       return;
     }
 
@@ -59,20 +61,19 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
       };
 
       await onAddExpansion(game.game_id, expansionData);
-      toast.success('Extension ajoutée avec succès');
+      toast.success(t('expansion.toast.added'));
       setIsAddDialogOpen(false);
       resetForm();
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de l\'ajout de l\'extension');
+      toast.error(t('expansion.toast.add_error'));
     }
   };
 
   const handleEditExpansion = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingExpansion || !formData.name.trim()) {
-      toast.error('Le nom de l\'extension est requis');
+      toast.error(t('expansion.toast.name_required'));
       return;
     }
 
@@ -85,22 +86,20 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
       };
 
       await onUpdateExpansion(editingExpansion.expansion_id!, expansionData);
-      toast.success('Extension modifiée avec succès');
+      toast.success(t('expansion.toast.updated'));
       setEditingExpansion(null);
       resetForm();
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de la modification de l\'extension');
+      toast.error(t('expansion.toast.update_error'));
     }
   };
 
   const handleDeleteExpansion = async (expansionId: number) => {
     try {
       await onDeleteExpansion(expansionId);
-      toast.success('Extension supprimée avec succès');
+      toast.success(t('expansion.toast.deleted'));
     } catch {
-      // Error handling would use proper logging in production
-      toast.error('Erreur lors de la suppression de l\'extension');
+      toast.error(t('expansion.toast.delete_error'));
     }
   };
 
