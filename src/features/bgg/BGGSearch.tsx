@@ -4,7 +4,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
-import { bggApiService } from '@/services/bggApi';
+import { bggApiService } from '@/features/bgg/bggApi';
 import type { BGGGame, BGGSearchResult } from '@/types';
 
 interface BGGSearchProps {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bggApiService } from '@/services/bggApi';
+import { bggApiService } from '@/features/bgg/bggApi';
 import type { BGGSearchResult, BGGGame } from '@/types';
 
 // MSW handlers définis dans src/__tests__/mocks/server.ts

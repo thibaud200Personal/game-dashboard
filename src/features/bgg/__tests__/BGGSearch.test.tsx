@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import BGGSearch from '../../components/BGGSearch';
-import * as bggApi from '../../services/bggApi';
+import BGGSearch from '@/features/bgg/BGGSearch';
+import * as bggApi from '@/features/bgg/bggApi';
 
 // Mock du service BGG API
-vi.mock('../../services/bggApi');
+vi.mock('@/features/bgg/bggApi');
 const mockedBggApi = vi.mocked(bggApi);
 
 describe('BGGSearch', () => {

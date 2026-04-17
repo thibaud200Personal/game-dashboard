@@ -22,7 +22,8 @@ export default defineConfig({
     
     // Configuration des fichiers de tests
     include: [
-      'src/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      'src/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'src/features/**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
     ],
     
     // Timeout étendu pour les tests d'intégration

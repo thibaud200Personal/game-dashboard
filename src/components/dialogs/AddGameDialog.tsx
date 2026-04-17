@@ -15,7 +15,7 @@ import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import BGGSearch from '@/components/BGGSearch';
+import BGGSearch from '@/features/bgg/BGGSearch';
 import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
