@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import NewGamePage from '@/components/NewGamePage';
+import NewGamePage from '@/features/plays/NewPlayPage';
 import { renderPage } from '@/__tests__/utils/test-utils';
 
 vi.mock('@/shared/hooks/useNavigationAdapter', () => ({

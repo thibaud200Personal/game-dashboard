@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 const Dashboard    = lazy(() => import('./components/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
-const NewGamePage  = lazy(() => import('./components/NewGamePage'));
+const NewGamePage  = lazy(() => import('./features/plays/NewPlayPage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
 const SettingsPage   = lazy(() => import('./components/SettingsPage'));
 const LoginPage      = lazy(() => import('./features/auth/LoginPage'));

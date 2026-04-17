@@ -1,7 +1,7 @@
 // src/__tests__/hooks/useNewGamePage.test.ts
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useNewGamePage } from '@/hooks/useNewGamePage';
+import { useNewGamePage } from '@/features/plays/useNewPlayPage';
 import { createHookWrapper } from '@/__tests__/utils/test-utils';
 
 vi.mock('@/shared/hooks/useNavigationAdapter', () => ({

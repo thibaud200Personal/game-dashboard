@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNewGamePage } from '@/hooks/useNewGamePage';
-import NewGameView from '@/views/NewGameView';
+import { useNewGamePage } from './useNewPlayPage';
+import NewGameView from './NewPlayView';
 
 export default function NewGamePage() {
   const hookData = useNewGamePage();

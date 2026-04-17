@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { gameApi } from '@/features/games/gameApi';
 import { playerApi } from '@/features/players/playerApi';
-import { playApi } from '../services/api/playApi';
+import { playApi } from './playApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import type { CreatePlayPayload } from '@/types';
