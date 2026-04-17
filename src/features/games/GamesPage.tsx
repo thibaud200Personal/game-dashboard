@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useGamesPage } from '@/hooks/useGamesPage';
-import { GamesPageView } from '@/views/GamesPageView';
+import { useGamesPage } from './useGamesPage';
+import { GamesPageView } from './GamesPageView';
 import type { BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 
 export default function GamesPage() {

@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator
 } from '@/shared/components/ui/dropdown-menu';
 import { ArrowLeft, Users, Clock, Star, Barbell, Calendar, Buildings, User, DotsThree, Crown, TrendUp, Gear, GameController } from '@phosphor-icons/react';
-import GameExpansionsPage from '@/components/GameExpansionsPage';
-import GameCharactersPage from '@/components/GameCharactersPage';
-import { UseGameDetailProps } from '@/hooks/games/useGameDetail';
+import GameExpansionsPage from '../expansions/GameExpansionsPage';
+import GameCharactersPage from '../characters/GameCharactersPage';
+import { UseGameDetailProps } from './useGameDetail';
 import { Game, GameExpansion, GameCharacter } from '@/types';
 
 interface GameDetailViewProps extends UseGameDetailProps {

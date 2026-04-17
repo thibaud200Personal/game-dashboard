@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { playerApi } from '../services/api/playerApi';
-import { gameApi } from '../services/api/gameApi';
+import { gameApi } from '@/features/games/gameApi';
 import { statsApi } from '@/shared/services/api/statsApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';

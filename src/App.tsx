@@ -6,13 +6,13 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const Dashboard    = lazy(() => import('./components/Dashboard'));
 const PlayersPage  = lazy(() => import('./components/PlayersPage'));
-const GamesPage    = lazy(() => import('./components/GamesPage'));
+const GamesPage    = lazy(() => import('./features/games/GamesPage'));
 const NewGamePage  = lazy(() => import('./components/NewGamePage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
 const SettingsPage   = lazy(() => import('./components/SettingsPage'));
 const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
 const Layout         = lazy(() => import('./shared/components/Layout'));
-const GamePageRoute  = lazy(() => import('./components/GamePageRoute'));
+const GamePageRoute  = lazy(() => import('./features/games/detail/GamePageRoute'));
 
 const queryClient = new QueryClient({
   defaultOptions: {

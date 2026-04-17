@@ -2,10 +2,10 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useGamesPage } from '@/hooks/useGamesPage';
+import { useGamesPage } from '@/features/games/useGamesPage';
 import { mockGames } from '@/__tests__/utils/test-utils';
 
-vi.mock('@/services/api/gameApi', () => ({
+vi.mock('@/features/games/gameApi', () => ({
   gameApi: {
     getAll:          vi.fn(),
     create:          vi.fn(),
@@ -28,7 +28,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('useGamesPage', async () => {
-  const { gameApi } = await import('@/services/api/gameApi');
+  const { gameApi } = await import('@/features/games/gameApi');
 
   beforeEach(() => {
     vi.clearAllMocks();

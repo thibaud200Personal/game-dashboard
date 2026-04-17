@@ -31,7 +31,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Input } from '@/shared/components/ui/input';
 import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
-import { AddGameDialog, EditGameDialog, DeleteGameDialog } from '@/components/dialogs';
+import { AddGameDialog, EditGameDialog, DeleteGameDialog } from './dialogs';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';

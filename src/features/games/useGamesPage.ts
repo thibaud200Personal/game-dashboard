@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { gameApi } from '../services/api/gameApi';
+import { gameApi } from './gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import type { Game, GameExpansion, GameCharacter } from '@/types';

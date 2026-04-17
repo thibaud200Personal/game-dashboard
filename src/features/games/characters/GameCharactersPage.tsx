@@ -1,5 +1,5 @@
 import React from 'react';
-import GameCharactersView from '@/views/games/GameCharactersView';
+import GameCharactersView from './GameCharactersView';
 import { Game, GameCharacter } from '@/types';
 
 interface GameCharactersPageProps {
