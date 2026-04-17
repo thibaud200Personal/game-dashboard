@@ -42,12 +42,11 @@ export const useSettingsPage = () => {
     setBggImportError(null);
     try {
       const text = await file.text();
-      const result = await request<{ count: number }>('/api/v1/bgg/import-catalog', {
+      await request<{ count: number }>('/api/v1/bgg/import-catalog', {
         method: 'POST',
         body: text,
         headers: { 'Content-Type': 'text/plain' },
       });
-      setBggCatalogCount(result.count);
       getBggCatalogStatus().then(s => {
         setBggCatalogCount(s.count);
         setBggCatalogImportedAt(s.bgg_catalog_imported_at);
@@ -108,7 +107,11 @@ export const useSettingsPage = () => {
       setDataOpError(null);
       try {
         const text = await file.text();
-        await request<{ ok: boolean }>('/api/v1/data/import', { method: 'POST', body: text });
+        await request<{ ok: boolean }>('/api/v1/data/import', {
+          method: 'POST',
+          body: text,
+          headers: { 'Content-Type': 'application/json' },
+        });
       } catch (err) {
         setDataOpError(err instanceof Error ? err.message : 'Erreur import');
       } finally {

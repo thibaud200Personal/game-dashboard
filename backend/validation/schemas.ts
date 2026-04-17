@@ -115,8 +115,8 @@ export const BulkCreateCharactersSchema = z.object({
   })).min(1, 'Au moins un personnage doit être fourni')
 });
 
-// Session schemas
-export const SessionPlayerSchema = z.object({
+// Play (game play) schemas
+export const PlayPlayerSchema = z.object({
   player_id: z.number().int().positive('ID de joueur invalide'),
   character_id: z.number().int().positive('ID de personnage invalide').optional(),
   score: z.number().min(0, 'Le score ne peut pas être négatif'),
@@ -125,14 +125,14 @@ export const SessionPlayerSchema = z.object({
   notes: z.string().max(500, 'Les notes ne peuvent pas dépasser 500 caractères').optional()
 });
 
-export const CreateSessionSchema = z.object({
+export const CreatePlaySchema = z.object({
   game_id: z.number().int().positive('ID de jeu invalide'),
   play_date: z.string().datetime('Date de partie invalide').optional(),
   duration_minutes: z.number().int().min(1, 'La durée doit être au moins 1 minute').max(1440, 'La durée ne peut pas dépasser 24 heures').optional(),
   winner_player_id: z.number().int().positive('ID du joueur gagnant invalide').optional(),
   play_type: SessionTypeSchema.optional(),
   notes: z.string().max(1000, 'Les notes ne peuvent pas dépasser 1000 caractères').optional(),
-  players: z.array(SessionPlayerSchema).min(1, 'Au moins un joueur doit être présent dans la session')
+  players: z.array(PlayPlayerSchema).min(1, 'Au moins un joueur doit être présent dans la partie')
 });
 
 // Parameter validation schemas
@@ -156,5 +156,5 @@ export type UpdateGameInput = z.infer<typeof UpdateGameSchema>;
 export type CreateCharacterInput = z.infer<typeof CreateCharacterSchema>;
 export type UpdateCharacterInput = z.infer<typeof UpdateCharacterSchema>;
 export type BulkCreateCharactersInput = z.infer<typeof BulkCreateCharactersSchema>;
-export type CreateSessionInput = z.infer<typeof CreateSessionSchema>;
-export type SessionPlayerInput = z.infer<typeof SessionPlayerSchema>;
+export type CreatePlayInput = z.infer<typeof CreatePlaySchema>;
+export type PlayPlayerInput = z.infer<typeof PlayPlayerSchema>;
