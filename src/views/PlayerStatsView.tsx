@@ -6,7 +6,7 @@ import {
   Star,
   ChartBar
 } from '@phosphor-icons/react';
-import { useLabels } from '@/hooks/useLabels';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface Player {
   player_id: number

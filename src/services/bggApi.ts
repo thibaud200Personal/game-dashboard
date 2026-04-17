@@ -2,7 +2,7 @@
 
 import type { BGGGame, BGGSearchResult } from '@/types';
 export type { BGGGame, BGGExpansion, BGGCharacter, BGGSearchResult } from '@/types';
-import { request } from './api/request';
+import { request } from '@/shared/services/api/request';
 
 class BGGApiService {
   async searchGames(query: string): Promise<BGGSearchResult[]> {

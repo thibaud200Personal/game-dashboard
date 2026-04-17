@@ -1,5 +1,5 @@
 import type { GamePlay, CreatePlayRequest } from '@shared/types';
-import { request } from './request';
+import { request } from '@/shared/services/api/request';
 
 const BASE = '/api/v1/plays';
 

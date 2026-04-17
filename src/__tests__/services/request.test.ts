@@ -9,7 +9,7 @@ describe('request() — cas nominaux', () => {
     server.use(
       http.get('/api/test', () => HttpResponse.json({ ok: true }), { once: true })
     );
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     const data = await request<{ ok: boolean }>('/api/test');
     expect(data.ok).toBe(true);
   });
@@ -18,7 +18,7 @@ describe('request() — cas nominaux', () => {
     server.use(
       http.get('/api/test', () => new HttpResponse(null, { status: 204 }), { once: true })
     );
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     const data = await request('/api/test');
     expect(data).toBeUndefined();
   });
@@ -27,7 +27,7 @@ describe('request() — cas nominaux', () => {
     server.use(
       http.get('/api/test', () => HttpResponse.json({ error: 'Not found' }, { status: 404 }), { once: true })
     );
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     await expect(request('/api/test')).rejects.toThrow('Not found');
   });
 });
@@ -49,7 +49,7 @@ describe('request() — intercepteur 401', () => {
       http.post('/api/v1/auth/refresh', () => HttpResponse.json({ role: 'admin' }), { once: true }),
       http.get('/api/test', () => HttpResponse.json({ ok: true }), { once: true }),
     );
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     const data = await request<{ ok: boolean }>('/api/test');
     expect(data.ok).toBe(true);
   });
@@ -71,7 +71,7 @@ describe('request() — intercepteur 401', () => {
       http.post('/api/v1/auth/refresh', () => new HttpResponse(null, { status: 401 }), { once: true }),
     );
 
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     await expect(request('/api/test')).rejects.toThrow();
     expect(redirectedTo).toBe('/login');
   });
@@ -86,7 +86,7 @@ describe('request() — intercepteur 401', () => {
       }),
     );
 
-    const { request } = await import('@/services/api/request');
+    const { request } = await import('@/shared/services/api/request');
     await Promise.allSettled([request('/api/test'), request('/api/test')]);
     expect(refreshCount).toBe(1);
   });

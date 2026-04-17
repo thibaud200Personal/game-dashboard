@@ -8,9 +8,9 @@ import {
   Play,
   ArrowLeft
 } from '@phosphor-icons/react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
 import { Player, Game, NavigationHandler } from '@/types';
-import { useLabels } from '@/hooks/useLabels';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface DashboardViewProps {
   stats: {

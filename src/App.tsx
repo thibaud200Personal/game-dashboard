@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const Dashboard    = lazy(() => import('./components/Dashboard'));
@@ -11,7 +11,7 @@ const NewGamePage  = lazy(() => import('./components/NewGamePage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
 const SettingsPage   = lazy(() => import('./components/SettingsPage'));
 const LoginPage      = lazy(() => import('./components/LoginPage'));
-const Layout         = lazy(() => import('./components/Layout'));
+const Layout         = lazy(() => import('./shared/components/Layout'));
 const GamePageRoute  = lazy(() => import('./components/GamePageRoute'));
 
 const queryClient = new QueryClient({

@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gameApi } from '../services/api/gameApi';
-import { queryKeys } from '../services/api/queryKeys';
-import { useNavigationAdapter } from './useNavigationAdapter';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import type { Game, GameExpansion, GameCharacter } from '@/types';
 import type { GameFormData, BGGGame } from '@/types';
 

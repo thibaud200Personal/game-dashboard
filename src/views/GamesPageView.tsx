@@ -19,22 +19,22 @@ import {
   ChartLineUp,
   DotsThree
 } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/shared/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuContent
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
+} from '@/shared/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { Input } from '@/shared/components/ui/input';
 import { Game, BGGGame, GameExpansion, GameCharacter, GameFormData } from '@/types';
 import { AddGameDialog, EditGameDialog, DeleteGameDialog } from '@/components/dialogs';
-import { Card, CardContent } from '@/components/ui/card';
-import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/utils/gameHelpers';
-import { useLabels } from '@/hooks/useLabels';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/shared/utils/gameHelpers';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface GamesPageViewProps {
   games: Game[];

@@ -10,17 +10,17 @@ import {
   ChartLineUp,
   DotsThreeVertical
 } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/shared/components/ui/dropdown-menu';
 import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from '@/components/dialogs';
 import { Player, PlayerFormData } from '@/types';
-import { useLabels } from '@/hooks/useLabels';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface PlayersPageViewProps {
   players: Player[];

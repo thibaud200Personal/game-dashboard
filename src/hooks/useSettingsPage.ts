@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigationAdapter } from './useNavigationAdapter';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import apiService from '@/services/ApiService';
-import { useLocale } from '@/hooks/useLocale';
-import { useApiReachable } from '@/hooks/useApiReachable';
-import { useLocales } from '@/hooks/useLocales';
+import { useLocale } from '@/shared/hooks/useLocale';
+import { useApiReachable } from '@/shared/hooks/useApiReachable';
+import { useLocales } from '@/shared/hooks/useLocales';
 
 export const useSettingsPage = () => {
   const onNavigation = useNavigationAdapter();

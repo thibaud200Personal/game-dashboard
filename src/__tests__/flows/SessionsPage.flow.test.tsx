@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import NewGamePage from '@/components/NewGamePage';
 import { renderPage } from '@/__tests__/utils/test-utils';
 
-vi.mock('@/hooks/useNavigationAdapter', () => ({
+vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
   useNavigationAdapter: () => vi.fn(),
 }));
 
@@ -13,7 +13,7 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 // Radix Select does not open in jsdom (no PointerEvent support).
 // We replace it with a native <select> so options are directly in the DOM.
-vi.mock('@/components/ui/select', () => {
+vi.mock('@/shared/components/ui/select', () => {
   const React = require('react');
   const SelectContext = React.createContext<{ onValueChange?: (v: string) => void }>({});
 

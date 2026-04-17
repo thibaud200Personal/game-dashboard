@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { playerApi } from '../services/api/playerApi';
 import { gameApi } from '../services/api/gameApi';
-import { statsApi } from '../services/api/statsApi';
-import { queryKeys } from '../services/api/queryKeys';
-import { useNavigationAdapter } from './useNavigationAdapter';
+import { statsApi } from '@/shared/services/api/statsApi';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 
 export const useDashboard = () => {
   const onNavigation = useNavigationAdapter();

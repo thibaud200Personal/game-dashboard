@@ -11,8 +11,8 @@ import {
 } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
 import { useGameStatsPage } from '@/hooks/useGameStatsPage';
-import { getMedalClass } from '@/utils/gameHelpers';
-import { useLabels } from '@/hooks/useLabels';
+import { getMedalClass } from '@/shared/utils/gameHelpers';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface GameStatsViewProps {
   selectedPeriod: 'week' | 'month' | 'year' | 'all'

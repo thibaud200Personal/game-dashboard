@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import GamesPage from '@/components/GamesPage';
 import { renderPage } from '@/__tests__/utils/test-utils';
 
-vi.mock('@/hooks/useNavigationAdapter', () => ({
+vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
   useNavigationAdapter: () => vi.fn(),
 }));
 

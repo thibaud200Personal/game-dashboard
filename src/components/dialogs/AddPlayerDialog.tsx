@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Plus } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/shared/components/ui/dialog';
+import { Label } from '@/shared/components/ui/label';
+import { Input } from '@/shared/components/ui/input';
 import { PlayerFormData } from '@/types';
-import { useLabels } from '@/hooks/useLabels';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface AddPlayerDialogProps {
   isOpen: boolean;

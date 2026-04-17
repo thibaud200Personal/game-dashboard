@@ -1,5 +1,5 @@
 import type { Game, GameExpansion, GameCharacter, CreateGameRequest, UpdateGameRequest } from '@shared/types';
-import { request } from './request';
+import { request } from '@/shared/services/api/request';
 
 const BASE = '/api/v1/games';
 

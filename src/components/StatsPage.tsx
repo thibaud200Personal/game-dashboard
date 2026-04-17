@@ -4,9 +4,9 @@ import { ArrowLeft, Users, TrendUp } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { playerApi } from '@/services/api/playerApi';
 import { gameApi } from '@/services/api/gameApi';
-import { queryKeys } from '@/services/api/queryKeys';
-import { useNavigationAdapter } from '@/hooks/useNavigationAdapter';
-import { useLabels } from '@/hooks/useLabels';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
+import { useLabels } from '@/shared/hooks/useLabels';
 import PlayerStatsPage from './PlayerStatsPage';
 import GameStatsPage from './GameStatsPage';
 

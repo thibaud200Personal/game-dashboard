@@ -8,19 +8,19 @@ import {
   Crown,
   Target
 } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/shared/components/ui/dialog';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Checkbox } from '@/shared/components/ui/checkbox';
 import BGGSearch from '@/components/BGGSearch';
 import type { BGGGame } from '@/types';
 
 import { GameExpansion, GameCharacter } from '@/types';
-import { withUpdatedAbility, withRemovedAbility, formatExpansion } from '@/utils/gameHelpers';
-import { useLabels } from '@/hooks/useLabels';
+import { withUpdatedAbility, withRemovedAbility, formatExpansion } from '@/shared/utils/gameHelpers';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface FormData {
   name: string

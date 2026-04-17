@@ -11,10 +11,10 @@ import {
   Trash,
   SignOut
 } from '@phosphor-icons/react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLabels } from '@/hooks/useLabels';
+import { Button } from '@/shared/components/ui/button';
+import { Switch } from '@/shared/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface SettingsPageViewProps {
   currentView: string;

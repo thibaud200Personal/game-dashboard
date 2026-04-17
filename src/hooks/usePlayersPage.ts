@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { playerApi } from '../services/api/playerApi';
-import { queryKeys } from '../services/api/queryKeys';
-import { useNavigationAdapter } from './useNavigationAdapter';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import type { Player, PlayerStatistics } from '@/types';
 import type { PlayerFormData } from '@/types';
 

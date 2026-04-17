@@ -18,7 +18,7 @@ vi.mock('@/services/api/gameApi', () => ({
   },
 }));
 
-vi.mock('@/hooks/useNavigationAdapter', () => ({
+vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
   useNavigationAdapter: () => vi.fn(),
 }));
 

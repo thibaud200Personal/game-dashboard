@@ -4,8 +4,8 @@ import { toast } from 'sonner';
 import { gameApi } from '../services/api/gameApi';
 import { playerApi } from '../services/api/playerApi';
 import { playApi } from '../services/api/playApi';
-import { queryKeys } from '../services/api/queryKeys';
-import { useNavigationAdapter } from './useNavigationAdapter';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import type { CreatePlayPayload } from '@/types';
 
 export const useNewGamePage = () => {

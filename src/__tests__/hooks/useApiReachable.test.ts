@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/__tests__/mocks/server';
-import { useApiReachable } from '@/hooks/useApiReachable';
+import { useApiReachable } from '@/shared/hooks/useApiReachable';
 
 describe('useApiReachable', () => {
   it('isReachable is true when /api/health returns 200', async () => {

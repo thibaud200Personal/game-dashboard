@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { MagnifyingGlass, Link, Circle } from '@phosphor-icons/react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
 import { bggApiService } from '@/services/bggApi';
 import type { BGGGame, BGGSearchResult } from '@/types';
 

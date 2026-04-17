@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gameApi } from '@/services/api/gameApi';
-import { queryKeys } from '@/services/api/queryKeys';
-import { useNavigationAdapter } from '@/hooks/useNavigationAdapter';
+import { queryKeys } from '@/shared/services/api/queryKeys';
+import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import GameDetailPage from './GameDetailPage';
 import GameExpansionsPage from './GameExpansionsPage';
 import GameCharactersPage from './GameCharactersPage';
