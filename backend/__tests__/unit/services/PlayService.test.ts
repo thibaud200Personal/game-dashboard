@@ -30,9 +30,9 @@ afterEach(() => conn.close())
 
 describe('PlayService', () => {
   it('creates play and players_play atomically', () => {
-    const result = service.createSession({
+    const result = service.createPlay({
       game_id: gameId,
-      session_type: 'competitive',
+      play_type: 'competitive',
       players: [{ player_id: playerId, score: 10, is_winner: true }],
     })
     const playId = (result as any).play_id
@@ -45,9 +45,9 @@ describe('PlayService', () => {
 
   it('rolls back entire transaction if player_id is invalid', () => {
     expect(() =>
-      service.createSession({
+      service.createPlay({
         game_id: gameId,
-        session_type: 'competitive',
+        play_type: 'competitive',
         players: [{ player_id: 9999, score: 10, is_winner: false }],
       })
     ).toThrow()
@@ -57,14 +57,14 @@ describe('PlayService', () => {
     expect(plays.n).toBe(0)
   })
 
-  it('getAllSessions returns all plays', () => {
-    service.createSession({ game_id: gameId, session_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
-    expect(service.getAllSessions()).toHaveLength(1)
+  it('getAllPlays returns all plays', () => {
+    service.createPlay({ game_id: gameId, play_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
+    expect(service.getAllPlays()).toHaveLength(1)
   })
 
-  it('deleteSession removes play and cascades to players', () => {
-    const play = service.createSession({ game_id: gameId, session_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
-    service.deleteSession((play as any).play_id)
+  it('deletePlay removes play and cascades to players', () => {
+    const play = service.createPlay({ game_id: gameId, play_type: 'competitive', players: [{ player_id: playerId, score: 5, is_winner: true }] })
+    service.deletePlay((play as any).play_id)
     const sp = conn.db.prepare('SELECT COUNT(*) as n FROM players_play').get() as { n: number }
     expect(sp.n).toBe(0)
   })

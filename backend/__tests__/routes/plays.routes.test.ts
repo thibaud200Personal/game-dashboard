@@ -40,7 +40,7 @@ describe('POST /api/v1/plays', () => {
   it('crée un play → 201', async () => {
     const res = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
-      session_type: 'competitive',
+      play_type: 'competitive',
       players: [{ player_id: playerId, score: 42, is_winner: true }],
     })
     expect(res.status).toBe(201)
@@ -50,7 +50,7 @@ describe('POST /api/v1/plays', () => {
   it('player_id inexistant → rollback + 500', async () => {
     const res = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
-      session_type: 'competitive',
+      play_type: 'competitive',
       players: [{ player_id: 9999, score: 0, is_winner: false }],
     })
     expect(res.status).toBe(500)
@@ -64,7 +64,7 @@ describe('DELETE /api/v1/plays/:id', () => {
   it('supprime le play → 204', async () => {
     const created = await request(app).post('/api/v1/plays').set(headers).send({
       game_id: gameId,
-      session_type: 'competitive',
+      play_type: 'competitive',
       players: [{ player_id: playerId, score: 10, is_winner: true }],
     })
     const playId = (created.body as any).play_id

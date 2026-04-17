@@ -7,8 +7,8 @@ export const queryKeys = {
     all: ['games'] as const,
     detail: (id: number) => ['games', id] as const,
   },
-  sessions: {
-    all: ['sessions'] as const,
+  plays: {
+    all: ['plays'] as const,
   },
   stats: {
     dashboard: ['stats', 'dashboard'] as const,

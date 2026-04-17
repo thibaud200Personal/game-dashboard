@@ -4,9 +4,9 @@ import {
   Game,
   GameExpansion,
   GameCharacter,
-  GameSession,
+  GamePlay,
   GameFormData,
-  CreateSessionPayload
+  CreatePlayPayload
 } from '@/types';
 
 class ApiService {
@@ -203,36 +203,36 @@ class ApiService {
     });
   }
 
-  async createSession(sessionData: CreateSessionPayload) {
-    return this.request<GameSession>('/sessions', {
+  async createPlay(playData: CreatePlayPayload) {
+    return this.request<GamePlay>('/plays', {
       method: 'POST',
-      body: JSON.stringify(sessionData),
+      body: JSON.stringify(playData),
     });
   }
 
-  // Session operations
-  async getAllSessions(gameId?: number) {
+  // Play operations
+  async getAllPlays(gameId?: number) {
     const query = gameId ? `?game_id=${gameId}` : '';
-    return this.request<GameSession[]>(`/sessions${query}`);
+    return this.request<GamePlay[]>(`/plays${query}`);
   }
 
-  async getSessionsByGame(gameId: number) {
-    return this.request<GameSession[]>(`/sessions/game/${gameId}`);
+  async getPlaysByGame(gameId: number) {
+    return this.request<GamePlay[]>(`/plays/game/${gameId}`);
   }
 
-  async getSessionsByPlayer(playerId: number) {
-    return this.request<GameSession[]>(`/sessions/player/${playerId}`);
+  async getPlaysByPlayer(playerId: number) {
+    return this.request<GamePlay[]>(`/plays/player/${playerId}`);
   }
 
-  async updateSession(sessionId: number, sessionData: Partial<GameSession>) {
-    return this.request<GameSession>(`/sessions/${sessionId}`, {
+  async updatePlay(playId: number, playData: Partial<GamePlay>) {
+    return this.request<GamePlay>(`/plays/${playId}`, {
       method: 'PUT',
-      body: JSON.stringify(sessionData),
+      body: JSON.stringify(playData),
     });
   }
 
-  async deleteSession(sessionId: number) {
-    return this.request<void>(`/sessions/${sessionId}`, {
+  async deletePlay(playId: number) {
+    return this.request<void>(`/plays/${playId}`, {
       method: 'DELETE',
     });
   }

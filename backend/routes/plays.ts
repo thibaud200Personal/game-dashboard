@@ -6,15 +6,15 @@ import { CreateSessionSchema } from '../validation/schemas'
 export function createPlayRouter(playService: PlayService): Router {
   const router = Router()
 
-  router.get('/', (_req, res) => res.json(playService.getAllSessions()))
+  router.get('/', (_req, res) => res.json(playService.getAllPlays()))
 
   router.post('/', validateBody(CreateSessionSchema), (req, res) => {
-    const session = playService.createSession(req.body)
-    res.status(201).json(session)
+    const play = playService.createPlay(req.body)
+    res.status(201).json(play)
   })
 
   router.delete('/:id', (req, res) => {
-    playService.deleteSession(Number(req.params.id))
+    playService.deletePlay(Number(req.params.id))
     res.status(204).send()
   })
 

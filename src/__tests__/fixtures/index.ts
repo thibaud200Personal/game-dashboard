@@ -1,4 +1,4 @@
-import type { PlayerStatistics, Game, GameSession, DashboardStats, GameStatistics } from '@/types';
+import type { PlayerStatistics, Game, GamePlay, DashboardStats, GameStatistics } from '@/types';
 
 export const mockPlayers: PlayerStatistics[] = [
   {
@@ -102,12 +102,12 @@ export const mockGames: Game[] = [
   },
 ];
 
-export const mockSessions: GameSession[] = [
+export const mockSessions: GamePlay[] = [
   {
-    session_id: 1,
+    play_id: 1,
     game_id: 1,
-    session_type: 'competitive',
-    session_date: new Date('2024-03-01T00:00:00.000Z'),
+    play_type: 'competitive',
+    play_date: new Date('2024-03-01T00:00:00.000Z'),
     duration_minutes: 70,
     winner_player_id: 1,
     created_at: new Date('2024-03-01T00:00:00.000Z'),
@@ -117,8 +117,8 @@ export const mockSessions: GameSession[] = [
 export const mockDashboard: DashboardStats = {
   total_players: 2,
   total_games: 2,
-  total_sessions: 1,
-  average_session_duration: 70,
+  total_plays: 1,
+  average_play_duration: 70,
 };
 
 export const mockGameStats: GameStatistics[] = [

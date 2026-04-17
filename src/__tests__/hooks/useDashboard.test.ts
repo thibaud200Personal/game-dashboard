@@ -22,8 +22,8 @@ describe('useDashboard', () => {
   it('dashboard contient les compteurs globaux', async () => {
     const { result } = renderHook(() => useDashboard(), { wrapper });
     await waitFor(() => expect(result.current.dashboard).toBeDefined());
-    expect(result.current.dashboard?.total_sessions).toBe(1);
-    expect(result.current.dashboard?.average_session_duration).toBe(70);
+    expect(result.current.dashboard?.total_plays).toBe(1);
+    expect(result.current.dashboard?.average_play_duration).toBe(70);
   });
 
   it('recentPlayers retourne au max 3 joueurs', async () => {

@@ -10,14 +10,14 @@ export class PlayService {
     private playRepo: PlayRepository,
   ) {}
 
-  createSession(data: CreatePlayRequest): GamePlay {
+  createPlay(data: CreatePlayRequest): GamePlay {
     return this.db.transaction(() => {
       const playId = this.playRepo.insertSession({
         game_id: data.game_id,
-        play_date: data.session_date,
+        play_date: data.play_date,
         duration_minutes: data.duration_minutes,
         winner_player_id: data.winner_player_id,
-        play_type: data.session_type,
+        play_type: data.play_type,
         notes: data.notes,
       })
       this.playRepo.insertPlayPlayers(playId, data.players)
@@ -25,11 +25,11 @@ export class PlayService {
     })()
   }
 
-  getAllSessions(): GamePlay[] {
+  getAllPlays(): GamePlay[] {
     return this.playRepo.findAll()
   }
 
-  deleteSession(playId: number): void {
+  deletePlay(playId: number): void {
     this.playRepo.delete(playId)
   }
 }

@@ -6,7 +6,7 @@ type InsertPlayData = {
   play_date?: string
   duration_minutes?: number
   winner_player_id?: number
-  play_type?: GamePlay['session_type']
+  play_type?: GamePlay['play_type']
   notes?: string
 }
 

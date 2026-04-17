@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Player, Game, GameSession } from '@shared/types'
+import type { Player, Game, GamePlay } from '@shared/types'
 
 describe('shared/types', () => {
   it('Player type has no dead stats columns', () => {
@@ -20,8 +20,8 @@ describe('shared/types', () => {
     expect('game_type' in game).toBe(false)
   })
 
-  it('GameSession supports hybrid session_type', () => {
-    const session: Partial<GameSession> = { session_type: 'hybrid' }
-    expect(session.session_type).toBe('hybrid')
+  it('GamePlay supports hybrid play_type', () => {
+    const play: Partial<GamePlay> = { play_type: 'hybrid' }
+    expect(play.play_type).toBe('hybrid')
   })
 })

@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { gameApi } from '../services/api/gameApi';
 import { playerApi } from '../services/api/playerApi';
-import { sessionApi } from '../services/api/sessionApi';
+import { playApi } from '../services/api/playApi';
 import { queryKeys } from '../services/api/queryKeys';
 import { useNavigationAdapter } from './useNavigationAdapter';
-import type { CreateSessionPayload } from '@/types';
+import type { CreatePlayPayload } from '@/types';
 
 export const useNewGamePage = () => {
   const onNavigation = useNavigationAdapter();
@@ -23,9 +23,9 @@ export const useNewGamePage = () => {
   });
 
   const createSession = useMutation({
-    mutationFn: sessionApi.create,
+    mutationFn: playApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.plays.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.dashboard });
     },
   });
@@ -125,12 +125,12 @@ export const useNewGamePage = () => {
     if (!selectedGame) return { success: false };
     setIsSubmitting(true);
     try {
-      const payload: CreateSessionPayload = {
+      const payload: CreatePlayPayload = {
         game_id: parseInt(selectedGameId),
-        session_date: new Date(),
+        play_date: new Date(),
         duration_minutes: duration ? parseInt(duration) : null,
         winner_player_id: winnerId ? parseInt(winnerId) : null,
-        session_type: sessionType,
+        play_type: sessionType,
         notes: notes || null,
         players: selectedPlayers.map(playerId => ({
           player_id: playerId,
@@ -140,18 +140,18 @@ export const useNewGamePage = () => {
       };
       await createSession.mutateAsync({
         game_id: payload.game_id,
-        session_date: payload.session_date?.toISOString(),
+        play_date: payload.play_date?.toISOString(),
         duration_minutes: payload.duration_minutes ?? undefined,
         winner_player_id: payload.winner_player_id ?? undefined,
-        session_type: payload.session_type,
+        play_type: payload.play_type,
         notes: payload.notes ?? undefined,
         players: payload.players,
       });
-      toast.success('Game session created successfully!');
+      toast.success('Game play created successfully!');
       resetForm();
       return { success: true };
     } catch {
-      toast.error('Failed to create game session');
+      toast.error('Failed to create game play');
       return { success: false };
     } finally {
       setIsSubmitting(false);

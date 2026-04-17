@@ -321,9 +321,9 @@ export default function GameStatsView({
             const winner = players.find(p => p.player_id === session.winner_player_id);
             return (
               <div key={index} className={isDark ? "flex items-center space-x-3 p-3 bg-white/5 rounded-xl" : "flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"}>
-                <div className={`w-3 h-3 rounded-full ${SESSION_TYPE_DOT_COLORS[session.session_type] ?? 'bg-gray-400'}`} />
+                <div className={`w-3 h-3 rounded-full ${SESSION_TYPE_DOT_COLORS[session.play_type] ?? 'bg-gray-400'}`} />
                 <div className="flex-1">
-                  <div className={`${valueClass} font-medium capitalize`}>{session.session_type}</div>
+                  <div className={`${valueClass} font-medium capitalize`}>{session.play_type}</div>
                   <div className={labelClass}>
                     {session.date.toLocaleDateString()} • {session.player_count} players • {session.duration_minutes}min
                   </div>

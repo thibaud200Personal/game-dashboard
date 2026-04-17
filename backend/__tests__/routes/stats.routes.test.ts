@@ -26,7 +26,7 @@ beforeEach(async () => {
   playerId = p.body.player_id
   gameId   = g.body.game_id
   await request(app).post('/api/v1/plays').set(headers).send({
-    game_id: gameId, session_type: 'competitive',
+    game_id: gameId, play_type: 'competitive',
     players: [{ player_id: playerId, score: 10, is_winner: true }],
   })
 })
