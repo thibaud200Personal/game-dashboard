@@ -10,7 +10,7 @@ const GamesPage    = lazy(() => import('./components/GamesPage'));
 const NewGamePage  = lazy(() => import('./components/NewGamePage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));
 const SettingsPage   = lazy(() => import('./components/SettingsPage'));
-const LoginPage      = lazy(() => import('./components/LoginPage'));
+const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
 const Layout         = lazy(() => import('./shared/components/Layout'));
 const GamePageRoute  = lazy(() => import('./components/GamePageRoute'));
 
