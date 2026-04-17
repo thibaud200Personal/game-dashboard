@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-const Dashboard    = lazy(() => import('./components/Dashboard'));
+const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
 const NewGamePage  = lazy(() => import('./features/plays/NewPlayPage'));

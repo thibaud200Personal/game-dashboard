@@ -1,7 +1,7 @@
 // src/__tests__/flows/DashboardPage.flow.test.tsx
 import { describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import Dashboard from '@/components/Dashboard';
+import Dashboard from '@/features/dashboard/Dashboard';
 import { renderPage } from '@/__tests__/utils/test-utils';
 
 vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
