@@ -1,6 +1,6 @@
 import React from 'react';
-import { useGameStatsPage } from '@/hooks/useGameStatsPage';
-import GameStatsView from '@/views/GameStatsView';
+import { useGameStatsPage } from './useGameStatsPage';
+import GameStatsView from './GameStatsView';
 import { Game, Player } from '@/types';
 
 interface GameStatsPageProps {

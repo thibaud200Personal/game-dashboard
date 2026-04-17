@@ -7,8 +7,8 @@ import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useLabels } from '@/shared/hooks/useLabels';
-import PlayerStatsPage from './PlayerStatsPage';
-import GameStatsPage from './GameStatsPage';
+import PlayerStatsPage from './player/PlayerStatsPage';
+import GameStatsPage from './game/GameStatsPage';
 
 export default function StatsPage() {
   const [searchParams] = useSearchParams();

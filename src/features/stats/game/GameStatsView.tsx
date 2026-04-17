@@ -10,7 +10,7 @@ import {
   Target
 } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
-import { useGameStatsPage } from '@/hooks/useGameStatsPage';
+import { useGameStatsPage } from './useGameStatsPage';
 import { getMedalClass } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
 

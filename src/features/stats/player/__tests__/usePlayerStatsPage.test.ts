@@ -1,7 +1,7 @@
 // src/__tests__/hooks/usePlayerStatsPage.test.ts
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { usePlayerStatsPage } from '@/hooks/usePlayerStatsPage';
+import { usePlayerStatsPage } from '@/features/stats/player/usePlayerStatsPage';
 import { mockPlayers, mockGames } from '@/__tests__/fixtures';
 
 describe('usePlayerStatsPage', () => {

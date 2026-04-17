@@ -8,7 +8,7 @@ const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
 const NewGamePage  = lazy(() => import('./features/plays/NewPlayPage'));
-const StatsPage    = lazy(() => import('./components/StatsPage'));
+const StatsPage    = lazy(() => import('./features/stats/StatsPage'));
 const SettingsPage   = lazy(() => import('./features/settings/SettingsPage'));
 const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
 const Layout         = lazy(() => import('./shared/components/Layout'));
