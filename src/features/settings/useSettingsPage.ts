@@ -21,6 +21,8 @@ export const useSettingsPage = () => {
   const [bggCatalogCount, setBggCatalogCount] = useState<number | null>(null);
   const [isBggImporting, setIsBggImporting] = useState(false);
   const [bggImportError, setBggImportError] = useState<string | null>(null);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichError, setEnrichError] = useState<string | null>(null);
 
   const [isDataExporting, setIsDataExporting] = useState(false);
   const [isDataImporting, setIsDataImporting] = useState(false);
@@ -126,6 +128,19 @@ export const useSettingsPage = () => {
       }
     },
     handleImportBggCatalog,
+    isEnriching,
+    enrichError,
+    handleEnrichNames: async () => {
+      setIsEnriching(true);
+      setEnrichError(null);
+      try {
+        await request<{ enriched: number }>('/api/v1/bgg/enrich-names', { method: 'POST' });
+      } catch (err) {
+        setEnrichError(err instanceof Error ? err.message : 'Erreur enrichissement');
+      } finally {
+        setIsEnriching(false);
+      }
+    },
     onLogout: logout,
     isAdmin: role === 'admin',
   };

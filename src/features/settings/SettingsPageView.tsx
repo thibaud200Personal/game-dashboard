@@ -35,6 +35,9 @@ interface SettingsPageViewProps {
   isBggImporting: boolean;
   bggImportError: string | null;
   handleImportBggCatalog: (file: File) => void;
+  isEnriching: boolean;
+  enrichError: string | null;
+  handleEnrichNames: () => void;
   onLogout: () => void;
   isAdmin: boolean;
 }
@@ -237,6 +240,18 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                   </span>
                 </Button>
               </label>
+              {props.enrichError && (
+                <p className="text-xs text-red-400 mt-1">{props.enrichError}</p>
+              )}
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={props.isEnriching || props.isBggImporting}
+                onClick={props.handleEnrichNames}
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                {props.isEnriching ? t('settings.data.bgg_enriching') : t('settings.data.bgg_enrich')}
+              </Button>
             </div>
           </div>
         </div>}
