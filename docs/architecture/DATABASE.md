@@ -1,7 +1,12 @@
 # Database Structure for Board Game Score Tracker
 
 ## Overview
-This document outlines the database schema for the Board Game Score Tracker application, designed to store comprehensive information about players, games, game sessions, and scoring data.
+
+This document describes the database schema for the Board Game Score Tracker. SQLite with `better-sqlite3`. Migrations numérotées appliquées au démarrage (001 → 014).
+
+**Tables actives :** `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `players_play`, `bgg_catalog`, `bgg_catalog_language`, `labels`, `refresh_tokens`, `log_import`, `schema_version`
+
+**Vues SQL :** `player_statistics`, `game_statistics`
 
 ## Tables
 
@@ -110,17 +115,17 @@ CREATE TABLE game_characters (
 );
 ```
 
-### 5. Game Sessions Table
-Stores information about individual game sessions/matches.
+### 5. Game Plays Table
+Stores information about individual game plays (renamed from `game_sessions` via migration 013).
 
 ```sql
-CREATE TABLE game_sessions (
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE game_plays (
+    play_id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_id INTEGER NOT NULL,
-    session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    play_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     duration_minutes INTEGER,
     winner_player_id INTEGER,
-    session_type TEXT CHECK (session_type IN ('competitive', 'cooperative', 'campaign')) DEFAULT 'competitive',
+    play_type TEXT CHECK (play_type IN ('competitive', 'cooperative', 'campaign', 'hybrid')) DEFAULT 'competitive',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (game_id) REFERENCES games(game_id) ON DELETE CASCADE,
@@ -128,52 +133,53 @@ CREATE TABLE game_sessions (
 );
 ```
 
-### 6. Session Players Table
-Links players to game sessions with their scores and performance.
+### 6. Players Play Table
+Links players to game plays with their scores and performance (renamed from `session_players` via migration 013).
 
 ```sql
-CREATE TABLE session_players (
-    session_player_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id INTEGER NOT NULL,
+CREATE TABLE players_play (
+    players_play_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    play_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     character_id INTEGER, -- Character/role played (if applicable)
     score INTEGER DEFAULT 0,
     placement INTEGER, -- Final ranking/placement in the game
     is_winner BOOLEAN DEFAULT FALSE,
     notes TEXT,
-    FOREIGN KEY (session_id) REFERENCES game_sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (play_id) REFERENCES game_plays(play_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (character_id) REFERENCES game_characters(character_id) ON DELETE SET NULL
 );
 ```
 
 ### 7. Player Statistics View
-A view that calculates player statistics dynamically.
+A view that calculates player statistics dynamically from `players_play`.
 
 ```sql
 CREATE VIEW player_statistics AS
-SELECT 
+SELECT
     p.player_id,
     p.player_name,
+    p.pseudo,
     p.avatar,
-    COUNT(DISTINCT sp.session_id) as games_played,
-    COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) as wins,
-    COALESCE(SUM(sp.score), 0) as total_score,
-    COALESCE(AVG(sp.score), 0) as average_score,
-    (COUNT(CASE WHEN sp.is_winner = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(DISTINCT sp.session_id), 0)) as win_percentage,
+    COUNT(DISTINCT pp.play_id) as games_played,
+    COUNT(CASE WHEN pp.is_winner = 1 THEN 1 END) as wins,
+    COALESCE(SUM(pp.score), 0) as total_score,
+    COALESCE(AVG(pp.score), 0) as average_score,
+    (COUNT(CASE WHEN pp.is_winner = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(DISTINCT pp.play_id), 0)) as win_percentage,
     p.favorite_game,
     p.created_at
 FROM players p
-LEFT JOIN session_players sp ON p.player_id = sp.player_id
+LEFT JOIN players_play pp ON p.player_id = pp.player_id
 GROUP BY p.player_id, p.player_name, p.avatar, p.favorite_game, p.created_at;
 ```
 
 ### 8. Game Statistics View
-A view that calculates game statistics dynamically.
+A view that calculates game statistics dynamically from `game_plays` and `players_play`.
 
 ```sql
 CREATE VIEW game_statistics AS
-SELECT 
+SELECT
     g.game_id,
     g.name,
     g.image,
@@ -183,16 +189,62 @@ SELECT
     g.category,
     g.year_published,
     g.bgg_rating,
-    COUNT(DISTINCT gs.session_id) as times_played,
-    (SELECT COUNT(DISTINCT sp.player_id) FROM session_players sp WHERE sp.session_id IN (SELECT session_id FROM game_sessions WHERE game_id = g.game_id)) as unique_players,
-    (SELECT AVG(sp.score) FROM session_players sp WHERE sp.session_id IN (SELECT session_id FROM game_sessions WHERE game_id = g.game_id)) as average_score,
-    (SELECT AVG(gs_inner.duration_minutes) FROM game_sessions gs_inner WHERE gs_inner.game_id = g.game_id) as average_duration,
+    COUNT(DISTINCT gp.play_id) as times_played,
+    (SELECT COUNT(DISTINCT pp.player_id) FROM players_play pp WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) as unique_players,
+    (SELECT AVG(pp.score) FROM players_play pp WHERE pp.play_id IN (SELECT play_id FROM game_plays WHERE game_id = g.game_id)) as average_score,
+    (SELECT AVG(gp_inner.duration_minutes) FROM game_plays gp_inner WHERE gp_inner.game_id = g.game_id) as average_duration,
     g.created_at
 FROM games g
-LEFT JOIN game_sessions gs ON g.game_id = gs.game_id
-GROUP BY g.game_id, g.name, g.image, g.min_players, g.max_players, 
+LEFT JOIN game_plays gp ON g.game_id = gp.game_id
+GROUP BY g.game_id, g.name, g.image, g.min_players, g.max_players,
          g.difficulty, g.category, g.year_published, g.bgg_rating, g.created_at;
 ```
+
+### 9. Labels Table
+Stores i18n labels for all UI strings, par locale.
+
+```sql
+CREATE TABLE IF NOT EXISTS labels (
+    key    TEXT NOT NULL,
+    locale TEXT NOT NULL,
+    value  TEXT NOT NULL,
+    PRIMARY KEY (key, locale)
+);
+```
+
+**Usage :** `GET /api/v1/labels?locale=fr` retourne tous les labels pour la locale demandée. Fallback offline via `src/shared/i18n/en.json`. Labels ajoutés/modifiés uniquement via migrations numérotées.
+
+### 10. Refresh Tokens Table
+Stocke les refresh tokens pour la rotation JWT.
+
+```sql
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    token      TEXT NOT NULL UNIQUE,
+    family_id  TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    role       TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    revoked    INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Mécanisme :** à chaque refresh, l'ancien token est marqué `revoked = 1` et un nouveau est émis. Si un token révoqué est réutilisé, toute la famille est révoquée (détection de vol).
+
+### 11. BGG Catalog Language Table
+Noms localisés des jeux BGG (enrichissement Wikidata).
+
+```sql
+CREATE TABLE IF NOT EXISTS bgg_catalog_language (
+    bgg_id  INTEGER NOT NULL REFERENCES bgg_catalog(bgg_id) ON DELETE CASCADE,
+    locale  TEXT NOT NULL,  -- 'fr', 'de', 'es', etc.
+    name    TEXT NOT NULL,
+    PRIMARY KEY (bgg_id, locale)
+);
+```
+
+**Usage :** peuplée par `POST /api/v1/bgg/enrich-names` (admin) via requêtes SPARQL Wikidata. Consultée lors de la recherche BGG pour proposer des noms localisés.
 
 ## Indexes
 
@@ -237,15 +289,15 @@ CREATE INDEX idx_game_characters_game_id ON game_characters(game_id);
 }
 ```
 
-### Example Session Record
+### Example Play Record
 ```json
 {
-  "session_id": 1,
+  "play_id": 1,
   "game_id": 1,
-  "session_date": "2024-03-15 19:30:00",
+  "play_date": "2024-03-15 19:30:00",
   "duration_minutes": 75,
   "winner_player_id": 1,
-  "session_type": "competitive"
+  "play_type": "competitive"
 }
 ```
 
@@ -263,7 +315,7 @@ CREATE TABLE IF NOT EXISTS bgg_catalog (
 CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
 ```
 
-**Usage :** La table est peuplée par un script d'import one-shot (`npm run import-bgg-catalog`, à implémenter). Elle est interrogée pour la recherche dans `BGGSearch` à la place de l'API geekdo. Au clic sur un résultat, `getGameDetails(bgg_id)` appelle toujours l'API geekdo pour les métadonnées complètes (image, mécaniques, etc.).
+**Usage :** La table est peuplée via `POST /api/v1/bgg/import-catalog` (CSV upload admin dans Settings). La recherche BGG (`BGGSearch`) interroge `bgg_catalog` + `bgg_catalog_language` en local. Au clic sur un résultat, `getGameDetails(bgg_id)` appelle toujours l'API geekdo pour les métadonnées complètes (image, mécaniques, etc.).
 
 **Source :** `boardgames_ranks.csv` — dump mensuel BGG (~175k lignes, colonnes : id, name, yearpublished, rank, bayesaverage, is_expansion).
 
@@ -289,7 +341,8 @@ CREATE TABLE IF NOT EXISTS log_import (
 
 ## Migration Notes
 
-- The current in-memory data structure can be migrated to this database schema
-- Player statistics should be calculated dynamically using views rather than stored
-- Game expansions and characters are normalized into separate tables for better data integrity
-- Session tracking allows for comprehensive game history and analytics
+- Ne jamais modifier un fichier de migration déjà appliqué — créer un nouveau fichier numéroté
+- Le runner `DatabaseConnection.ts` vérifie `MAX(version)` dans `schema_version` et applique les fichiers manquants dans une transaction atomique
+- Les labels i18n sont ajoutés/modifiés uniquement via des migrations (jamais en direct en BDD)
+- Nommage BDD : `snake_case`, préfixe entité (`game_plays`, `players_play`)
+- L'enrichissement Wikidata (`bgg_catalog_language`) peut être relancé manuellement depuis Settings (admin)

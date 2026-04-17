@@ -12,38 +12,38 @@ backend/
 ├── routes/                      → handlers HTTP (parsing uniquement)
 │   ├── players.ts
 │   ├── games.ts
-│   ├── sessions.ts
+│   ├── plays.ts
 │   ├── stats.ts
 │   ├── bgg.ts
+│   ├── labels.ts
+│   ├── data.ts
+│   ├── logs.ts
 │   └── auth.ts
 ├── services/                    → logique métier + transactions
 │   ├── PlayerService.ts
 │   ├── GameService.ts
-│   ├── SessionService.ts
+│   ├── PlayService.ts
 │   ├── StatsService.ts
+│   ├── LabelsService.ts
 │   └── AuthService.ts
 ├── repositories/                → accès BDD (une entité par fichier)
 │   ├── PlayerRepository.ts
 │   ├── GameRepository.ts
-│   ├── SessionRepository.ts
+│   ├── PlayRepository.ts
 │   ├── StatsRepository.ts
-│   └── BGGRepository.ts
+│   ├── BGGRepository.ts
+│   ├── LabelsRepository.ts
+│   └── RefreshTokenRepository.ts
 ├── database/
 │   ├── DatabaseConnection.ts    → connexion SQLite + runner migrations
-│   ├── migrations/              → fichiers SQL numérotés
-│   │   ├── 001_initial_schema.sql
-│   │   └── ...
-│   └── schema.sql               → schéma de référence
+│   └── migrations/              → fichiers SQL numérotés (001 → 014)
 ├── middleware/
-│   ├── auth.ts                  → vérification JWT
+│   ├── auth.ts                  → vérification JWT (cookie + Bearer)
 │   ├── requireRole.ts           → guard admin/user
 │   └── errorHandler.ts          → mapping erreurs → HTTP
-├── validation/
-│   ├── schemas.ts               → schémas Zod
-│   └── middleware.ts            → middleware validation
-└── scripts/
-    ├── import-bgg-catalog.ts
-    └── init-database.ts
+└── validation/
+    ├── schemas.ts               → schémas Zod
+    └── middleware.ts            → middleware validation
 ```
 
 ## Flux d'une requête
@@ -140,9 +140,15 @@ export class ForbiddenError extends Error { ... }
 POST /api/v1/auth/login
   Body: { password: string }
   → valide contre ADMIN_PASSWORD ou USER_PASSWORD (.env)
-  → génère JWT signé : { sub: 'user', role: 'admin'|'user', exp: now+3600 }
+  → génère JWT signé : { sub: 'user', role: 'admin'|'user', exp: now+1h }
+  → set cookie HttpOnly (accessToken, 1h) + refreshToken (7j)
   → web : Set-Cookie httpOnly + SameSite=Strict
   → Android : { token, expiresIn }
+
+POST /api/v1/auth/refresh
+  → lit le refreshToken depuis le cookie
+  → rotation : ancien token invalidé, nouveau émis
+  → répond avec un nouveau accessToken
 
 Routes protégées :
   → middleware auth.ts vérifie le JWT (cookie OU header Authorization)
@@ -153,11 +159,13 @@ Routes admin-only :
   → 403 si role !== 'admin'
 ```
 
+**Refresh token rotation** : chaque refresh invalide le token précédent (table `refresh_tokens`). Un token réutilisé déclenche la révocation de toute la famille (protection contre le vol de token).
+
 Rôles :
 | Rôle | Accès |
 |---|---|
-| `user` | Lecture + création sessions/jeux/joueurs, export données |
-| `admin` | Tout user + import BGG catalog + suppression en masse |
+| `user` | Lecture + création plays/jeux/joueurs, export données |
+| `admin` | Tout user + import BGG catalog + enrichissement Wikidata + suppression en masse |
 
 ## Migrations BDD
 
@@ -170,7 +178,15 @@ backend/database/migrations/
 ├── 003_add_bgg_catalog.sql
 ├── 004_remove_dead_stats_columns.sql
 ├── 005_remove_game_type.sql
-└── 006_add_hybrid_session_type.sql
+├── 006_add_hybrid_session_type.sql
+├── 007_create_views.sql
+├── 008_extend_bgg_catalog.sql
+├── 009_add_bgg_catalog_langue.sql
+├── 010_rename_bgg_catalog_langue.sql
+├── 011_create_labels.sql
+├── 012_refresh_tokens.sql
+├── 013_rename_sessions_to_plays.sql
+└── 014_add_enrich_labels.sql
 ```
 
 Table de suivi :

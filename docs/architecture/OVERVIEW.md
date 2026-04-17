@@ -1,6 +1,6 @@
 # Architecture — Vue d'ensemble
 
-## Stack technique (mars 2026)
+## Stack technique (avril 2026)
 
 | Couche | Technologie | Version |
 |---|---|---|
@@ -35,7 +35,7 @@
                │
 ┌──────────────▼──────────────────────────────────┐
 │              SQLite (better-sqlite3)             │
-│  6 tables + 2 vues SQL + bgg_catalog             │
+│  9 tables + 2 vues SQL + catalogue BGG           │
 │  Migrations numérotées (schema_version)          │
 └─────────────────────────────────────────────────┘
 ```
