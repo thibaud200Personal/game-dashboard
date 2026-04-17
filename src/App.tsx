@@ -5,7 +5,7 @@ import { TooltipProvider } from '@/shared/components/ui/tooltip';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const Dashboard    = lazy(() => import('./components/Dashboard'));
-const PlayersPage  = lazy(() => import('./components/PlayersPage'));
+const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
 const NewGamePage  = lazy(() => import('./components/NewGamePage'));
 const StatsPage    = lazy(() => import('./components/StatsPage'));

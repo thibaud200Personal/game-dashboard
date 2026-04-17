@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { gameApi } from '@/features/games/gameApi';
-import { playerApi } from '../services/api/playerApi';
+import { playerApi } from '@/features/players/playerApi';
 import { playApi } from '../services/api/playApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';

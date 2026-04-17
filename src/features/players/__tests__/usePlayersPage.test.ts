@@ -1,7 +1,7 @@
 // src/__tests__/hooks/usePlayersPage.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { usePlayersPage } from '@/hooks/usePlayersPage';
+import { usePlayersPage } from '@/features/players/usePlayersPage';
 import { createHookWrapper } from '@/__tests__/utils/test-utils';
 import { mockPlayers } from '@/__tests__/fixtures';
 

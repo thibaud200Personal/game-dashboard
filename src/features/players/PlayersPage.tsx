@@ -1,6 +1,6 @@
 import React from 'react';
-import { PlayersPageView } from '@/views/PlayersPageView';
-import { usePlayersPage } from '@/hooks/usePlayersPage';
+import { PlayersPageView } from './PlayersPageView';
+import { usePlayersPage } from './usePlayersPage';
 
 export default function PlayersPage() {
   const logic = usePlayersPage();

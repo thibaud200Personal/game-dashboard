@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from '@/components/dialogs';
+import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from './dialogs';
 import { Player, PlayerFormData } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
 

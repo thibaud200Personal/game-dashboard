@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Users, TrendUp } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
-import { playerApi } from '@/services/api/playerApi';
+import { playerApi } from '@/features/players/playerApi';
 import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
