@@ -23,22 +23,22 @@ export const UpdatePlayerSchema = z.object({
 
 // Game schemas
 export const GameExpansionSchema = z.object({
-  expansion_id: z.number().int().positive().optional(),
-  game_id: z.number().int().positive().optional(),
-  bgg_expansion_id: z.number().int().positive().optional(),
+  expansion_id: z.number().int().positive().nullish().transform(v => v ?? undefined),
+  game_id: z.number().int().positive().nullish().transform(v => v ?? undefined),
+  bgg_expansion_id: z.number().int().positive().nullish().transform(v => v ?? undefined),
   name: z.string().min(1, 'Le nom de l\'extension est requis').max(200, 'Le nom ne peut pas dépasser 200 caractères'),
-  year_published: z.number().int().min(1800, 'Année de publication invalide').max(new Date().getFullYear() + 5, 'Année de publication invalide').optional(),
-  description: z.string().max(1000, 'La description ne peut pas dépasser 1000 caractères').optional()
+  year_published: z.number().int().min(1800, 'Année de publication invalide').max(new Date().getFullYear() + 5, 'Année de publication invalide').nullish().transform(v => v ?? undefined),
+  description: z.string().max(1000, 'La description ne peut pas dépasser 1000 caractères').nullish().transform(v => v ?? undefined),
 });
 
 export const GameCharacterSchema = z.object({
-  character_id: z.number().int().positive().optional(),
-  game_id: z.number().int().positive().optional(),
+  character_id: z.number().int().positive().nullish().transform(v => v ?? undefined),
+  game_id: z.number().int().positive().nullish().transform(v => v ?? undefined),
   character_key: z.string().min(1, 'La clé du personnage est requise').max(50, 'La clé ne peut pas dépasser 50 caractères'),
   name: z.string().min(1, 'Le nom du personnage est requis').max(100, 'Le nom ne peut pas dépasser 100 caractères'),
-  description: z.string().max(500, 'La description ne peut pas dépasser 500 caractères').optional(),
-  avatar: z.string().url('URL d\'avatar invalide').optional(),
-  abilities: z.array(z.string().max(100, 'Une capacité ne peut pas dépasser 100 caractères')).optional()
+  description: z.string().max(500, 'La description ne peut pas dépasser 500 caractères').nullish().transform(v => v ?? undefined),
+  avatar: z.string().url('URL d\'avatar invalide').nullish().transform(v => v ?? undefined),
+  abilities: z.array(z.string().max(100, 'Une capacité ne peut pas dépasser 100 caractères')).nullish().transform(v => v ?? undefined),
 });
 
 export const CreateGameBaseSchema = z.object({
