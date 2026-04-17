@@ -13,7 +13,7 @@ export function useNavigationAdapter(): NavigationHandler {
       case 'dashboard': navigate('/'); break;
       case 'players':   navigate('/players'); break;
       case 'games':     navigate('/games'); break;
-      case 'new-game':  navigate('/sessions/new'); break;
+      case 'new-game':  navigate('/plays/new'); break;
       case 'stats':     navigate(id != null ? `/stats?id=${id}&src=${_source ?? ''}` : '/stats'); break;
       case 'player-stats': navigate(`/stats?id=${id}&src=players`); break;
       case 'game-stats':   navigate(`/stats?id=${id}&src=games`); break;

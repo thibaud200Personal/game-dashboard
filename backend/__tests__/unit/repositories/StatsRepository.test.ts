@@ -28,7 +28,7 @@ beforeEach(() => {
   playerId = playerRepo.create({ player_name: 'Alice', pseudo: 'alice' })
   gameId   = gameRepo.create(baseGame)
 
-  const playId = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+  const playId = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
   playRepo.insertPlayPlayers(playId, [{ player_id: playerId, score: 42, is_winner: true }])
 })
 

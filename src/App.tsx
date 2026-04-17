@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from './shared/contexts/AuthContext';
 const Dashboard    = lazy(() => import('./features/dashboard/Dashboard'));
 const PlayersPage  = lazy(() => import('./features/players/PlayersPage'));
 const GamesPage    = lazy(() => import('./features/games/GamesPage'));
-const NewGamePage  = lazy(() => import('./features/plays/NewPlayPage'));
+const NewPlayPage  = lazy(() => import('./features/plays/NewPlayPage'));
 const StatsPage    = lazy(() => import('./features/stats/StatsPage'));
 const SettingsPage   = lazy(() => import('./features/settings/SettingsPage'));
 const LoginPage      = lazy(() => import('./features/auth/LoginPage'));
@@ -47,7 +47,7 @@ function AppRoutes() {
           <Route index element={<Dashboard />} />
           <Route path="players" element={<PlayersPage />} />
           <Route path="games" element={<GamesPage />} />
-          <Route path="sessions/new" element={<NewGamePage />} />
+          <Route path="plays/new" element={<NewPlayPage />} />
           <Route path="games/:id" element={<GamePageRoute subRoute="detail" />} />
           <Route path="games/:id/expansions" element={<GamePageRoute subRoute="expansions" />} />
           <Route path="games/:id/characters" element={<GamePageRoute subRoute="characters" />} />

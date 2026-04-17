@@ -47,14 +47,14 @@ vi.mock('@/shared/components/ui/select', () => {
 
 describe('NewGamePage — flux création session', () => {
   it('affiche la liste des jeux disponibles', async () => {
-    renderPage(<NewGamePage />, '/sessions/new');
+    renderPage(<NewGamePage />, '/plays/new');
     // After MSW responds, the game options are rendered in the native <select>
     await waitFor(() => expect(screen.getByText('Wingspan')).toBeInTheDocument());
   });
 
   it('affiche les joueurs disponibles', async () => {
     const user = userEvent.setup();
-    renderPage(<NewGamePage />, '/sessions/new');
+    renderPage(<NewGamePage />, '/plays/new');
 
     // Wait for games to load then select Wingspan
     await waitFor(() => expect(screen.getByText('Wingspan')).toBeInTheDocument());
@@ -67,7 +67,7 @@ describe('NewGamePage — flux création session', () => {
   });
 
   it('rend sans crash avec données vides si MSW retourne []', async () => {
-    renderPage(<NewGamePage />, '/sessions/new');
+    renderPage(<NewGamePage />, '/plays/new');
     await waitFor(() =>
       expect(screen.queryByText(/chargement|loading/i) || document.body).toBeTruthy()
     );

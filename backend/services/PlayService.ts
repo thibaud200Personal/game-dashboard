@@ -12,7 +12,7 @@ export class PlayService {
 
   createPlay(data: CreatePlayRequest): GamePlay {
     return this.db.transaction(() => {
-      const playId = this.playRepo.insertSession({
+      const playId = this.playRepo.insertPlay({
         game_id: data.game_id,
         play_date: data.play_date,
         duration_minutes: data.duration_minutes,

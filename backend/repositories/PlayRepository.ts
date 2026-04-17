@@ -42,7 +42,7 @@ export class PlayRepository {
     return rows.map(r => ({ ...r, is_winner: !!r.is_winner }))
   }
 
-  insertSession(data: InsertPlayData): number {
+  insertPlay(data: InsertPlayData): number {
     const result = this.db.prepare(`
       INSERT INTO game_plays (game_id, play_date, duration_minutes, winner_player_id, play_type, notes)
       VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, COALESCE(?, 'competitive'), ?)

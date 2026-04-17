@@ -86,12 +86,12 @@ Règles :
 - Les services lèvent des erreurs typées (`NotFoundError`, `ConflictError`)
 
 ```ts
-// services/SessionService.ts
-createSession(payload: CreateSessionPayload): GameSession {
+// services/PlayService.ts
+createPlay(payload: CreatePlayRequest): GamePlay {
   return this.db.transaction(() => {
-    const session = this.sessionRepo.insertSession(payload)
-    this.sessionRepo.insertSessionPlayers(session.session_id, payload.players)
-    return session
+    const playId = this.playRepo.insertPlay(payload)
+    this.playRepo.insertPlayPlayers(playId, payload.players)
+    return this.playRepo.findById(playId)!
   })()
 }
 ```

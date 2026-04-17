@@ -28,19 +28,19 @@ afterEach(() => conn.close())
 
 describe('PlayRepository', () => {
   it('inserts a play and retrieves it', () => {
-    const playId = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+    const playId = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
     const play = playRepo.findById(playId)
     expect(play?.game_id).toBe(gameId)
     expect((play as any).play_type).toBe('competitive')
   })
 
   it('accepts hybrid play_type', () => {
-    const playId = playRepo.insertSession({ game_id: gameId, play_type: 'hybrid' })
+    const playId = playRepo.insertPlay({ game_id: gameId, play_type: 'hybrid' })
     expect((playRepo.findById(playId) as any).play_type).toBe('hybrid')
   })
 
   it('inserts play players and retrieves them', () => {
-    const playId = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+    const playId = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
     playRepo.insertPlayPlayers(playId, [
       { player_id: playerId, score: 42, is_winner: true },
     ])
@@ -51,13 +51,13 @@ describe('PlayRepository', () => {
   })
 
   it('findAll returns all plays', () => {
-    playRepo.insertSession({ game_id: gameId, play_type: 'hybrid' })
-    playRepo.insertSession({ game_id: gameId, play_type: 'cooperative' })
+    playRepo.insertPlay({ game_id: gameId, play_type: 'hybrid' })
+    playRepo.insertPlay({ game_id: gameId, play_type: 'cooperative' })
     expect(playRepo.findAll()).toHaveLength(2)
   })
 
   it('delete removes a play', () => {
-    const playId = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+    const playId = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
     playRepo.delete(playId)
     expect(playRepo.findById(playId)).toBeUndefined()
   })

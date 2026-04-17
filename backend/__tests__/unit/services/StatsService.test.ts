@@ -26,7 +26,7 @@ beforeEach(() => {
     supports_campaign: false, supports_hybrid: false,
     has_expansion: false, has_characters: false, is_expansion: false,
   })
-  const pid = playRepo.insertSession({ game_id: gameId, play_type: 'competitive' })
+  const pid = playRepo.insertPlay({ game_id: gameId, play_type: 'competitive' })
   playRepo.insertPlayPlayers(pid, [{ player_id: playerId, score: 10, is_winner: true }])
 })
 afterEach(() => conn.close())

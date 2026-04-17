@@ -11,7 +11,7 @@ vi.mock('@/shared/hooks/useNavigationAdapter', () => ({
 // Sonner toast ne doit pas lever d'erreur en jsdom
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-const wrapper = createHookWrapper('/sessions/new');
+const wrapper = createHookWrapper('/plays/new');
 
 describe('useNewGamePage', () => {
   it('charge les jeux et les joueurs', async () => {
