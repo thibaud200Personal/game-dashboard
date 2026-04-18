@@ -13,7 +13,9 @@ Ces deux fichiers décrivent les mêmes entités (`Player`, `Game`, `GameSession
 
 ## Décision
 
-Créer un dossier `shared/types/index.ts` à la racine du monorepo. Frontend et backend importent depuis ce fichier. `backend/models/interfaces.ts` est supprimé. `src/types/index.ts` réexporte uniquement depuis `shared/types`.
+Créer un dossier `shared/types/` à la racine du monorepo avec un fichier `index.d.ts` (déclaration TypeScript écrite à la main — pas de `.ts` source compilé). Frontend et backend importent depuis ce fichier via l'alias `@shared/types`. `backend/models/interfaces.ts` est supprimé. `src/types/index.ts` réexporte uniquement depuis `shared/types`.
+
+> **Note implémentation** : `index.d.ts` est intentionnellement hand-written. Le backend a `rootDir: "./"` et le frontend `noEmit: true` — aucun risque d'écrasement par `tsc`. Pour ajouter un type : éditer `shared/types/index.d.ts` directement, sans étape de build. Voir [DEVELOPMENT.md §6](../guides/DEVELOPMENT.md#6-types-partagés--sharedtypes).
 
 ## Conséquences
 

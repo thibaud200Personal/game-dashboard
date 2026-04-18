@@ -48,7 +48,7 @@ Frontend : les fonctionnalités admin sont conditionnellement rendues selon le r
 - Import BGG catalog protégé par rôle admin
 
 **Négatives :**
-- Pas de refresh token — session expire après 1h (acceptable pour usage personnel)
+- ~~Pas de refresh token~~ — **Refresh tokens implémentés** (table `refresh_tokens`, rotation de famille via `RefreshTokenRepository` + `AuthService.rotateRefreshToken`). Expiration access token : 1h, refresh token : 30 jours.
 - Migration : le frontend doit changer de `localStorage` vers cookie, adapter les requêtes avec `credentials: 'include'`
 
 ## Alternatives rejetées
