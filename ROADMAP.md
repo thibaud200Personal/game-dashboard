@@ -668,7 +668,7 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 
 1. ✅ **🗄️ Migration schema BGG étendu** — PR #55 : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
 2. ~~**📝 Formulaire pré-import BGG**~~ — Annulé (formulaire actuel gère saisie manuelle + import BGG, mobile-first)
-3. **📊 Cache BGG local** : localStorage + expiration (2-3 jours) → [détail](changelog/sprint1-bgg-cache.md)
+3. **📊 Cache BGG local** : côté backend uniquement (à faire quand front/back séparés)
 4. ✅ **🔀 Unifier BGGGame/BGGGameDetails** : `shared/types/index.d.ts` — source de vérité unique, frontend + backend alignés
 
 </details>
@@ -686,20 +686,20 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 <details>
 <summary><b>Sprint 3 — Bug Fix & Polish (2-4 jours)</b></summary>
 
-1. **🎨 Thème Sombre/Clair** : ThemeProvider React Context + localStorage persistence (2-3 jours) → [détail](changelog/sprint3-theme-toggle.md)
+1. **🎨 Thème Sombre/Clair** : ThemeProvider React Context + localStorage persistence (2-3 jours)
 2. ✅ **🌐 BGGSearch FR** — PR #58 : tous les messages en français
 3. ✅ **👤 BGGGameDetails.characters** — `characters: []` déjà initialisé dans `parseGeekdoItem`
-4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet → [détail](changelog/sprint3-bgg-flags-recalculation.md)
+4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet
 
 </details>
 
 <details>
 <summary><b>Sprint 4 — Features UX (2-4 semaines)</b></summary>
 
-1. **📊 Graphiques temporels** : Implémenter visualisations Recharts dans StatsPage → [détail](changelog/sprint4-temporal-charts.md)
-2. **🎮 Sélection personnages en session** : Interface modale dans NewGamePage → [détail](changelog/sprint4-character-selection-session.md)
-3. **🎮 Service UltraBoardGames** : Copier `externalGameDataService.ts` de boardGameScore → [détail](changelog/sprint4-ultraboardgames-service.md)
-4. **💾 Export/Import données** : Implémenter les stubs existants dans `useSettingsPage` → [détail](changelog/sprint4-export-import.md)
+1. **📊 Graphiques temporels** : Implémenter visualisations Recharts dans StatsPage
+2. **🎮 Sélection personnages en session** : Interface modale dans NewGamePage
+3. **🎮 Service UltraBoardGames** : Copier `externalGameDataService.ts` de boardGameScore
+4. **💾 Export/Import données** : Implémenter les stubs existants dans `useSettingsPage`
 
 </details>
 
@@ -708,13 +708,13 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 
 1. ✅ **🌍 Internationalisation DB-driven** — **Complète** (PR #85, avril 2026) — Infrastructure + migration complète : tous les strings hardcodés remplacés par `t()` dans 9 composants (LoginPage, BGGSearch, DashboardView, GameCharactersView, CharacterDialogs, GameDetailView, AddGameDialog, GameExpansionsView, ExpansionDialogs). 6 migrations SQL (017-022) avec labels EN/FR.
    - **Note :** Traduire le *contenu* des entités (description d'un jeu, noms localisés) est un sujet séparé impliquant une refonte du schéma BDD (`games_translations` etc.) — à investiguer si le besoin est confirmé.
-2. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
-2. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)
-3. Système d'achievements / gamification → [détail](changelog/sprint5-achievements.md)
-4. Système de recommandations → [détail](changelog/sprint5-recommendations.md)
-5. Mode tournoi / brackets → [détail](changelog/sprint5-tournament-mode.md)
-6. Tests E2E (Cypress/Playwright) → [détail](changelog/sprint5-e2e-tests.md)
-7. PWA basique → [détail](changelog/sprint5-pwa.md)
+2. Système Migration BDD (knex.js / versioning)
+3. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)
+4. Système d'achievements / gamification
+5. Système de recommandations
+6. Mode tournoi / brackets
+7. Tests E2E (Cypress/Playwright) → [détail](changelog/sprint5-e2e-tests.md)
+8. PWA basique
 
 </details>
 
