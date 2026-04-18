@@ -689,7 +689,7 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 1. **🎨 Thème Sombre/Clair** : ThemeProvider React Context + localStorage persistence (2-3 jours)
 2. ✅ **🌐 BGGSearch FR** — PR #58 : tous les messages en français
 3. ✅ **👤 BGGGameDetails.characters** — `characters: []` déjà initialisé dans `parseGeekdoItem`
-4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet
+4. **🔄 has_expansion/has_characters** : Recalculer les flags après import BGG complet → [détail](changelog/sprint3-bgg-flags-recalculation.md)
 
 </details>
 
