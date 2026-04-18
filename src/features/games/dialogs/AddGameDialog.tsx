@@ -140,7 +140,7 @@ export default function AddGameDialog({
     // Year validation
     const currentYear = new Date().getFullYear();
     if (formData.year_published < 1800 || formData.year_published > currentYear + 5) {
-      newErrors.year_published = `Year must be between 1800 and ${currentYear + 5}`;
+      newErrors.year_published = `${t('games.form.validation.year')} ${currentYear + 5}`;
     }
 
     // BGG Rating validation
@@ -249,7 +249,7 @@ export default function AddGameDialog({
         <DialogHeader>
           <DialogTitle>{t('games.add_dialog.title')}</DialogTitle>
           <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
-            Add a new game to your collection by filling out the details below.
+            {t('games.add_dialog.description')}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -260,7 +260,7 @@ export default function AddGameDialog({
               className="border-teal-600 text-teal-400 hover:bg-teal-600/20"
             >
               <Link className="w-4 h-4 mr-2" />
-              Search BoardGameGeek
+              {t('games.form.bgg_search')}
             </Button>
           </div>
 
@@ -299,21 +299,21 @@ export default function AddGameDialog({
           )}
 
           <div>
-            <Label htmlFor="game-name">Game Name *</Label>
+            <Label htmlFor="game-name">{t('games.form.name.label')} *</Label>
             <Input
               id="game-name"
               name="game-name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               className={`bg-slate-700 border-slate-600 text-white ${errors.name ? 'border-red-500' : ''}`}
-              placeholder="Enter game name"
+              placeholder={t('games.form.name.placeholder')}
             />
             {errors.name && (
               <p className="text-red-400 text-sm mt-1">{errors.name}</p>
             )}
           </div>
           <div>
-            <Label htmlFor="game-image">Image URL</Label>
+            <Label htmlFor="game-image">{t('games.form.image.label')}</Label>
             <Input
               id="game-image"
               name="game-image"
@@ -327,7 +327,7 @@ export default function AddGameDialog({
             )}
           </div>
           <div>
-            <Label htmlFor="edit-game-thumbnail">Thumbnail URL</Label>
+            <Label htmlFor="edit-game-thumbnail">{t('games.form.thumbnail.label')}</Label>
             <Input
               id="edit-game-thumbnail"
               value={formData.thumbnail || ''}
@@ -338,7 +338,7 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="min-players">Min Players *</Label>
+              <Label htmlFor="min-players">{t('games.form.min_players.label')} *</Label>
               <Input
                 id="min-players"
                 name="min-players"
@@ -353,7 +353,7 @@ export default function AddGameDialog({
               )}
             </div>
             <div>
-              <Label htmlFor="max-players">Max Players *</Label>
+              <Label htmlFor="max-players">{t('games.form.max_players.label')} *</Label>
               <Input
                 id="max-players"
                 name="max-players"
@@ -370,7 +370,7 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="duration">Durée (affichage)</Label>
+              <Label htmlFor="duration">{t('games.form.duration.label')}</Label>
               <Input
                 id="duration"
                 name="duration"
@@ -381,7 +381,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="age-min">Âge minimum</Label>
+              <Label htmlFor="age-min">{t('games.form.age_min.label')}</Label>
               <Input
                 id="age-min"
                 name="age-min"
@@ -395,7 +395,7 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="edit-min-playtime">Durée min (min)</Label>
+              <Label htmlFor="edit-min-playtime">{t('games.form.min_playtime.label')}</Label>
               <Input
                 id="edit-min-playtime"
                 type="number"
@@ -407,7 +407,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="edit-playing-time">Durée recommandée (min)</Label>
+              <Label htmlFor="edit-playing-time">{t('games.form.playing_time.label')}</Label>
               <Input
                 id="edit-playing-time"
                 type="number"
@@ -419,7 +419,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="edit-max-playtime">Durée max (min)</Label>
+              <Label htmlFor="edit-max-playtime">{t('games.form.max_playtime.label')}</Label>
               <Input
                 id="edit-max-playtime"
                 type="number"
@@ -433,15 +433,15 @@ export default function AddGameDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="difficulty">Difficulté</Label>
+              <Label htmlFor="difficulty">{t('games.form.difficulty.label')}</Label>
               <Select value={formData.difficulty} onValueChange={(value) => onFormDataChange({ difficulty: value })}>
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Expert">Expert</SelectItem>
+                  <SelectItem value="Beginner">{t('games.form.difficulty.beginner')}</SelectItem>
+                  <SelectItem value="Intermediate">{t('games.form.difficulty.intermediate')}</SelectItem>
+                  <SelectItem value="Expert">{t('games.form.difficulty.expert')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -449,7 +449,7 @@ export default function AddGameDialog({
           <div className="grid grid-cols-2 gap-4">
             
             <div>
-              <Label>Game Modes</Label>
+              <Label>{t('games.form.modes.label')}</Label>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
@@ -503,18 +503,18 @@ export default function AddGameDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">{t('games.form.category.label')}</Label>
             <Input
               id="category"
               name="category"
               value={formData.category}
               onChange={(e) => onFormDataChange({ category: e.target.value })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder="Strategy, Party, etc."
+              placeholder={t('games.form.category.placeholder')}
             />
           </div>
           <div>
-            <Label htmlFor="edit-categories">Catégories</Label>
+            <Label htmlFor="edit-categories">{t('games.form.categories.label')}</Label>
             <Input
               id="edit-categories"
               value={(formData.categories || []).join(', ')}
@@ -522,11 +522,11 @@ export default function AddGameDialog({
                 categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
               })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder="Stratégie, Aventure, ..."
+              placeholder={t('games.form.categories.placeholder')}
             />
           </div>
           <div>
-            <Label htmlFor="edit-mechanics">Mécaniques</Label>
+            <Label htmlFor="edit-mechanics">{t('games.form.mechanics.label')}</Label>
             <Input
               id="edit-mechanics"
               value={(formData.mechanics || []).join(', ')}
@@ -534,36 +534,36 @@ export default function AddGameDialog({
                 mechanics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
               })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder="Gestion de main, Jeu coopératif, ..."
+              placeholder={t('games.form.mechanics.placeholder')}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="designer">Designer</Label>
+              <Label htmlFor="designer">{t('games.form.designer.label')}</Label>
               <Input
                 id="designer"
                 name="designer"
                 value={formData.designer}
                 onChange={(e) => onFormDataChange({ designer: e.target.value })}
                 className="bg-slate-700 border-slate-600 text-white"
-                placeholder="Game designer"
+                placeholder={t('games.form.designer.placeholder')}
               />
             </div>
             <div>
-              <Label htmlFor="publisher">Publisher</Label>
+              <Label htmlFor="publisher">{t('games.form.publisher.label')}</Label>
               <Input
                 id="publisher"
                 name="publisher"
                 value={formData.publisher}
                 onChange={(e) => onFormDataChange({ publisher: e.target.value })}
                 className="bg-slate-700 border-slate-600 text-white"
-                placeholder="Publisher"
+                placeholder={t('games.form.publisher.placeholder')}
               />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="year-published">Year</Label>
+              <Label htmlFor="year-published">{t('games.form.year.label')}</Label>
               <Input
                 id="year-published"
                 name="year-published"
@@ -576,7 +576,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="bgg-rating">BGG Rating</Label>
+              <Label htmlFor="bgg-rating">{t('games.form.bgg_rating.label')}</Label>
               <Input
                 id="bgg-rating"
                 name="bgg-rating"
@@ -590,7 +590,7 @@ export default function AddGameDialog({
               />
             </div>
             <div>
-              <Label htmlFor="weight">Weight (1-5)</Label>
+              <Label htmlFor="weight">{t('games.form.weight.label')}</Label>
               <Input
                 id="weight"
                 name="weight"
@@ -605,14 +605,14 @@ export default function AddGameDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('games.form.description.label')}</Label>
             <Textarea
               id="description"
               name="description"
               value={formData.description}
               onChange={(e) => onFormDataChange({ description: e.target.value })}
               className="bg-slate-700 border-slate-600 text-white"
-              placeholder="Brief game description"
+              placeholder={t('games.form.description.placeholder')}
               rows={3}
             />
           </div>
@@ -625,7 +625,7 @@ export default function AddGameDialog({
                   checked={formData.has_expansion}
                   onCheckedChange={(checked) => onFormDataChange({ has_expansion: !!checked, ...(checked ? { is_expansion: false } : {}) })}
                 />
-                <Label htmlFor="has_expansion">A des extensions</Label>
+                <Label htmlFor="has_expansion">{t('games.form.has_expansion_checkbox.label')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -633,13 +633,13 @@ export default function AddGameDialog({
                   checked={formData.is_expansion ?? false}
                   onCheckedChange={(checked) => onFormDataChange({ is_expansion: !!checked, ...(checked ? { has_expansion: false } : {}) })}
                 />
-                <Label htmlFor="is_expansion">Est une extension</Label>
+                <Label htmlFor="is_expansion">{t('games.form.is_expansion_checkbox.label')}</Label>
               </div>
             </div>
             {/* Expansions Display - show if checkbox is checked */}
             {formData.has_expansion && (
               <div className="space-y-2">
-                <Label>Expansions</Label>
+                <Label>{t('games.form.expansions.label')}</Label>
                 <Textarea
                   id="expansions-list"
                   name="expansions-list"
@@ -704,7 +704,7 @@ export default function AddGameDialog({
                   <Input
                     value={character.name}
                     onChange={(e) => updateCharacter(charIndex, 'name', e.target.value)}
-                    placeholder="Character name"
+                    placeholder={t('games.form.characters.name.placeholder')}
                     className="bg-slate-600 border-slate-500 text-white"
                   />
                   <Button
@@ -720,12 +720,12 @@ export default function AddGameDialog({
                 <Input
                   value={character.description}
                   onChange={(e) => updateCharacter(charIndex, 'description', e.target.value)}
-                  placeholder="Character description"
+                  placeholder={t('games.form.character.description.placeholder')}
                   className="bg-slate-600 border-slate-500 text-white"
                 />
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">Abilities</Label>
+                    <Label className="text-xs">{t('games.form.characters.abilities.label')}</Label>
                     <Button
                       type="button"
                       onClick={() => addAbility(charIndex)}
@@ -733,7 +733,7 @@ export default function AddGameDialog({
                       className="border-slate-500 text-white hover:bg-slate-500 h-6 text-xs"
                     >
                       <Plus className="w-2 h-2 mr-1" />
-                      Add Ability
+                      {t('games.form.character.add_ability')}
                     </Button>
                   </div>
                   {(character.abilities || []).map((ability, abilityIndex) => (
@@ -741,7 +741,7 @@ export default function AddGameDialog({
                       <Input
                         value={ability}
                         onChange={(e) => updateAbility(charIndex, abilityIndex, e.target.value)}
-                        placeholder="Ability name"
+                        placeholder={t('games.form.characters.ability.placeholder')}
                         className="bg-slate-600 border-slate-500 text-white text-xs"
                       />
                       <Button

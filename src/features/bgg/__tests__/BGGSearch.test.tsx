@@ -4,6 +4,24 @@ import userEvent from '@testing-library/user-event';
 import BGGSearch from '@/features/bgg/BGGSearch';
 import * as bggApi from '@/features/bgg/bggApi';
 
+vi.mock('@/shared/hooks/useLabels', () => ({
+  useLabels: () => ({
+    t: (key: string, fallback?: string) => {
+      const map: Record<string, string> = {
+        'bgg.search.placeholder': 'Search by name or BGG ID...',
+        'bgg.search.loading_details': 'Loading details...',
+        'bgg.search.error.search_failed': 'BGG search failed. Please try again.',
+        'bgg.search.error.load_failed': 'Could not load game details. Please try again.',
+        'bgg.search.badge.base_game': 'Base game',
+        'bgg.search.empty': 'No games found. Try a different search term.',
+        'bgg.search.footer': 'Data from BoardGameGeek.com · Enter a BGG ID for direct loading',
+      };
+      return map[key] ?? fallback ?? key;
+    },
+    isLoading: false,
+  })
+}));
+
 // Mock du service BGG API
 vi.mock('@/features/bgg/bggApi');
 const mockedBggApi = vi.mocked(bggApi);
@@ -21,7 +39,7 @@ describe('BGGSearch', () => {
     
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/rechercher par nom ou id bgg/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search by name or bgg id/i)).toBeInTheDocument();
   });
 
   it('should handle search input changes', async () => {
@@ -134,7 +152,7 @@ describe('BGGSearch', () => {
     });
     
     await waitFor(() => {
-      expect(screen.getByText(/échec de la recherche/i)).toBeInTheDocument();
+      expect(screen.getByText(/bgg search failed/i)).toBeInTheDocument();
     });
   });
 });

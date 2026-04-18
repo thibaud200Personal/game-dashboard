@@ -54,7 +54,7 @@ describe('GamesPage — flux CRUD', () => {
     await user.click(bggBtn);
 
     // Le champ de recherche BGG est maintenant visible
-    const bggInput = screen.getByPlaceholderText(/Rechercher par nom ou ID BGG/i);
+    const bggInput = screen.getByPlaceholderText(/Search by name or BGG ID/i);
     await user.type(bggInput, 'Wingspan');
     await user.keyboard('{Enter}');
 

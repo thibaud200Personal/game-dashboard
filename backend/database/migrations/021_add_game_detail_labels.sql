@@ -1,0 +1,22 @@
+-- Game detail view labels
+INSERT OR IGNORE INTO labels (key, locale, value) VALUES
+  ('game.detail.tab.overview', 'en', 'Overview'),
+  ('game.detail.tab.overview', 'fr', 'Vue générale'),
+  ('game.detail.back', 'en', 'Back to games'),
+  ('game.detail.back', 'fr', 'Retour aux jeux'),
+  ('game.detail.more_options', 'en', 'More Options'),
+  ('game.detail.more_options', 'fr', 'Plus d''options'),
+  ('game.detail.manage_expansions', 'en', 'Manage Expansions'),
+  ('game.detail.manage_expansions', 'fr', 'Gérer les extensions'),
+  ('game.detail.manage_characters', 'en', 'Manage Characters'),
+  ('game.detail.manage_characters', 'fr', 'Gérer les personnages'),
+  ('game.detail.manage', 'en', 'Manage'),
+  ('game.detail.manage', 'fr', 'Gérer'),
+  ('game.detail.more_items', 'en', 'more...'),
+  ('game.detail.more_items', 'fr', 'autre(s)...'),
+  ('game.detail.no_expansions', 'en', 'No expansions added.'),
+  ('game.detail.no_expansions', 'fr', 'Aucune extension ajoutée.'),
+  ('game.detail.no_characters', 'en', 'No characters added.'),
+  ('game.detail.no_characters', 'fr', 'Aucun personnage ajouté.'),
+  ('game.detail.weight_complexity', 'en', 'Complexity'),
+  ('game.detail.weight_complexity', 'fr', 'Complexité');

@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/
 import { ArrowLeft, Plus, PencilSimple, Trash, User, Lightning } from '@phosphor-icons/react';
 import { useGameCharacters, UseGameCharactersProps } from './useGameCharacters';
 import { AddCharacterDialog, EditCharacterDialog, DeleteCharacterDialog } from './dialogs/CharacterDialogs';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 export default function GameCharactersView(props: UseGameCharactersProps & { darkMode: boolean }) {
   const {
@@ -31,6 +32,8 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
     darkMode
   } = props;
 
+  const { t } = useLabels();
+
   // Classes dynamiques pour le thème
   const bgHeader = darkMode ? 'bg-slate-800/50 border-b border-slate-700/50' : 'bg-slate-100 border-b border-slate-200';
   const textHeader = darkMode ? 'text-white' : 'text-slate-900';
@@ -55,14 +58,13 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{navigationSource === 'game-detail' ? 'Retour aux détails du jeu' : 'Retour à la liste des jeux'}</p>
+                <p>{navigationSource === 'game-detail' ? t('character.view.back_to_detail') : t('character.view.back_to_games')}</p>
               </TooltipContent>
             </Tooltip>
             <div className={darkMode ? 'h-6 w-px bg-slate-600 hidden md:block' : 'h-6 w-px bg-slate-300 hidden md:block'}></div>
             <h1 className={`text-lg md:text-xl font-semibold flex-1 truncate ${textHeader}`}>
-              <span className={darkMode ? "text-white" : "text-slate-900"}>Personnages - {game.name}</span>
+              <span className={darkMode ? "text-white" : "text-slate-900"}>{t('character.view.title')} - {game.name}</span>
             </h1>
-            {/* Ajout du bouton d'ajout avec harmonisation */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -71,11 +73,11 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                   onClick={() => setIsAddDialogOpen(true)}
                   className={darkMode ? 'border-slate-600 bg-slate-800 text-white hover:bg-slate-700' : 'bg-teal-500 hover:bg-teal-600 text-white'}
                 >
-                  <Plus className="w-5 h-5 mr-1" /> Ajouter
+                  <Plus className="w-5 h-5 mr-1" /> {t('common.buttons.add')}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Ajouter un personnage</p>
+                <p>{t('character.dialog.add.title')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -109,12 +111,12 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                 {character.description && (
                   <p className="text-slate-300 text-sm">{character.description}</p>
                 )}
-                
+
                 {character.abilities && character.abilities.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-slate-300">
                       <Lightning className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Capacités</span>
+                      <span className="text-sm font-medium">{t('character.form.abilities.label')}</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {character.abilities.map((ability, index) => (
@@ -139,14 +141,14 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                         className="border-slate-600 text-slate-300 hover:bg-slate-700/50 flex-1"
                       >
                         <PencilSimple className="w-4 h-4 md:mr-2" />
-                        <span className="hidden md:inline">Modifier</span>
+                        <span className="hidden md:inline">{t('common.buttons.edit')}</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Edit Character</p>
+                      <p>{t('character.tooltip.edit')}</p>
                     </TooltipContent>
                   </Tooltip>
-                  
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -159,7 +161,7 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Delete Character</p>
+                      <p>{t('character.tooltip.delete')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -170,13 +172,13 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
       ) : (
   <Card className={darkMode ? "bg-slate-800/50 border-slate-700/50" : "bg-white border-slate-200"}>
           <CardContent className="text-center py-12">
-            <p className="text-slate-400 mb-4">Aucun personnage ajouté pour ce jeu.</p>
-            <Button 
+            <p className="text-slate-400 mb-4">{t('character.view.empty')}</p>
+            <Button
               onClick={() => setIsAddDialogOpen(true)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Ajouter le premier personnage
+              {t('character.view.add_first')}
             </Button>
           </CardContent>
         </Card>
@@ -221,14 +223,14 @@ export default function GameCharactersView(props: UseGameCharactersProps & { dar
                 className="text-slate-300 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour
+                {t('common.buttons.back')}
               </Button>
-              <Button 
+              <Button
                 onClick={() => setIsAddDialogOpen(true)}
                 className={darkMode ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-teal-500 hover:bg-teal-600 text-white"}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Ajouter
+                {t('common.buttons.add')}
               </Button>
             </div>
           </div>
