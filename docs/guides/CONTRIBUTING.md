@@ -1,15 +1,15 @@
-# Guide de contribution
+# Contributing Guide
 
-## Prérequis
+## Prerequisites
 
 - Node.js 24 LTS
 - npm 10+
 - Git
 
-## Installation locale
+## Local Setup
 
 ```bash
-# Cloner le repo
+# Clone the repo
 git clone <repo-url>
 cd game-dashboard
 
@@ -19,183 +19,183 @@ npm install
 # Backend
 cd backend && npm install && cd ..
 
-# Variables d'environnement
+# Environment variables
 cp .env.example .env
-# Éditer .env : AUTH_JWT_SECRET, ADMIN_PASSWORD, USER_PASSWORD
+# Edit .env: AUTH_JWT_SECRET, ADMIN_PASSWORD, USER_PASSWORD
 
-# Initialiser la base de données
+# Initialize the database
 cd backend && npm run init-db && cd ..
 
-# Démarrer les deux serveurs
-npm run dev          # Frontend : http://localhost:5173
-cd backend && npm run dev  # Backend : http://localhost:3001
+# Start both servers
+npm run dev          # Frontend: http://localhost:5173
+cd backend && npm run dev  # Backend: http://localhost:3001
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 game-dashboard/
-├── shared/          → types et utilitaires partagés front/back
-├── src/             → frontend React
-├── backend/         → API Express
+├── shared/          → shared types and utilities (front/back)
+├── src/             → React frontend
+├── backend/         → Express API
 ├── docs/            → documentation
-├── .env.example     → template variables d'environnement
+├── .env.example     → environment variables template
 └── Dockerfile
 ```
 
-## Variables d'environnement
+## Environment Variables
 
-Voir `.env.example` pour la liste complète. Variables obligatoires :
+See `.env.example` for the full list. Required variables:
 
-| Variable | Description | Exemple |
+| Variable | Description | Example |
 |---|---|---|
-| `AUTH_JWT_SECRET` | Secret de signature JWT (min 32 chars) | `openssl rand -hex 32` |
-| `ADMIN_PASSWORD` | Mot de passe administrateur | — |
-| `USER_PASSWORD` | Mot de passe utilisateur standard | — |
-| `PORT` | Port du serveur backend | `3001` |
-| `NODE_ENV` | Environnement (`development` / `production`) | `development` |
-| `CORS_ORIGINS` | Origines autorisées (séparées par `,`) | `http://localhost:5173` |
+| `AUTH_JWT_SECRET` | JWT signing secret (min 32 chars) | `openssl rand -hex 32` |
+| `ADMIN_PASSWORD` | Administrator password | — |
+| `USER_PASSWORD` | Standard user password | — |
+| `PORT` | Backend server port | `3001` |
+| `NODE_ENV` | Environment (`development` / `production`) | `development` |
+| `CORS_ORIGINS` | Allowed origins (comma-separated) | `http://localhost:5173` |
 
-Ne jamais commiter `.env`. Seul `.env.example` est versionné.
+Never commit `.env`. Only `.env.example` is versioned.
 
-## Workflow de développement
+## Development Workflow
 
 ### Branches
 
-- `main` — branche protégée, review obligatoire
-- `feature/<nom>` — nouvelles fonctionnalités
-- `fix/<nom>` — corrections de bugs
-- `chore/<nom>` — maintenance, dépendances
-- `docs/<nom>` — documentation uniquement
+- `main` — protected branch, review required
+- `feature/<name>` — new features
+- `fix/<name>` — bug fixes
+- `chore/<name>` — maintenance, dependencies
+- `docs/<name>` — documentation only
 
-### Process PR
+### PR Process
 
-1. Créer une branche depuis `main`
-2. Écrire les tests avant le code (TDD)
-3. Développer la feature
-4. Vérifier que tous les tests passent : `npm run test:run`
-5. Vérifier le lint : `npm run lint`
-6. Ouvrir une PR vers `main`
-7. Review obligatoire avant merge
-8. Après merge : supprimer la branche locale ET distante
+1. Create a branch from `main`
+2. Write tests before code (TDD)
+3. Develop the feature
+4. Verify all tests pass: `npm run test:run`
+5. Verify lint: `npm run lint`
+6. Open a PR towards `main`
+7. Review required before merge
+8. After merge: delete both local AND remote branch
 
 ```bash
-git push origin --delete ma-branche
-git branch -d ma-branche
+git push origin --delete my-branch
+git branch -d my-branch
 ```
 
-## Principe TDD
+## TDD Principle
 
-**Tests écrits avant le code.**
+**Tests written before code.**
 
-1. Écrire le test qui décrit le comportement attendu → il échoue (red)
-2. Écrire le code minimal pour le faire passer (green)
-3. Refactorer sans casser les tests (refactor)
+1. Write the test describing the expected behavior → it fails (red)
+2. Write the minimal code to make it pass (green)
+3. Refactor without breaking tests (refactor)
 
-Avantage : les tests documentent le comportement attendu et servent de filet de sécurité pour les refactorings futurs.
+Benefit: tests document expected behavior and serve as a safety net for future refactors.
 
-## Conventions de code
+## Code Conventions
 
 ### TypeScript
 
-- `strict: true` dans tous les tsconfig
-- Zéro `any` — utiliser `unknown`, types précis, ou `Omit<T, 'field'>`
-- Types importés depuis `@shared/types` ou `@/types` (qui réexporte shared)
-- Exception documentée : middleware d'erreur Express 5 (`error: any` — convention Express)
+- `strict: true` in all tsconfigs
+- Zero `any` — use `unknown`, precise types, or `Omit<T, 'field'>`
+- Types imported from `@shared/types` or `@/types` (which re-exports shared)
+- Documented exception: Express 5 error middleware (`error: any` — Express convention)
 
 ```ts
 // ✅ Correct
 async createPlayer(data: Omit<Player, 'player_id' | 'created_at'>): Promise<Player>
 
-// ❌ Interdit
+// ❌ Forbidden
 async createPlayer(data: any): Promise<any>
 ```
 
-### Nommage
+### Naming
 
-| Élément | Convention | Exemple |
+| Element | Convention | Example |
 |---|---|---|
-| Composants React | PascalCase | `GameCard.tsx` |
-| Vues (presenters) | PascalCase + suffixe `View` | `GamesPageView.tsx` |
-| Hooks | camelCase + préfixe `use` | `useGamesPage.ts` |
-| Services/Repositories | PascalCase + suffixe | `PlayerRepository.ts` |
+| React components | PascalCase | `GameCard.tsx` |
+| Views (presenters) | PascalCase + `View` suffix | `GamesPageView.tsx` |
+| Hooks | camelCase + `use` prefix | `useGamesPage.ts` |
+| Services/Repositories | PascalCase + suffix | `PlayerRepository.ts` |
 | Types | PascalCase | `Player`, `GameSession` |
 | Variables | camelCase | `gameList` |
-| Constantes | SCREAMING_SNAKE_CASE | `MAX_PLAYERS` |
+| Constants | SCREAMING_SNAKE_CASE | `MAX_PLAYERS` |
 
 ### Imports
 
 ```ts
 // 1. React
 import React, { useState } from 'react'
-// 2. Bibliothèques externes
+// 2. External libraries
 import { useQuery } from '@tanstack/react-query'
-// 3. Imports internes absolus
+// 3. Absolute internal imports
 import { Player } from '@/types'
 import { playerApi } from '@/features/players/playerApi'
 import { queryKeys } from '@/shared/services/api/queryKeys'
-// 4. Imports relatifs
+// 4. Relative imports
 import './Component.css'
 ```
 
 ### Commits
 
-Format Conventional Commits :
+Conventional Commits format:
 ```
-feat: ajouter la sélection de personnages en session
-fix: corriger le calcul des stats joueur sur sessions coopératives
-chore: mettre à jour Vite 8.1
-docs: documenter le pattern repository
-test: ajouter les tests d'intégration SessionService
+feat: add character selection in session
+fix: correct player stats calculation for cooperative sessions
+chore: update Vite 8.1
+docs: document repository pattern
+test: add SessionService integration tests
 ```
 
-## Ajouter un champ en base de données
+## Adding a Database Field
 
-1. Créer un fichier de migration numéroté : `backend/database/migrations/00N_description.sql`
-2. Ajouter le champ dans `shared/types/index.ts`
-3. Mettre à jour le schéma Zod dans `backend/validation/schemas.ts`
-4. Mettre à jour le repository concerné
-5. Mettre à jour `docs/architecture/DATA_MAPPING.md`
-6. Écrire un test qui vérifie que la migration s'applique correctement
+1. Create a numbered migration file: `backend/database/migrations/00N_description.sql`
+2. Add the field in `shared/types/index.ts`
+3. Update the Zod schema in `backend/validation/schemas.ts`
+4. Update the relevant repository
+5. Update `docs/architecture/DATA_MAPPING.md`
+6. Write a test verifying the migration applies correctly
 
-## Ajouter un endpoint
+## Adding an Endpoint
 
-1. Ajouter le type dans `shared/types/index.ts` si nécessaire
-2. Créer/mettre à jour le schéma Zod dans `backend/validation/schemas.ts`
-3. Ajouter la méthode dans le repository
-4. Ajouter la logique dans le service
-5. Ajouter la route dans `backend/routes/`
-6. Enregistrer dans `server.ts`
-7. Écrire les tests (repository + service + route)
-8. Mettre à jour la doc OpenAPI (annotations JSDoc sur la route)
+1. Add the type in `shared/types/index.ts` if needed
+2. Create/update the Zod schema in `backend/validation/schemas.ts`
+3. Add the method in the repository
+4. Add the logic in the service
+5. Add the route in `backend/routes/`
+6. Register in `server.ts`
+7. Write tests (repository + service + route)
+8. Update the OpenAPI docs (JSDoc annotations on the route)
 
-## Ajouter une page frontend
+## Adding a Frontend Page
 
-L'architecture est **feature-based** : chaque fonctionnalité est co-localisée dans `src/features/<nom>/`.
+The architecture is **feature-based**: each feature is co-located in `src/features/<name>/`.
 
-1. Créer le dossier `src/features/<nom>/`
-2. Créer le hook `src/features/<nom>/use<NomPage>.ts`
-3. Créer le container `src/features/<nom>/<NomPage>.tsx`
-4. Créer la view `src/features/<nom>/<NomPage>View.tsx`
-5. Si dialogs nécessaires : créer `src/features/<nom>/dialogs/`
-6. Si nouveau domaine API : créer `src/features/<nom>/<nom>Api.ts`
-7. Ajouter la route dans `src/App.tsx`
-8. Ajouter les clés de cache dans `src/shared/services/api/queryKeys.ts`
-9. Écrire les tests (hook + composant + intégration)
+1. Create the folder `src/features/<name>/`
+2. Create the hook `src/features/<name>/use<NamePage>.ts`
+3. Create the container `src/features/<name>/<NamePage>.tsx`
+4. Create the view `src/features/<name>/<NamePage>View.tsx`
+5. If dialogs are needed: create `src/features/<name>/dialogs/`
+6. If a new API domain: create `src/features/<name>/<name>Api.ts`
+7. Add the route in `src/App.tsx`
+8. Add cache keys in `src/shared/services/api/queryKeys.ts`
+9. Write tests (hook + component + integration)
 
-**Règles d'architecture :**
-- Une feature n'importe **jamais** depuis une autre feature (exception : `features/bgg/` est importable par `features/games/` et `features/settings/`)
-- Tout module utilisé par 2+ features → `src/shared/`
-- Ne pas créer de fichiers dans les anciens dossiers `src/components/`, `src/views/`, `src/hooks/` (supprimés)
+**Architecture rules:**
+- A feature **never** imports from another feature (exception: `features/bgg/` is importable by `features/games/` and `features/settings/`)
+- Any module used by 2+ features → `src/shared/`
+- Do not create files in the old `src/components/`, `src/views/`, `src/hooks/` folders (removed)
 
 ## Tests
 
-### Commandes
+### Commands
 
 ```bash
 npm run test:run        # One-shot (frontend)
 npm test                # Watch mode (frontend)
-npm run test:coverage   # Couverture (seuil 80%)
+npm run test:coverage   # Coverage (80% threshold)
 
 cd backend
 npm run test:run        # One-shot (backend)
@@ -206,32 +206,32 @@ npm run test:run        # One-shot (backend)
 ```
 src/shared/__tests__/
 ├── unit/
-│   ├── technical/      → fonctions pures, utils, formatters
-│   └── functional/     → hooks et composants
-├── integration/        → flux complets avec MSW
-├── fixtures/           → données réalistes (Gloomhaven, Wingspan, Catan)
+│   ├── technical/      → pure functions, utils, formatters
+│   └── functional/     → hooks and components
+├── integration/        → full flows with MSW
+├── fixtures/           → realistic data (Gloomhaven, Wingspan, Catan)
 ├── mocks/              → MSW handlers + server setup
 └── utils/              → test-utils.tsx (render helpers)
 
 backend/__tests__/
 ├── unit/
-│   ├── services/       → services avec repositories mockés
-│   └── repositories/   → SQL contre DB SQLite in-memory
-├── integration/        → routes HTTP complètes (supertest)
+│   ├── services/       → services with mocked repositories
+│   └── repositories/   → SQL against in-memory SQLite DB
+├── integration/        → full HTTP routes (supertest)
 └── fixtures/
 ```
 
-### Règles
+### Rules
 
-- Fixtures réalistes — pas de données génériques ("test", "foo", 123)
-- Repositories testés contre une vraie DB SQLite in-memory
-- Services testés avec repositories mockés (injection de dépendance)
-- Chaque test est indépendant (pas d'état partagé entre tests)
+- Realistic fixtures — no generic data ("test", "foo", 123)
+- Repositories tested against a real in-memory SQLite DB
+- Services tested with mocked repositories (dependency injection)
+- Each test is independent (no shared state between tests)
 
-## Sécurité
+## Security
 
-- Ne jamais commiter de secrets (`.env`, tokens, mots de passe)
-- Vérifier `npm audit` avant chaque PR : `npm audit && cd backend && npm audit`
-- Signaler une vulnérabilité en créant une issue privée (pas en PR publique)
+- Never commit secrets (`.env`, tokens, passwords)
+- Check `npm audit` before every PR: `npm audit && cd backend && npm audit`
+- Report a vulnerability by creating a private issue (not a public PR)
 
-Voir `docs/security/SECURITY.md` pour le modèle de menace complet.
+See `docs/security/SECURITY.md` for the full threat model.

@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document describes the database schema for the Board Game Score Tracker. SQLite with `better-sqlite3`. Migrations numérotées appliquées au démarrage (001 → 014).
+This document describes the database schema for the Board Game Score Tracker. SQLite with `better-sqlite3`. Numbered migrations applied at startup (001 → 014).
 
-**Tables actives :** `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `players_play`, `bgg_catalog`, `bgg_catalog_language`, `labels`, `refresh_tokens`, `log_import`, `schema_version`
+**Active tables:** `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `players_play`, `bgg_catalog`, `bgg_catalog_language`, `labels`, `refresh_tokens`, `log_import`, `schema_version`
 
-**Vues SQL :** `player_statistics`, `game_statistics`
+**SQL views:** `player_statistics`, `game_statistics`
 
 ## Tables
 
@@ -17,31 +17,31 @@ Stores information about individual players in the system.
 CREATE TABLE players (
     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
     player_name TEXT NOT NULL,
-    pseudo TEXT, -- alias unique (ajouté via runMigrations(), UNIQUE INDEX idx_players_pseudo COLLATE NOCASE)
+    pseudo TEXT, -- unique alias (added via runMigrations(), UNIQUE INDEX idx_players_pseudo COLLATE NOCASE)
     avatar TEXT, -- URL to avatar image
-    games_played INTEGER DEFAULT 0,  -- ⚠️ voir note dette technique ci-dessous
-    wins INTEGER DEFAULT 0,           -- ⚠️ voir note dette technique ci-dessous
-    total_score INTEGER DEFAULT 0,    -- ⚠️ voir note dette technique ci-dessous
-    average_score REAL DEFAULT 0.0,   -- ⚠️ voir note dette technique ci-dessous
+    games_played INTEGER DEFAULT 0,  -- ⚠️ see technical debt note below
+    wins INTEGER DEFAULT 0,           -- ⚠️ see technical debt note below
+    total_score INTEGER DEFAULT 0,    -- ⚠️ see technical debt note below
+    average_score REAL DEFAULT 0.0,   -- ⚠️ see technical debt note below
     favorite_game TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-> ⚠️ **Dette technique — colonnes stats dénormalisées**
+> ⚠️ **Technical Debt — denormalized stats columns**
 >
-> Les colonnes `games_played`, `wins`, `total_score`, `average_score` sont **dupliquées** : elles existent dans la table `players` **et** sont recalculées dynamiquement dans la vue `player_statistics` à partir des données réelles de `session_players`.
+> The columns `games_played`, `wins`, `total_score`, `average_score` are **duplicated**: they exist in the `players` table **and** are dynamically recalculated in the `player_statistics` view from real `session_players` data.
 >
-> **Situation actuelle :** le backend lit toujours via la vue (`player_statistics`), jamais depuis les colonnes stockées. Les colonnes de la table restent donc à leur valeur par défaut (`0`) — elles ne sont jamais mises à jour par le système de sessions. Il n'y a aucun trigger ni logique applicative qui les synchronise.
+> **Current situation:** the backend always reads via the view (`player_statistics`), never from the stored columns. The table columns therefore remain at their default value (`0`) — they are never updated by the session system. There is no trigger or application logic that synchronizes them.
 >
-> **Conséquence :** ces colonnes sont mortes en lecture. Toute valeur affichée provient de la vue.
+> **Consequence:** these columns are dead on read. All displayed values come from the view.
 >
-> **Décision à prendre :**
-> - **Option A (recommandée) — supprimer les colonnes de `players`**, utiliser uniquement la vue. Source de vérité unique, pas de risque de désynchronisation.
-> - **Option B — conserver et synchroniser** : mettre à jour les colonnes à chaque création/modification de session (via trigger SQL ou code applicatif). Redondant mais parfois utile pour les perfs sur très gros volume.
+> **Decision needed:**
+> - **Option A (recommended) — drop the columns from `players`**, use only the view. Single source of truth, no desync risk.
+> - **Option B — keep and sync**: update the columns on each session creation/modification (via SQL trigger or application code). Redundant but sometimes useful for performance at very large scale.
 >
-> **Statut :** non tranché. Conserver pour l'instant (rétrocompatibilité de l'API), à nettoyer lors d'un sprint dédié.
+> **Status:** unresolved. Kept for now (API backward compatibility), to be cleaned up in a dedicated sprint.
 
 ### 2. Games Table
 Stores comprehensive information about board games.
@@ -50,8 +50,8 @@ Stores comprehensive information about board games.
 CREATE TABLE games (
     game_id INTEGER PRIMARY KEY AUTOINCREMENT,
     bgg_id INTEGER UNIQUE, -- BoardGameGeek ID
-    thumbnail TEXT, -- URL miniature BGG
-    playing_time INTEGER, -- durée typique en minutes
+    thumbnail TEXT, -- BGG thumbnail URL
+    playing_time INTEGER, -- typical duration in minutes
     min_playtime INTEGER,
     max_playtime INTEGER,
     categories TEXT, -- JSON array
@@ -78,7 +78,7 @@ CREATE TABLE games (
     supports_hybrid BOOLEAN DEFAULT FALSE,
     has_expansion BOOLEAN DEFAULT FALSE,
     has_characters BOOLEAN DEFAULT FALSE,
-    is_expansion INTEGER DEFAULT 0, -- 1 si ce jeu est lui-même une extension
+    is_expansion INTEGER DEFAULT 0, -- 1 if this game is itself an expansion
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -201,7 +201,7 @@ GROUP BY g.game_id, g.name, g.image, g.min_players, g.max_players,
 ```
 
 ### 9. Labels Table
-Stores i18n labels for all UI strings, par locale.
+Stores i18n labels for all UI strings, per locale.
 
 ```sql
 CREATE TABLE IF NOT EXISTS labels (
@@ -212,10 +212,10 @@ CREATE TABLE IF NOT EXISTS labels (
 );
 ```
 
-**Usage :** `GET /api/v1/labels?locale=fr` retourne tous les labels pour la locale demandée. Fallback offline via `src/shared/i18n/en.json`. Labels ajoutés/modifiés uniquement via migrations numérotées.
+**Usage:** `GET /api/v1/labels?locale=fr` returns all labels for the requested locale. Offline fallback via `src/shared/i18n/en.json`. Labels added/modified only via numbered migrations.
 
 ### 10. Refresh Tokens Table
-Stocke les refresh tokens pour la rotation JWT.
+Stores refresh tokens for JWT rotation.
 
 ```sql
 CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -230,10 +230,10 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 ```
 
-**Mécanisme :** à chaque refresh, l'ancien token est marqué `revoked = 1` et un nouveau est émis. Si un token révoqué est réutilisé, toute la famille est révoquée (détection de vol).
+**Mechanism:** on each refresh, the old token is marked `revoked = 1` and a new one is issued. If a revoked token is reused, the entire family is revoked (theft detection).
 
 ### 11. BGG Catalog Language Table
-Noms localisés des jeux BGG (enrichissement Wikidata).
+Localized names for BGG games (Wikidata enrichment).
 
 ```sql
 CREATE TABLE IF NOT EXISTS bgg_catalog_language (
@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS bgg_catalog_language (
 );
 ```
 
-**Usage :** peuplée par `POST /api/v1/bgg/enrich-names` (admin) via requêtes SPARQL Wikidata. Consultée lors de la recherche BGG pour proposer des noms localisés.
+**Usage:** populated by `POST /api/v1/bgg/enrich-names` (admin) via Wikidata SPARQL queries. Consulted during BGG search to provide localized names.
 
 ## Indexes
 
@@ -303,46 +303,46 @@ CREATE INDEX idx_game_characters_game_id ON game_characters(game_id);
 
 ## BGG Catalog Table
 
-Table catalogue locale contenant l'ensemble des jeux BGG, importée depuis le dump CSV mensuel de BoardGameGeek. Permet une recherche full-text et un filtre par année/extension sans dépendre de l'API geekdo en temps réel.
+Local catalog table containing all BGG games, imported from BoardGameGeek's monthly CSV dump. Enables full-text search and filtering by year/expansion without depending on the geekdo API in real time.
 
 ```sql
 CREATE TABLE IF NOT EXISTS bgg_catalog (
     bgg_id         INTEGER PRIMARY KEY,  -- BGG ID (source: CSV dump)
-    name           TEXT NOT NULL,         -- Nom du jeu
-    year_published INTEGER,               -- Année de publication (nullable)
-    is_expansion   INTEGER NOT NULL DEFAULT 0  -- 0 = jeu de base, 1 = extension
+    name           TEXT NOT NULL,         -- Game name
+    year_published INTEGER,               -- Publication year (nullable)
+    is_expansion   INTEGER NOT NULL DEFAULT 0  -- 0 = base game, 1 = expansion
 );
 CREATE INDEX IF NOT EXISTS idx_bgg_catalog_name ON bgg_catalog(name);
 ```
 
-**Usage :** La table est peuplée via `POST /api/v1/bgg/import-catalog` (CSV upload admin dans Settings). La recherche BGG (`BGGSearch`) interroge `bgg_catalog` + `bgg_catalog_language` en local. Au clic sur un résultat, `getGameDetails(bgg_id)` appelle toujours l'API geekdo pour les métadonnées complètes (image, mécaniques, etc.).
+**Usage:** The table is populated via `POST /api/v1/bgg/import-catalog` (CSV admin upload in Settings). BGG search (`BGGSearch`) queries `bgg_catalog` + `bgg_catalog_language` locally. On clicking a result, `getGameDetails(bgg_id)` always calls the geekdo API for full metadata (image, mechanics, etc.).
 
-**Source :** `boardgames_ranks.csv` — dump mensuel BGG (~175k lignes, colonnes : id, name, yearpublished, rank, bayesaverage, is_expansion).
+**Source:** `boardgames_ranks.csv` — monthly BGG dump (~175k rows, columns: id, name, yearpublished, rank, bayesaverage, is_expansion).
 
 ## Import / Export Log Table
 
-Table à ligne unique (toujours `id = 1`) servant de journal des dernières opérations de data management. Mise à jour automatiquement lors de chaque opération.
+Single-row table (always `id = 1`) serving as a log of the latest data management operations. Automatically updated on each operation.
 
 ```sql
 CREATE TABLE IF NOT EXISTS log_import (
     id                      INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-    bgg_catalog_imported_at TIMESTAMP,  -- dernière import catalogue BGG
-    data_exported_at        TIMESTAMP,  -- dernier export des données
-    data_imported_at        TIMESTAMP   -- dernier import des données
+    bgg_catalog_imported_at TIMESTAMP,  -- last BGG catalog import
+    data_exported_at        TIMESTAMP,  -- last data export
+    data_imported_at        TIMESTAMP   -- last data import
 );
 ```
 
-**Colonnes :**
-- `bgg_catalog_imported_at` : mis à jour par `importBggCatalog()` dans `DatabaseManager`
-- `data_exported_at` : mis à jour lors de l'implémentation future de l'export données
-- `data_imported_at` : mis à jour lors de l'implémentation future de l'import données
+**Columns:**
+- `bgg_catalog_imported_at`: updated by `importBggCatalog()` in `DatabaseManager`
+- `data_exported_at`: updated on future data export implementation
+- `data_imported_at`: updated on future data import implementation
 
-**Méthodes DatabaseManager :** `getImportLog()`, `updateImportLog(field)`
+**DatabaseManager methods:** `getImportLog()`, `updateImportLog(field)`
 
 ## Migration Notes
 
-- Ne jamais modifier un fichier de migration déjà appliqué — créer un nouveau fichier numéroté
-- Le runner `DatabaseConnection.ts` vérifie `MAX(version)` dans `schema_version` et applique les fichiers manquants dans une transaction atomique
-- Les labels i18n sont ajoutés/modifiés uniquement via des migrations (jamais en direct en BDD)
-- Nommage BDD : `snake_case`, préfixe entité (`game_plays`, `players_play`)
-- L'enrichissement Wikidata (`bgg_catalog_language`) peut être relancé manuellement depuis Settings (admin)
+- Never modify an already-applied migration file — create a new numbered file
+- The `DatabaseConnection.ts` runner checks `MAX(version)` in `schema_version` and applies missing files in an atomic transaction
+- i18n labels are added/modified only via migrations (never directly in the DB)
+- DB naming: `snake_case`, entity prefix (`game_plays`, `players_play`)
+- Wikidata enrichment (`bgg_catalog_language`) can be re-triggered manually from Settings (admin)

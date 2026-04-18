@@ -1,27 +1,27 @@
-# Documentation des Mappages de Champs : Frontend
+# Field Mapping Documentation: Frontend
 
-## Vue d'ensemble
+## Overview
 
-Ce document présente les correspondances entre les interfaces frontend et la base de données pour le projet Board Game Dashboard.
+This document presents the mappings between frontend interfaces and the database for the Board Game Dashboard project.
 
-## Méthodologie d'Audit
+## Audit Methodology
 
-✅ **Correspondance exacte** - Le champ existe avec le même nom et type  
-🔄 **Champ calculé** - Champ virtuel généré côté frontend  
-🔗 **Relation** - Champ relié à une autre table
+✅ **Exact match** - Field exists with the same name and type  
+🔄 **Computed field** - Virtual field generated on the frontend  
+🔗 **Relation** - Field linked to another table
 
 ---
 
-## 1. INTERFACE PLAYER
+## 1. PLAYER INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface Player {
   player_id: number
   player_name: string
-  pseudo: string         // alias/pseudo unique (ajouté via migration runMigrations())
-  avatar?: string        // optionnel (aligné BDD)
-  stats?: string         // champ virtuel frontend uniquement
+  pseudo: string         // unique alias/pseudo (added via migration runMigrations())
+  avatar?: string        // optional (aligned with DB)
+  stats?: string         // frontend-only virtual field
   games_played: number
   wins: number
   total_score: number
@@ -32,34 +32,34 @@ interface Player {
 }
 ```
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `player_id` | `player_id` | INTEGER | ✅ Correspondance exacte | |
-| `player_name` | `player_name` | VARCHAR(100) | ✅ Correspondance exacte | |
-| `pseudo` | `pseudo` | TEXT UNIQUE | ✅ Correspondance exacte | Ajouté via `runMigrations()` dans DatabaseManager |
-| `avatar` | `avatar` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `games_played` | `games_played` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
-| `wins` | `wins` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
-| `total_score` | `total_score` | INTEGER | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
-| `average_score` | `average_score` | DECIMAL(5,2) | ⚠️ Dupliqué — voir note | Colonne en table ET vue `player_statistics` |
-| `favorite_game` | `favorite_game` | VARCHAR(255) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
-| `updated_at` | `updated_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
-| `stats` | 🔄 Calculé frontend | Champ virtuel | 🔄 Champ virtuel pour affichage | Format: "2,100 pts" |
+| `player_id` | `player_id` | INTEGER | ✅ Exact match | |
+| `player_name` | `player_name` | VARCHAR(100) | ✅ Exact match | |
+| `pseudo` | `pseudo` | TEXT UNIQUE | ✅ Exact match | Added via `runMigrations()` in DatabaseManager |
+| `avatar` | `avatar` | TEXT | ✅ Exact match | Optional on both sides |
+| `games_played` | `games_played` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
+| `wins` | `wins` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
+| `total_score` | `total_score` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
+| `average_score` | `average_score` | DECIMAL(5,2) | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
+| `favorite_game` | `favorite_game` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
+| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
+| `stats` | 🔄 Frontend computed | Virtual field | 🔄 Virtual field for display | Format: "2,100 pts" |
 
-> ⚠️ **Dette technique — stats dénormalisées dans `players`**
+> ⚠️ **Technical Debt — denormalized stats in `players`**
 >
-> `games_played`, `wins`, `total_score`, `average_score` sont présents à la fois comme colonnes dans la table `players` **et** comme colonnes calculées dans la vue SQL `player_statistics` (calculées depuis `session_players`).
-> Le backend lit **toujours** via la vue — les colonnes stockées dans `players` restent à `0` en permanence car aucun trigger ni code applicatif ne les met à jour.
-> **À résoudre :** supprimer ces 4 colonnes de la table `players` (Option A, recommandée) ou les synchroniser via trigger (Option B). Voir `database-structure.md` pour le détail.
+> `games_played`, `wins`, `total_score`, `average_score` exist both as columns in the `players` table **and** as computed columns in the SQL view `player_statistics` (calculated from `session_players`).
+> The backend **always** reads via the view — the stored columns in `players` remain at `0` permanently because no trigger or application code updates them.
+> **To resolve:** drop these 4 columns from the `players` table (Option A, recommended) or sync them via trigger (Option B). See `database-structure.md` for details.
 
 ---
 
-## 2. INTERFACE GAME
+## 2. GAME INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface Game {
   game_id: number
@@ -102,54 +102,54 @@ interface Game {
 }
 ```
 
-> **Note :** `game_type TEXT CHECK('competitive'|'cooperative'|'campaign'|'hybrid') DEFAULT 'competitive'` est présent dans `schema.sql` mais absent de l'interface TypeScript `Game`. La valeur par défaut BDD (`'competitive'`) garantit la cohérence. Ce champ sera ajouté à l'interface dans une future itération (voir ROADMAP).
+> **Note:** `game_type TEXT CHECK('competitive'|'cooperative'|'campaign'|'hybrid') DEFAULT 'competitive'` is present in `schema.sql` but absent from the TypeScript `Game` interface. The DB default value (`'competitive'`) ensures consistency. This field will be added to the interface in a future iteration (see ROADMAP).
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `game_id` | `game_id` | INTEGER | ✅ Correspondance exacte | |
-| `bgg_id` | `bgg_id` | INTEGER | ✅ Correspondance exacte | Optionnel, UNIQUE |
-| `thumbnail` | `thumbnail` | TEXT | ✅ Correspondance exacte | Optionnel — URL miniature BGG |
-| `playing_time` | `playing_time` | INTEGER | ✅ Correspondance exacte | Optionnel — durée typique (minutes) |
-| `min_playtime` | `min_playtime` | INTEGER | ✅ Correspondance exacte | Optionnel |
-| `max_playtime` | `max_playtime` | INTEGER | ✅ Correspondance exacte | Optionnel |
-| `categories` | `categories` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
-| `mechanics` | `mechanics` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
-| `families` | `families` | TEXT (JSON) | ✅ Correspondance exacte | Optionnel — tableau JSON |
-| `name` | `name` | VARCHAR(255) | ✅ Correspondance exacte | |
-| `description` | `description` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `image` | `image` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `min_players` | `min_players` | INTEGER | ✅ Correspondance exacte | |
-| `max_players` | `max_players` | INTEGER | ✅ Correspondance exacte | |
-| `duration` | `duration` | VARCHAR(50) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `difficulty` | `difficulty` | VARCHAR(50) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `category` | `category` | VARCHAR(100) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `year_published` | `year_published` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `publisher` | `publisher` | VARCHAR(255) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `designer` | `designer` | VARCHAR(255) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `bgg_rating` | `bgg_rating` | DECIMAL(3,1) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `weight` | `weight` | DECIMAL(3,1) | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `age_min` | `age_min` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `supports_cooperative` | `supports_cooperative` | BOOLEAN | ✅ Correspondance exacte | |
-| `supports_competitive` | `supports_competitive` | BOOLEAN | ✅ Correspondance exacte | |
-| `supports_campaign` | `supports_campaign` | BOOLEAN | ✅ Correspondance exacte | |
-| `supports_hybrid` | `supports_hybrid` | BOOLEAN | ✅ Correspondance exacte | |
-| `has_expansion` | `has_expansion` | BOOLEAN | ✅ Correspondance exacte | |
-| `has_characters` | `has_characters` | BOOLEAN | ✅ Correspondance exacte | |
-| `is_expansion` | `is_expansion` | INTEGER (0/1) | ✅ Correspondance exacte | Vrai si ce jeu est lui-même une extension |
-| — | `game_type` | TEXT CHECK | ⚠️ Absent du type TS | Présent en BDD (DEFAULT 'competitive') — voir note ci-dessus |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
-| `updated_at` | `updated_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
-| `expansions` | 🔗 Relation | Table séparée | 🔗 Relation JOIN | Table `game_expansions` |
-| `characters` | 🔗 Relation | Table séparée | 🔗 Relation JOIN | Table `game_characters` |
-| `players` | 🔄 Calculé frontend | Champ virtuel | 🔄 Champ virtuel pour affichage | Format: "2-4" |
+| `game_id` | `game_id` | INTEGER | ✅ Exact match | |
+| `bgg_id` | `bgg_id` | INTEGER | ✅ Exact match | Optional, UNIQUE |
+| `thumbnail` | `thumbnail` | TEXT | ✅ Exact match | Optional — BGG thumbnail URL |
+| `playing_time` | `playing_time` | INTEGER | ✅ Exact match | Optional — typical duration (minutes) |
+| `min_playtime` | `min_playtime` | INTEGER | ✅ Exact match | Optional |
+| `max_playtime` | `max_playtime` | INTEGER | ✅ Exact match | Optional |
+| `categories` | `categories` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
+| `mechanics` | `mechanics` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
+| `families` | `families` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
+| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
+| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
+| `image` | `image` | TEXT | ✅ Exact match | Optional on both sides |
+| `min_players` | `min_players` | INTEGER | ✅ Exact match | |
+| `max_players` | `max_players` | INTEGER | ✅ Exact match | |
+| `duration` | `duration` | VARCHAR(50) | ✅ Exact match | Optional on both sides |
+| `difficulty` | `difficulty` | VARCHAR(50) | ✅ Exact match | Optional on both sides |
+| `category` | `category` | VARCHAR(100) | ✅ Exact match | Optional on both sides |
+| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional on both sides |
+| `publisher` | `publisher` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
+| `designer` | `designer` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
+| `bgg_rating` | `bgg_rating` | DECIMAL(3,1) | ✅ Exact match | Optional on both sides |
+| `weight` | `weight` | DECIMAL(3,1) | ✅ Exact match | Optional on both sides |
+| `age_min` | `age_min` | INTEGER | ✅ Exact match | Optional on both sides |
+| `supports_cooperative` | `supports_cooperative` | BOOLEAN | ✅ Exact match | |
+| `supports_competitive` | `supports_competitive` | BOOLEAN | ✅ Exact match | |
+| `supports_campaign` | `supports_campaign` | BOOLEAN | ✅ Exact match | |
+| `supports_hybrid` | `supports_hybrid` | BOOLEAN | ✅ Exact match | |
+| `has_expansion` | `has_expansion` | BOOLEAN | ✅ Exact match | |
+| `has_characters` | `has_characters` | BOOLEAN | ✅ Exact match | |
+| `is_expansion` | `is_expansion` | INTEGER (0/1) | ✅ Exact match | True if this game is itself an expansion |
+| — | `game_type` | TEXT CHECK | ⚠️ Absent from TS type | Present in DB (DEFAULT 'competitive') — see note above |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
+| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
+| `expansions` | 🔗 Relation | Separate table | 🔗 JOIN relation | `game_expansions` table |
+| `characters` | 🔗 Relation | Separate table | 🔗 JOIN relation | `game_characters` table |
+| `players` | 🔄 Frontend computed | Virtual field | 🔄 Virtual field for display | Format: "2-4" |
 
 ---
 
-## 3. INTERFACE GAMEEXPANSION
+## 3. GAMEEXPANSION INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface GameExpansion {
   expansion_id?: number
@@ -161,51 +161,51 @@ interface GameExpansion {
 }
 ```
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `expansion_id` | `expansion_id` | INTEGER | ✅ Correspondance exacte | Optionnel en frontend (auto-gen) |
-| `game_id` | `game_id` | INTEGER | ✅ Correspondance exacte | Optionnel en frontend (fourni par parent) |
-| `bgg_expansion_id` | `bgg_expansion_id` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `name` | `name` | VARCHAR(255) | ✅ Correspondance exacte | |
-| `year_published` | `year_published` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `description` | `description` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
+| `expansion_id` | `expansion_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
+| `game_id` | `game_id` | INTEGER | ✅ Exact match | Optional on frontend (provided by parent) |
+| `bgg_expansion_id` | `bgg_expansion_id` | INTEGER | ✅ Exact match | Optional on both sides |
+| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
+| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional on both sides |
+| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
 
 ---
 
-## 4. INTERFACE GAMECHARACTER
+## 4. GAMECHARACTER INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface GameCharacter {
   character_id?: number
   game_id?: number
   character_key: string
   name: string
-  description?: string  // optionnel (aligné BDD)
+  description?: string  // optional (aligned with DB)
   avatar?: string
-  abilities: string[]   // requis, stocké en JSON en BDD
+  abilities: string[]   // required, stored as JSON in DB
 }
 ```
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `character_id` | `character_id` | INTEGER | ✅ Correspondance exacte | Optionnel en frontend (auto-gen) |
-| `game_id` | `game_id` | INTEGER | ✅ Correspondance exacte | Optionnel en frontend (fourni par parent) |
-| `character_key` | `character_key` | VARCHAR(100) | ✅ Correspondance exacte | |
-| `name` | `name` | VARCHAR(255) | ✅ Correspondance exacte | |
-| `description` | `description` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `avatar` | `avatar` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `abilities` | `abilities` | TEXT (JSON) | ✅ Correspondance exacte | Array→JSON conversion |
+| `character_id` | `character_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
+| `game_id` | `game_id` | INTEGER | ✅ Exact match | Optional on frontend (provided by parent) |
+| `character_key` | `character_key` | VARCHAR(100) | ✅ Exact match | |
+| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
+| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
+| `avatar` | `avatar` | TEXT | ✅ Exact match | Optional on both sides |
+| `abilities` | `abilities` | TEXT (JSON) | ✅ Exact match | Array→JSON conversion |
 
 ---
 
-## 5. INTERFACE GAMESESSION
+## 5. GAMESESSION INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface GameSession {
   session_id?: number
@@ -219,24 +219,24 @@ interface GameSession {
 }
 ```
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `session_id` | `session_id` | INTEGER | ✅ Correspondance exacte | |
-| `game_id` | `game_id` | INTEGER | ✅ Correspondance exacte | |
-| `session_date` | `session_date` | TIMESTAMP | ✅ Correspondance exacte | |
-| `duration_minutes` | `duration_minutes` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `winner_player_id` | `winner_player_id` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `session_type` | `session_type` | VARCHAR(20) | ✅ Correspondance exacte | `competitive\|cooperative\|campaign\|hybrid` |
-| `notes` | `notes` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Correspondance exacte | Auto-généré en BDD |
+| `session_id` | `session_id` | INTEGER | ✅ Exact match | |
+| `game_id` | `game_id` | INTEGER | ✅ Exact match | |
+| `session_date` | `session_date` | TIMESTAMP | ✅ Exact match | |
+| `duration_minutes` | `duration_minutes` | INTEGER | ✅ Exact match | Optional on both sides |
+| `winner_player_id` | `winner_player_id` | INTEGER | ✅ Exact match | Optional on both sides |
+| `session_type` | `session_type` | VARCHAR(20) | ✅ Exact match | `competitive\|cooperative\|campaign\|hybrid` |
+| `notes` | `notes` | TEXT | ✅ Exact match | Optional on both sides |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
 
 ---
 
-## 6. INTERFACE SESSIONPLAYER
+## 6. SESSIONPLAYER INTERFACE
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface SessionPlayer {
   session_player_id?: number
@@ -250,26 +250,26 @@ interface SessionPlayer {
 }
 ```
 
-### Correspondances Base de Données
+### Database Mappings
 
-| **Champ Frontend** | **Champ BDD** | **Type BDD** | **Status** | **Notes** |
+| **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `session_player_id` | `session_player_id` | INTEGER | ✅ Correspondance exacte | Optionnel en frontend (auto-gen) |
-| `session_id` | `session_id` | INTEGER | ✅ Correspondance exacte | |
-| `player_id` | `player_id` | INTEGER | ✅ Correspondance exacte | |
-| `character_id` | `character_id` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `score` | `score` | INTEGER | ✅ Correspondance exacte | |
-| `placement` | `placement` | INTEGER | ✅ Correspondance exacte | Optionnel des deux côtés |
-| `is_winner` | `is_winner` | BOOLEAN | ✅ Correspondance exacte | |
-| `notes` | `notes` | TEXT | ✅ Correspondance exacte | Optionnel des deux côtés |
+| `session_player_id` | `session_player_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
+| `session_id` | `session_id` | INTEGER | ✅ Exact match | |
+| `player_id` | `player_id` | INTEGER | ✅ Exact match | |
+| `character_id` | `character_id` | INTEGER | ✅ Exact match | Optional on both sides |
+| `score` | `score` | INTEGER | ✅ Exact match | |
+| `placement` | `placement` | INTEGER | ✅ Exact match | Optional on both sides |
+| `is_winner` | `is_winner` | BOOLEAN | ✅ Exact match | |
+| `notes` | `notes` | TEXT | ✅ Exact match | Optional on both sides |
 
 ---
 
-## 7. INTERFACE CREATESESSIONPAYLOAD
+## 7. CREATESESSIONPAYLOAD INTERFACE
 
-Type dédié à la **création** d'une session. Distinct de `GameSession` car il inclut les joueurs et les champs spécifiques aux modes coopératif/campagne. N'est jamais retourné par le backend.
+Type dedicated to **creating** a session. Distinct from `GameSession` because it includes players and fields specific to cooperative/campaign modes. Never returned by the backend.
 
-### Interface Frontend
+### Frontend Interface
 ```typescript
 interface CreateSessionPayload {
   game_id: number
@@ -283,7 +283,7 @@ interface CreateSessionPayload {
     score: number
     is_winner: boolean
   }>
-  // Champs coopératif/campagne
+  // Cooperative/campaign fields
   team_score?: number
   team_success?: boolean
   difficulty_level?: string
@@ -291,43 +291,43 @@ interface CreateSessionPayload {
 }
 ```
 
-Ce type est utilisé exclusivement dans `ApiService.createSession()` et les hooks de création de session. Il ne correspond pas à une table BDD unique — le backend le décompose en `game_sessions` + `session_players`.
+This type is used exclusively in `ApiService.createSession()` and session creation hooks. It does not map to a single DB table — the backend decomposes it into `game_sessions` + `session_players`.
 
 ---
 
-## RÉSUMÉ DES CORRESPONDANCES
+## MAPPING SUMMARY
 
-### 🟢 Statut Global
-✅ **Table Players** : 100% mappée (inclus `pseudo` via migration)
-✅ **Table Games** : 100% mappée (inclus BGG étendu, `is_expansion`) — voir note `game_type`
-✅ **Table Game_Expansions** : 100% mappée
-✅ **Table Game_Characters** : 100% mappée
-✅ **Table Game_Sessions** : 100% mappée
-✅ **Table Session_Players** : 100% mappée
-✅ **CreateSessionPayload** : Type de création documenté (non persisté directement)
+### 🟢 Overall Status
+✅ **Players Table**: 100% mapped (including `pseudo` via migration)
+✅ **Games Table**: 100% mapped (including extended BGG, `is_expansion`) — see `game_type` note
+✅ **Game_Expansions Table**: 100% mapped
+✅ **Game_Characters Table**: 100% mapped
+✅ **Game_Sessions Table**: 100% mapped
+✅ **Session_Players Table**: 100% mapped
+✅ **CreateSessionPayload**: Creation type documented (not directly persisted)
 
-**Note :** Le champ `game_type` (BDD) n'a pas encore d'équivalent dans l'interface TypeScript `Game`. C'est un écart documenté et intentionnel — la valeur par défaut BDD garantit la cohérence des données.
+**Note:** The `game_type` field (DB) does not yet have an equivalent in the TypeScript `Game` interface. This is a documented, intentional gap — the DB default value ensures data consistency.
 
-### 🔄 Champs Calculés (Frontend uniquement)
-- **`stats`** (Players) : Calculé = `${total_score} pts`
-- **`players`** (Games) : Calculé = `${min_players}-${max_players}`
+### 🔄 Computed Fields (Frontend only)
+- **`stats`** (Players): Computed = `${total_score} pts`
+- **`players`** (Games): Computed = `${min_players}-${max_players}`
 
-### 🔄 Champs Automatiques (BDD uniquement)
-- **`created_at`** : Auto-rempli à la création avec CURRENT_TIMESTAMP
-- **`updated_at`** : Auto-rempli à la modification via triggers
+### 🔄 Automatic Fields (DB only)
+- **`created_at`**: Auto-filled at creation with CURRENT_TIMESTAMP
+- **`updated_at`**: Auto-filled on modification via triggers
 
 ---
 
-## 7. Règles de Gestion et Statut
+## 7. Business Rules and Status
 
-### Règles Clés
--   **Champs Automatiques (`created_at`, `updated_at`)**: Ces champs sont gérés exclusivement par la base de données via des valeurs par défaut (`CURRENT_TIMESTAMP`) et des triggers. Ils ne doivent pas être envoyés dans les requêtes `POST` ou `PUT` depuis le frontend.
--   **Champs Calculés (Frontend)**:
-    -   `Player.stats`: Généré côté client pour l'affichage (ex: `"2,100 pts"`).
-    -   `Game.players`: Généré côté client à partir de `min_players` et `max_players` (ex: `"2-4"`).
--   **Relations de Données**:
-    -   `Game.expansions`: Chargées depuis la table `game_expansions` si `Game.has_expansion` est `true`.
-    -   `Game.characters`: Chargées depuis la table `game_characters` si `Game.has_characters` est `true`.
+### Key Rules
+-   **Automatic Fields (`created_at`, `updated_at`)**: These fields are managed exclusively by the database via defaults (`CURRENT_TIMESTAMP`) and triggers. They must not be sent in `POST` or `PUT` requests from the frontend.
+-   **Computed Fields (Frontend)**:
+    -   `Player.stats`: Generated client-side for display (e.g. `"2,100 pts"`).
+    -   `Game.players`: Generated client-side from `min_players` and `max_players` (e.g. `"2-4"`).
+-   **Data Relations**:
+    -   `Game.expansions`: Loaded from the `game_expansions` table if `Game.has_expansion` is `true`.
+    -   `Game.characters`: Loaded from the `game_characters` table if `Game.has_characters` is `true`.
 
-### Statut Final
-🎯 **Alignement quasi-complet** : Toutes les interfaces frontend sont alignées avec le schéma BDD, à l'exception de `game_type` (écart documenté, intentionnel). Zéro `any` dans les interfaces. La structure est strictement typée de bout en bout (DB schema → `src/types/index.ts` → backend → frontend).
+### Final Status
+🎯 **Near-complete alignment**: All frontend interfaces are aligned with the DB schema, except for `game_type` (documented, intentional gap). Zero `any` in interfaces. The structure is strictly typed end-to-end (DB schema → `src/types/index.ts` → backend → frontend).

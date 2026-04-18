@@ -1,97 +1,97 @@
 # 🗺️ Roadmap — Board Game Dashboard
 
-**📈 Statut** : 340 tests (206 backend + 134 frontend) · Phase 3 en cours
+**📈 Status**: 340 tests (206 backend + 134 frontend) · Phase 3 in progress
 
 ---
 
-## 🧹 Dette Technique — Restante
+## 🧹 Technical Debt — Remaining
 
-- **`vitest.config.ts` backend — variables d'env de test** : `server.ts` exécute `createAuthService()` et `getDb()` au niveau module (effets de bord à l'import). Contourné via `backend/logger.ts`. Vraie solution : ajouter `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` dans `backend/vitest.config.ts`.
-- **MSW handler manquant** : `GET /api/v1/labels?locale=en` non intercepté dans certains tests (GamesPage, PlayersPage, StatsPages) — warning MSW à l'exécution, aucun test qui fail.
-- **Stats joueur (#23/#31)** : recent activity et performance overview vides — pas de endpoint `GET /api/v1/stats/players/:id/recent-plays` côté backend.
-- **`players` — 4 colonnes mortes** : `games_played`, `wins`, `total_score`, `average_score` existent dans la table `players` ET sont recalculées dynamiquement via la vue `player_statistics`. Le backend lit toujours via la vue — les colonnes stockées restent à `0`. Option recommandée : supprimer les 4 colonnes + nettoyage `CreatePlayerSchema` Zod. Non tranché — conservées pour rétrocompatibilité.
-
----
-
-## 🐛 Bugs — Restants
-
-- **`has_expansion`/`has_characters` non recalculés sur add/delete** : `addExpansion()` et `deleteExpansion()` ne mettent pas à jour le flag sur le jeu parent. Impact faible (getById() charge toujours les expansions), mais `getAll()` peut retourner `expansions: []` à tort. → [détail](changelog/sprint3-bgg-flags-recalculation.md)
-- **Labels EditGameDialog** : les valeurs BDD enum (`Beginner`, `Intermediate`, `competitive`…) s'affichent en anglais dans les formulaires d'édition. À corriger via maps centralisées `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consommées par `t()`.
-- **📅 Filtre par année BGG** : filtrage côté client sur les résultats geekdo (pas de paramètre serveur `yearpublished`). Faible priorité.
-- **🗄️ Index local BGG — recherche à brancher** : infrastructure livrée (PR #59). Reste : brancher `searchGames()` sur `bgg_catalog` (FTS5 à envisager pour 175k entrées). Une fois branché : ajouter champ année + case "inclure extensions" dans `BGGSearch`.
-- **🖼️ Thumbnails BGG non persistés** : jusqu'à 15 appels geekdo refaits à chaque recherche. Solution : table `bgg_thumbnails (bgg_id PK, thumbnail_url, fetched_at)` indépendante du cycle d'import CSV.
-- **🕒 `name_updated_at` dans `bgg_catalog_language`** : timestamp de dernière mise à jour du `name_en` — utile pour détecter les renames BGG et invalider les traductions. À envisager lors du sprint "catalogue local".
-- **🔽 Recherche BGG — autocomplete** : remplacer le champ texte par un composant autocomplete (saisie libre + filtre sur noms en/fr/es). La sélection doit transmettre le `bgg_id`, pas le nom — évite les problèmes d'homonymes.
+- **`vitest.config.ts` backend — test env variables**: `server.ts` calls `createAuthService()` and `getDb()` at module level (side effects on import). Worked around via `backend/logger.ts`. Real fix: add `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` in `backend/vitest.config.ts`.
+- **Missing MSW handler**: `GET /api/v1/labels?locale=en` not intercepted in some tests (GamesPage, PlayersPage, StatsPages) — MSW warning at runtime, no failing tests.
+- **Player stats (#23/#31)**: recent activity and performance overview empty — no `GET /api/v1/stats/players/:id/recent-plays` backend endpoint.
+- **`players` — 4 dead columns**: `games_played`, `wins`, `total_score`, `average_score` exist in the `players` table AND are dynamically recalculated via the `player_statistics` view. The backend always reads via the view — stored columns stay at `0`. Recommended option: drop the 4 columns + clean up `CreatePlayerSchema` Zod. Unresolved — kept for backward compatibility.
 
 ---
 
-## 🔒 Sécurité — Restante
+## 🐛 Bugs — Remaining
 
-- ⏳ `typescript` 5 → 6 — différé (ts-node, vitest, plugins pas encore compatibles)
-- ⏳ `eslint` 9 → 10 — différé (eslint-plugin-react-hooks et sonarjs pas encore compatibles)
+- **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
+- **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
+- **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
+- **🗄️ Local BGG index — search to wire up**: infrastructure delivered (PR #59). Remaining: connect `searchGames()` to `bgg_catalog` (FTS5 to consider for 175k entries). Once wired: add year field + "include expansions" toggle in `BGGSearch`.
+- **🖼️ BGG thumbnails not persisted**: up to 15 geekdo calls repeated on every search. Solution: `bgg_thumbnails (bgg_id PK, thumbnail_url, fetched_at)` table independent of the CSV import cycle.
+- **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
+- **🔽 BGG search — autocomplete**: replace the text field with an autocomplete component (free input + filter on en/fr/es names). Selection must transmit the `bgg_id`, not the name — avoids homonym issues.
 
 ---
 
-## 🎯 Phase en cours — Phase 3 : Finitions UX
+## 🔒 Security — Remaining
 
-Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), graphiques temporels + cache BGG backend à implémenter. → [voir détail](#-phase-3--finitions-ux)
+- ⏳ `typescript` 5 → 6 — deferred (ts-node, vitest, plugins not yet compatible)
+- ⏳ `eslint` 9 → 10 — deferred (eslint-plugin-react-hooks and sonarjs not yet compatible)
 
 ---
 
-## Plan d'évolution
+## 🎯 Current Phase — Phase 3: UX Polish
 
-### ✅ Phase 1 — Foundation (terminée)
+Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`), time-series charts + backend BGG cache to implement. → [see detail](#-phase-3--ux-polish)
+
+---
+
+## Evolution Plan
+
+### ✅ Phase 1 — Foundation (complete)
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
 <details>
 <summary><b>🏗️ Architecture & Infrastructure</b></summary>
 
-- ✅ Architecture Frontend : pattern Container/Presenter, séparation logique/présentation
-- ✅ Backend API RESTful : Express + endpoints CRUD complets
-- ✅ Architecture relationnelle : tables `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `play_players`
-- ✅ Validation Zod : schémas complets + middleware sur toutes les routes
-- ✅ Vues SQL : `player_statistics`, `game_statistics` — résolution N+1
+- ✅ Frontend Architecture: Container/Presenter pattern, logic/presentation separation
+- ✅ RESTful Backend API: Express + complete CRUD endpoints
+- ✅ Relational architecture: `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `play_players` tables
+- ✅ Zod validation: complete schemas + middleware on all routes
+- ✅ SQL views: `player_statistics`, `game_statistics` — N+1 resolution
 
 </details>
 
 <details>
-<summary><b>🏗️ Sprint 0 — Refactoring architecture complète (avril 2026)</b></summary>
+<summary><b>🏗️ Sprint 0 — Full Architecture Refactoring (April 2026)</b></summary>
 
-- ✅ `shared/types/index.d.ts` — source de vérité unique frontend + backend
-- ✅ Migrations SQL numérotées (001–022) + runner dans `DatabaseConnection.ts`
-- ✅ `DatabaseManager.ts` + `interfaces.ts` supprimés → `DatabaseConnection` + Repositories
-- ✅ Architecture en couches : Routes → Services → Repositories → DatabaseConnection
-- ✅ `server.ts` réécrit : `/api/v1`, Helmet, pino, rate limiting, routes séparées
-- ✅ JWT middleware : `auth.ts` (JWT signé, HttpOnly cookie), `requireRole.ts` (rôles `admin`/`user`)
-- ✅ Refresh tokens avec rotation de famille (`RefreshTokenRepository`)
-- ✅ Frontend React Query v5 : toutes les pages en hooks zero-prop (`useXxxPage`)
-- ✅ React Router v7 : shell `App.tsx`, `AuthContext`, `Layout`, `useNavigationAdapter`
-- ✅ `api/*` split : `playerApi.ts`, `gameApi.ts`, `sessionApi.ts`, `statsApi.ts`, `authApi.ts`, `bggApi.ts`, `queryKeys.ts`
-- ✅ Architecture feature-based : `src/features/<nom>/` co-localisant container + view + hook + api + dialogs
-
-</details>
-
-<details>
-<summary><b>🧪 Tests & Qualité</b></summary>
-
-- ✅ Infrastructure : Vitest + React Testing Library + MSW
-- ✅ **206/206 tests backend** (26 fichiers — repos, services, routes HTTP)
-- ✅ **134/134 tests frontend** (23 fichiers — hooks, flows, composants, services)
-- ✅ Hooks couverts : useGamesPage, usePlayersPage, useNewPlayPage, useDashboard, useGameStatsPage, usePlayerStatsPage
-- ✅ Routes HTTP : 8 suites supertest (auth, games, players, plays, stats, bgg, labels, data)
-- ✅ Flows CRUD : Players, Games, Plays, Stats, BGGSearch via MSW
+- ✅ `shared/types/index.d.ts` — single source of truth frontend + backend
+- ✅ Numbered SQL migrations (001–022) + runner in `DatabaseConnection.ts`
+- ✅ `DatabaseManager.ts` + `interfaces.ts` deleted → `DatabaseConnection` + Repositories
+- ✅ Layered architecture: Routes → Services → Repositories → DatabaseConnection
+- ✅ `server.ts` rewritten: `/api/v1`, Helmet, pino, rate limiting, separate routes
+- ✅ JWT middleware: `auth.ts` (signed JWT, HttpOnly cookie), `requireRole.ts` (`admin`/`user` roles)
+- ✅ Refresh tokens with family rotation (`RefreshTokenRepository`)
+- ✅ Frontend React Query v5: all pages in zero-prop hooks (`useXxxPage`)
+- ✅ React Router v7: `App.tsx` shell, `AuthContext`, `Layout`, `useNavigationAdapter`
+- ✅ `api/*` split: `playerApi.ts`, `gameApi.ts`, `sessionApi.ts`, `statsApi.ts`, `authApi.ts`, `bggApi.ts`, `queryKeys.ts`
+- ✅ Feature-based architecture: `src/features/<name>/` co-locating container + view + hook + api + dialogs
 
 </details>
 
 <details>
-<summary><b>🌍 Internationalisation DB-driven (PR #85, avril 2026)</b></summary>
+<summary><b>🧪 Tests & Quality</b></summary>
 
-- ✅ Table `labels(key, locale, value)` + endpoints `GET /api/v1/labels?locale=xx`
-- ✅ Hooks `useLabels` / `useLocale` / `useLocales` / `useApiReachable`
-- ✅ Migration complète : 9 composants, 6 migrations SQL (017-022), labels EN/FR
-- **Note** : traduire le *contenu* des entités (noms localisés, descriptions) impliquerait une refonte schéma BDD (`games_translations` etc.) — à investiguer si besoin confirmé.
+- ✅ Infrastructure: Vitest + React Testing Library + MSW
+- ✅ **206/206 backend tests** (26 files — repos, services, HTTP routes)
+- ✅ **134/134 frontend tests** (23 files — hooks, flows, components, services)
+- ✅ Covered hooks: useGamesPage, usePlayersPage, useNewPlayPage, useDashboard, useGameStatsPage, usePlayerStatsPage
+- ✅ HTTP routes: 8 supertest suites (auth, games, players, plays, stats, bgg, labels, data)
+- ✅ CRUD flows: Players, Games, Plays, Stats, BGGSearch via MSW
+
+</details>
+
+<details>
+<summary><b>🌍 DB-driven Internationalization (PR #85, April 2026)</b></summary>
+
+- ✅ `labels(key, locale, value)` table + `GET /api/v1/labels?locale=xx` endpoints
+- ✅ `useLabels` / `useLocale` / `useLocales` / `useApiReachable` hooks
+- ✅ Full migration: 9 components, 6 SQL migrations (017-022), EN/FR labels
+- **Note**: translating entity *content* (localized names, descriptions) would require a schema redesign (`games_translations` etc.) — to investigate if need is confirmed.
 
 </details>
 
@@ -99,156 +99,156 @@ Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), 
 
 ---
 
-### 🎯 Phase 2 — Finitions BGG & BDD (quasi-terminée)
+### 🎯 Phase 2 — BGG & DB Polish (nearly complete)
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
-- ✅ **Migration Schema BGG Étendu** (PR #55) : `thumbnail`, `playing_time`, `min/max_playtime`, `categories`, `mechanics`, `families`
-- ✅ **Migrations automatiques** : `runMigrations()` dans `DatabaseConnection.ts` — transactions SQLite
-- ✅ **Unification interfaces BGG** : `BGGGame`, `BGGSearchResult`, `BGGExpansion`, `BGGCharacter` dans `shared/types/index.d.ts` — voir [DEVELOPMENT.md §6](docs/guides/DEVELOPMENT.md#6-types-partagés--sharedtypes)
-- ~~**Formulaire pré-import BGG**~~ — Annulé : le formulaire d'ajout gère déjà saisie manuelle + BGG
+- ✅ **Extended BGG Schema Migration** (PR #55): `thumbnail`, `playing_time`, `min/max_playtime`, `categories`, `mechanics`, `families`
+- ✅ **Automatic migrations**: `runMigrations()` in `DatabaseConnection.ts` — SQLite transactions
+- ✅ **BGG interface unification**: `BGGGame`, `BGGSearchResult`, `BGGExpansion`, `BGGCharacter` in `shared/types/index.d.ts` — see [DEVELOPMENT.md §6](docs/guides/DEVELOPMENT.md#6-shared-types--sharedtypes)
+- ~~**BGG pre-import form**~~ — Cancelled: the add form already handles manual entry + BGG
 
 </details>
 
 ---
 
-### 🎨 Phase 3 — Finitions UX
+### 🎨 Phase 3 — UX Polish
 
 <details open>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
-#### **Thème Sombre/Clair** — fonctionnel, refacto à faire
-- ✅ `DarkModeContext` + localStorage + toggle Settings + `DarkModeProvider` dans `App.tsx`
-- **Reste** : migrer du prop-drilling (`darkMode` passé en prop partout) vers le variant CSS Tailwind `dark:` — élimine le threading de prop dans tous les composants et dialogs. Zéro usage de `dark:` actuellement.
+#### **Dark/Light Theme** — functional, refactor pending
+- ✅ `DarkModeContext` + localStorage + Settings toggle + `DarkModeProvider` in `App.tsx`
+- **Remaining**: migrate from prop-drilling (`darkMode` passed as prop everywhere) to the Tailwind `dark:` CSS variant — eliminates prop threading through all components and dialogs. Zero `dark:` usage currently.
 
-#### **Graphiques Temporels** — non démarré
-- Infrastructure Recharts prête, placeholders "coming soon" en place
-- Scope : évolution scores, tendances jeux, performances temporelles
+#### **Time-Series Charts** — not started
+- Recharts infrastructure ready, "coming soon" placeholders in place
+- Scope: score evolution, game trends, temporal performance
 
-#### **Cache BGG backend** — non démarré
-- Cache persistant résultats BGG + sync périodique métadonnées
-- Différé à la séparation front/back — inspiration : board-game-scorekeep
+#### **Backend BGG Cache** — not started
+- Persistent cache of BGG results + periodic metadata sync
+- Deferred to front/back split — inspiration: board-game-scorekeep
 
-#### **Harmonisation UI/UX Globale** — reporté
-- Boutons, couleurs, tailles, cohérence visuelle — à reprendre après stabilisation technique
-
-</details>
-
----
-
-### 🔄 Phase 4 — Évolutions Avancées
-
-<details>
-<summary>Voir le détail</summary>
-
-#### **Sélection Personnages en Session** — non démarré
-- Détection `has_characters` en place, interface sélection manquante
-- Interface modale sélection personnages pour sessions
-
-#### **Enrichissement Données**
-- **Service Personnages UltraBoardGames** : scraping HTML UltraBoardGames.com (pas d'API). ⚠️ Fragile + légalement ambigu — à aborder quand les autres features sont stables.
-- **Export/Import Données** : stubs présents dans `useSettingsPage`, implémentation manquante (Export JSON/CSV, import avec validation, backup automatique).
-
-#### **Tests End-to-End** — non démarré → [détail](changelog/sprint5-e2e-tests.md)
-- Framework recommandé : Playwright
-- 7 workflows prioritaires : BGG search/import, CRUD players/games/sessions, navigation, stats
-- Fichiers cibles : `e2e/bgg-search.spec.ts`, `player-crud.spec.ts`, `game-crud.spec.ts`, `session-create.spec.ts`, `navigation.spec.ts`, `stats-page.spec.ts`
-
-#### **Gestion d'Erreurs Granulaire** — partiellement fait
-- ✅ `ErrorBoundary` global + `ErrorFallback.tsx` + toasts `sonner` dans tous les hooks
-- **Reste** : error boundaries par feature (si BGGSearch plante, seule la section crashe)
-
-#### **Tests Performance** — non démarré
-- Benchmarking suite Vitest. Note : 340 tests en ~25s — faible priorité.
+#### **Global UI/UX Harmonization** — deferred
+- Buttons, colors, sizes, visual consistency — to revisit after technical stabilization
 
 </details>
 
 ---
 
-### ✨ Phase 5 — Fonctionnalités Avancées (long terme)
+### 🔄 Phase 4 — Advanced Features
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
-#### **Mode Campagne Multi-Scénarios** — non démarré → [détail](changelog/sprint5-campaign-mode.md)
-- Support `campaign` existant en BDD + types, mais aucune interface dédiée
-- Schéma à ajouter : table `campaigns`, `game_plays.campaign_id`, `scenario_number`
-- Backend : CRUD `/api/campaigns` + `GET /api/campaigns/:id/plays`
-- Frontend : `CampaignPage`, option "Ajouter à une campagne" dans NewPlayPage
+#### **Character Selection in Session** — not started
+- `has_characters` detection in place, selection interface missing
+- Modal interface for character selection in sessions
 
-#### **Système Migration BDD** — non démarré
-- Knex.js ou système de versioning explicite à la place du runner maison
+#### **Data Enrichment**
+- **UltraBoardGames Character Service**: HTML scraping UltraBoardGames.com (no API). ⚠️ Fragile + legally ambiguous — to tackle when other features are stable.
+- **Data Export/Import**: stubs present in `useSettingsPage`, implementation missing (JSON/CSV export, import with validation, automatic backup).
 
-#### **Tableau de Bord Avancé** — non démarré
-- Graphiques recharts sophistiqués : évolution scores, tendances, comparaisons temporelles
+#### **End-to-End Tests** — not started
+- Recommended framework: Playwright
+- 7 priority workflows: BGG search/import, CRUD players/games/sessions, navigation, stats
+- Target files: `e2e/bgg-search.spec.ts`, `player-crud.spec.ts`, `game-crud.spec.ts`, `session-create.spec.ts`, `navigation.spec.ts`, `stats-page.spec.ts`
 
-#### **Gestion Images Avancée** — non démarré
-- Téléchargement images BGG à l'import → stockage local → re-encodage WebP avec `sharp`
-- Volume Docker : `uploads/` dans le named volume existant (avec SQLite)
+#### **Granular Error Handling** — partially done
+- ✅ Global `ErrorBoundary` + `ErrorFallback.tsx` + `sonner` toasts in all hooks
+- **Remaining**: per-feature error boundaries (if BGGSearch crashes, only that section crashes)
 
-#### ❌ Non Pertinent pour ce Projet
-- Multi-utilisateurs, PWA/offline, Mode Tournoi, Achievements, IA/ML, Partage social
+#### **Performance Tests** — not started
+- Vitest benchmarking suite. Note: 340 tests in ~25s — low priority.
 
 </details>
 
 ---
 
-## 🧹 Dette Technique — Livrée
+### ✨ Phase 5 — Advanced Features (long term)
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
+
+#### **Multi-Scenario Campaign Mode** — not started
+- `campaign` support exists in DB + types, but no dedicated interface
+- Schema to add: `campaigns` table, `game_plays.campaign_id`, `scenario_number`
+- Backend: CRUD `/api/campaigns` + `GET /api/campaigns/:id/plays`
+- Frontend: `CampaignPage`, "Add to campaign" option in NewPlayPage
+
+#### **DB Migration System** — not started
+- Knex.js or explicit versioning system instead of the custom runner
+
+#### **Advanced Dashboard** — not started
+- Sophisticated recharts charts: score evolution, trends, temporal comparisons
+
+#### **Advanced Image Management** — not started
+- Download BGG images at import → local storage → WebP re-encoding with `sharp`
+- Docker volume: `uploads/` in the existing named volume (with SQLite)
+
+#### ❌ Not Relevant for This Project
+- Multi-user, PWA/offline, Tournament Mode, Achievements, AI/ML, Social sharing
+
+</details>
+
+---
+
+## 🧹 Technical Debt — Delivered
 
 <details>
-<summary><b>PR #55 — Audit sécurité & refacto</b></summary>
+<summary>See detail</summary>
 
-- ✅ Duplicate keys BGGSearch : clé `${result.id}-${index}`
-- ✅ Migrations SQLite dans transaction : `runMigrations()` encapsulé dans `db.transaction()`
-- ✅ `eslint.audit.config.js` ajouté à `.gitignore`
+<details>
+<summary><b>PR #55 — Security audit & refactor</b></summary>
+
+- ✅ Duplicate keys BGGSearch: key `${result.id}-${index}`
+- ✅ SQLite migrations in transaction: `runMigrations()` wrapped in `db.transaction()`
+- ✅ `eslint.audit.config.js` added to `.gitignore`
 
 </details>
 
 <details>
-<summary><b>PR #56 — Performance & feedback UI</b></summary>
+<summary><b>PR #56 — Performance & UI feedback</b></summary>
 
-- ✅ Toast Sonner sur `handleAddGame`/`handleUpdateGame`
-- ✅ 32 tests unitaires helpers purs
-- ✅ `useCallback` sur handlers `usePlayersPage`, `useGamesPage`
-- ✅ `React.memo` sur `GameCard` et `PlayerCard`
-- ✅ `React.lazy` + `Suspense` : 9 pages lazy-loadées
+- ✅ Sonner toast on `handleAddGame`/`handleUpdateGame`
+- ✅ 32 unit tests for pure helpers
+- ✅ `useCallback` on `usePlayersPage`, `useGamesPage` handlers
+- ✅ `React.memo` on `GameCard` and `PlayerCard`
+- ✅ `React.lazy` + `Suspense`: 9 lazy-loaded pages
 
 </details>
 
 <details>
-<summary><b>PR #57 — Authentification</b></summary>
+<summary><b>PR #57 — Authentication</b></summary>
 
-- ✅ Bearer token statique : `POST /api/auth/login` valide `AUTH_PASSWORD`, token 64-hex en mémoire
-- ✅ Middleware `requireAuth` protège toutes les routes sauf `/api/health` et `/api/auth/login`
-- ✅ Startup guard : refus démarrage si `AUTH_PASSWORD` manquant
-- ✅ Frontend : `LoginPage`, token en `localStorage`, logout dans Settings, 401 → redirect
+- ✅ Static bearer token: `POST /api/auth/login` validates `AUTH_PASSWORD`, 64-hex token in memory
+- ✅ `requireAuth` middleware protects all routes except `/api/health` and `/api/auth/login`
+- ✅ Startup guard: refuses to start if `AUTH_PASSWORD` is missing
+- ✅ Frontend: `LoginPage`, token in `localStorage`, logout in Settings, 401 → redirect
 
 </details>
 
 <details>
 <summary><b>PR #58 — Quick wins</b></summary>
 
-- ✅ `formatExpansionLabel` supprimé — fusionné dans `formatExpansion`
-- ✅ BGGSearch harmonisé FR — `onKeyPress` → `onKeyDown`
-- ✅ Debounce resize 150ms dans `usePlayersPage` et `useGamesPage`
+- ✅ `formatExpansionLabel` removed — merged into `formatExpansion`
+- ✅ BGGSearch harmonized — `onKeyPress` → `onKeyDown`
+- ✅ 150ms resize debounce in `usePlayersPage` and `useGamesPage`
 
 </details>
 
 <details>
-<summary><b>PR #59 — BGG catalog, doublons, pseudo joueur</b></summary>
+<summary><b>PR #59 — BGG catalog, duplicates, player pseudo</b></summary>
 
-- ✅ Index local BGG : table `bgg_catalog`, script `npm run import-bgg-catalog`, UI Settings
-- ✅ Détection doublons jeux : check `bgg_id`, 409 backend + `DuplicateGameError`
-- ✅ Pseudo joueur unique : colonne `pseudo TEXT UNIQUE`, Zod + 409, miroir auto
+- ✅ Local BGG index: `bgg_catalog` table, `npm run import-bgg-catalog` script, Settings UI
+- ✅ Game duplicate detection: `bgg_id` check, 409 backend + `DuplicateGameError`
+- ✅ Unique player pseudo: `pseudo TEXT UNIQUE` column, Zod + 409, auto-mirror
 
 </details>
 
 <details>
-<summary><b>PR #60-63 — Bump dépendances</b></summary>
+<summary><b>PR #60-63 — Dependency bumps</b></summary>
 
 - ✅ `typescript-eslint` → `^8.57.2`, `globals` 16→17, `dotenv` 16→17, `@types/node` 24→25
 - ✅ `zod` 3→4, `express` 4→5 (PR #61)
@@ -258,20 +258,20 @@ Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), 
 </details>
 
 <details>
-<summary><b>Sprint 0 — Refactoring architecture complète (avril 2026)</b></summary>
+<summary><b>Sprint 0 — Full Architecture Refactoring (April 2026)</b></summary>
 
-Voir Phase 1 ci-dessus pour le détail complet.
+See Phase 1 above for full details.
 
 </details>
 
 <details>
-<summary><b>Refactoring feature-based + renommage sessions→plays (avril 2026)</b></summary>
+<summary><b>Feature-based refactoring + sessions→plays rename (April 2026)</b></summary>
 
-- ✅ Migration DB 013 : `game_sessions` → `game_plays`, `session_players` → `play_players`
-- ✅ Backend : `SessionRepository/Service/Route` → `PlayRepository/Service/Route`, endpoint `/api/v1/plays`
-- ✅ Types : `GameSession` → `GamePlay`, `CreateSessionPayload` → `CreatePlayPayload`
-- ✅ Architecture feature-based : `src/features/<nom>/` — isolation inter-features
-- ✅ Suppression `src/components/`, `src/views/`, `src/hooks/`, `src/services/api/`
+- ✅ DB migration 013: `game_sessions` → `game_plays`, `session_players` → `play_players`
+- ✅ Backend: `SessionRepository/Service/Route` → `PlayRepository/Service/Route`, endpoint `/api/v1/plays`
+- ✅ Types: `GameSession` → `GamePlay`, `CreateSessionPayload` → `CreatePlayPayload`
+- ✅ Feature-based architecture: `src/features/<name>/` — inter-feature isolation
+- ✅ Removal of `src/components/`, `src/views/`, `src/hooks/`, `src/services/api/`
 
 </details>
 
@@ -279,50 +279,50 @@ Voir Phase 1 ci-dessus pour le détail complet.
 
 ---
 
-## 🐛 Bugs — Livrés
+## 🐛 Bugs — Delivered
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
-- ✅ **`BGGGameDetails.characters` non initialisé** — `parseGeekdoItem` retourne `characters: []`
-- ✅ **`has_expansion` non calculé à l'import BGG** — `handleBGGSearch` calcule `(bggGame.expansions?.length || 0) > 0`
-- ✅ **`BGGGame`/`BGGGameDetails` dupliquées** — unifié dans `shared/types/index.d.ts`
-- ✅ **`ApiService.getImportLog()` type inexact** — supprimé, fusionné dans `getBggCatalogStatus()`
-- ✅ **Mode coopératif — Score masqué** — "Competitive Scoring" conditionné par `sessionType === 'competitive'`
-- ✅ **Dégrisage bouton création session** — `canSubmit()` gère correctement chaque mode
-- ✅ **Score à 0 par défaut (compétitif)** — `playerScores[playerId] || 0` forcé à la soumission
-- ✅ **`canSubmit` modes campaign/hybrid** — hybrid exige gagnant OU teamSuccess OU teamScore > 0
-- ✅ **Routes export/import protégées** — `GET/POST /api/v1/data/export|import|reset` sous `requireRole('admin')`
-- ✅ **Suppression jeux** — handler frontend + SQL `DELETE /api/games/:id`
-- ✅ **`supports_hybrid` non persisté** — ajouté aux SQL INSERT/UPDATE
-- ✅ **Détection doublons jeux** — 409 backend + `DuplicateGameError`, dialog reste ouverte
+- ✅ **`BGGGameDetails.characters` uninitialized** — `parseGeekdoItem` returns `characters: []`
+- ✅ **`has_expansion` not calculated on BGG import** — `handleBGGSearch` computes `(bggGame.expansions?.length || 0) > 0`
+- ✅ **`BGGGame`/`BGGGameDetails` duplicated** — unified in `shared/types/index.d.ts`
+- ✅ **`ApiService.getImportLog()` inaccurate type** — removed, merged into `getBggCatalogStatus()`
+- ✅ **Cooperative mode — Score hidden** — "Competitive Scoring" conditioned by `sessionType === 'competitive'`
+- ✅ **Session creation button grayed out** — `canSubmit()` correctly handles each mode
+- ✅ **Score at 0 by default (competitive)** — `playerScores[playerId] || 0` forced on submission
+- ✅ **`canSubmit` campaign/hybrid modes** — hybrid requires winner OR teamSuccess OR teamScore > 0
+- ✅ **Protected export/import routes** — `GET/POST /api/v1/data/export|import|reset` under `requireRole('admin')`
+- ✅ **Game deletion** — frontend handler + SQL `DELETE /api/games/:id`
+- ✅ **`supports_hybrid` not persisted** — added to SQL INSERT/UPDATE
+- ✅ **Game duplicate detection** — 409 backend + `DuplicateGameError`, dialog stays open
 
 </details>
 
 ---
 
-## 🔒 Sécurité — Livrée (audit mars 2026)
+## 🔒 Security — Delivered (March 2026 audit)
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
-- ✅ `npm audit` : 0 vulnérabilité frontend + backend
-- ✅ Zod sur toutes les routes : middleware `validateBody` sur POST/PUT
-- ✅ CORS trim : `.map(o => o.trim())` sur `CORS_ORIGINS`
-- ✅ JSON.parse robuste : `parseJSONField` helper dans `DatabaseConnection`
-- ✅ BGG parseInt : `isNaN` + bounds check sur `objectid` dans `bggService.ts`
-- ✅ HTTPS/HSTS : redirect HTTP→HTTPS + `Strict-Transport-Security` en production
-- ✅ JWT signé HttpOnly cookie (PR #57 → Sprint 0)
-- ✅ Refresh tokens avec rotation de famille (Sprint 0)
-- ✅ `path-to-regexp` 0.1.13 → 8.4.0 — corrige CVE-2024-45296 (ReDoS) via PR #61
+- ✅ `npm audit`: 0 vulnerabilities frontend + backend
+- ✅ Zod on all routes: `validateBody` middleware on POST/PUT
+- ✅ CORS trim: `.map(o => o.trim())` on `CORS_ORIGINS`
+- ✅ Robust JSON.parse: `parseJSONField` helper in `DatabaseConnection`
+- ✅ BGG parseInt: `isNaN` + bounds check on `objectid` in `bggService.ts`
+- ✅ HTTPS/HSTS: HTTP→HTTPS redirect + `Strict-Transport-Security` in production
+- ✅ Signed JWT HttpOnly cookie (PR #57 → Sprint 0)
+- ✅ Refresh tokens with family rotation (Sprint 0)
+- ✅ `path-to-regexp` 0.1.13 → 8.4.0 — fixes CVE-2024-45296 (ReDoS) via PR #61
 
 </details>
 
 ---
 
-## 📊 Performance — Audit Unlighthouse avril 2026
+## 📊 Performance — Unlighthouse Audit April 2026
 
-**Scores globaux :** 91 total · 89 Performance · 92 Accessibility · 100 Best Practices · 83 SEO
+**Global scores:** 91 total · 89 Performance · 92 Accessibility · 100 Best Practices · 83 SEO
 
 | Page | Perf | A11y | BP | SEO |
 |------|------|------|-----|-----|
@@ -333,48 +333,48 @@ Voir Phase 1 ci-dessus pour le détail complet.
 | /settings | 95 | 93 | 100 | 82 |
 | /stats | **80** | **87** | 100 | 83 |
 
-| Priorité | Catégorie | Problème | Solution |
-|----------|-----------|----------|----------|
-| ⭐⭐ | SEO | Meta description absente | `<meta name="description">` dans `index.html` |
-| ⭐⭐ | Performance | `/stats` perf 80 — recharts lourd | Lazy load charts, optimiser requêtes stats |
-| ⭐⭐ | Accessibility | `/stats` a11y 87 — charts sans aria | `aria-label` sur graphiques recharts |
-| ⭐ | Performance | Google Fonts render-blocking (~780ms) | `font-display: swap` ou self-hosting |
-| ⭐ | Performance | Pas de cache headers assets | Fix niveau serveur/Nginx |
-| ⭐ | Performance | Images BGG non optimisées (~32 KiB) | Télécharger à l'import + re-encoder WebP avec `sharp` |
+| Priority | Category | Issue | Solution |
+|----------|-----------|-------|----------|
+| ⭐⭐ | SEO | Missing meta description | `<meta name="description">` in `index.html` |
+| ⭐⭐ | Performance | `/stats` perf 80 — heavy recharts | Lazy load charts, optimize stats queries |
+| ⭐⭐ | Accessibility | `/stats` a11y 87 — charts without aria | `aria-label` on recharts charts |
+| ⭐ | Performance | Google Fonts render-blocking (~780ms) | `font-display: swap` or self-hosting |
+| ⭐ | Performance | No asset cache headers | Server/Nginx level fix |
+| ⭐ | Performance | BGG images not optimized (~32 KiB) | Download at import + re-encode WebP with `sharp` |
 
 ---
 
-## 🔧 Historique Infrastructure
+## 🔧 Infrastructure History
 
-| PR | Date | Résumé | Détail |
+| PR | Date | Summary | Detail |
 |---|---|---|---|
-| #43 | Mars 2026 | Fix suppression jeux, supports_hybrid, DeletePlayerDialog, types | [changelog/pr-43-fix-popups-delete.md](changelog/pr-43-fix-popups-delete.md) |
-| #44 | Mars 2026 | Mise à jour stack : Node 24, Vite 7.3, Vitest 4, TS 5.9 | [changelog/pr-44-stack-update.md](changelog/pr-44-stack-update.md) |
-| #45 | Mars 2026 | Suppression @github/spark + 15 packages morts | [changelog/pr-45-remove-spark.md](changelog/pr-45-remove-spark.md) |
-| #46 | Mars 2026 | Réorganisation ROADMAP + répertoire changelog/ + .gitattributes LF | [changelog/pr-46-roadmap-reorganization.md](changelog/pr-46-roadmap-reorganization.md) |
-| #57 | Mars 2026 | Authentification Bearer token statique | — |
-| #58 | Mars 2026 | Quick wins : formatExpansion merge, BGGSearch FR, debounce, onKeyDown | — |
+| #43 | March 2026 | Fix game deletion, supports_hybrid, DeletePlayerDialog, types | [changelog/pr-43-fix-popups-delete.md](changelog/pr-43-fix-popups-delete.md) |
+| #44 | March 2026 | Stack update: Node 24, Vite 7.3, Vitest 4, TS 5.9 | [changelog/pr-44-stack-update.md](changelog/pr-44-stack-update.md) |
+| #45 | March 2026 | Remove @github/spark + 15 dead packages | [changelog/pr-45-remove-spark.md](changelog/pr-45-remove-spark.md) |
+| #46 | March 2026 | ROADMAP reorganization + changelog/ directory + .gitattributes LF | [changelog/pr-46-roadmap-reorganization.md](changelog/pr-46-roadmap-reorganization.md) |
+| #57 | March 2026 | Static bearer token authentication | — |
+| #58 | March 2026 | Quick wins: formatExpansion merge, BGGSearch, debounce, onKeyDown | — |
 
-📋 Mises à jour techniques planifiées : [changelog/planned-updates.md](changelog/planned-updates.md)
+📋 Planned technical updates: [changelog/planned-updates.md](changelog/planned-updates.md)
 
-*Dernière mise à jour : Avril 2026*
+*Last updated: April 2026*
 
 ---
 
-## 📚 Références Projets
+## 📚 Reference Projects
 
-> Sources d'**inspiration technique** uniquement — évaluer chaque pattern avant de l'importer. **À supprimer à terme** quand les features correspondantes sont livrées ou définitivement abandonnées.
+> **Technical inspiration** only — evaluate each pattern before importing it. **To be removed** when the corresponding features are delivered or definitively abandoned.
 
 <details>
-<summary>Voir le détail</summary>
+<summary>See detail</summary>
 
 ### 🎮 boardGameScore (`C:/git/boardGameScore`)
-- **Mapping BGG ID → slug UltraBoardGames** : Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror…
-- **Supprimer quand** : service UltraBoardGames livré ou abandonné
+- **BGG ID → UltraBoardGames slug mapping**: Citadels (478→'citadels'), Dark Souls (197831→'dark-souls'), Zombicide, Arkham Horror…
+- **Remove when**: UltraBoardGames service delivered or abandoned
 
 ### 🧪 board-game-scorekeep (`C:/git/board-game-scorekeep`)
-- **Système campagne complet** à étudier pour Phase 5 → [détail](changelog/sprint5-campaign-mode.md)
-- **Cache BGG intelligent** à étudier pour Phase 2 (cache backend)
-- **Supprimer quand** : mode campagne livré ET cache BGG backend implémenté
+- **Complete campaign system** to study for Phase 5
+- **Smart BGG cache** to study for Phase 2 (backend cache)
+- **Remove when**: campaign mode delivered AND backend BGG cache implemented
 
 </details>

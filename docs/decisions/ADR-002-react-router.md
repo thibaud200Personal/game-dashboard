@@ -1,45 +1,45 @@
-# ADR-002 — Navigation par URL avec React Router v7
+# ADR-002 — URL-based Navigation with React Router v7
 
-**Date** : 31 mars 2026
-**Statut** : Accepté
+**Date**: March 31, 2026
+**Status**: Accepted
 
-## Contexte
+## Context
 
-La navigation actuelle est state-based : `currentView` (string) + `navigationContext` (id + source) dans `App.tsx`. Conséquences :
-- F5 ramène toujours à l'accueil
-- Pas de liens directs partageables
-- Pas d'historique navigateur
-- `App.tsx` cumule shell + routeur + gestionnaire d'état
+The current navigation is state-based: `currentView` (string) + `navigationContext` (id + source) in `App.tsx`. Consequences:
+- F5 always returns to the home screen
+- No shareable deep links
+- No browser history
+- `App.tsx` accumulates shell + router + state management
 
-## Décision
+## Decision
 
-Adopter React Router v7. Chaque page a une URL. `App.tsx` devient un shell pur. `navigationContext` est remplacé par l'historique navigateur (`navigate(-1)`) et `location.state` pour les cas contextuels.
+Adopt React Router v7. Each page has a URL. `App.tsx` becomes a pure shell. `navigationContext` is replaced by browser history (`navigate(-1)`) and `location.state` for contextual cases.
 
-## Gestion de la navigation contextuelle mobile
+## Contextual Mobile Navigation
 
-Le `navigationContext` servait à savoir "depuis quel écran je viens" pour le bouton retour mobile. Avec React Router :
+`navigationContext` served to know "which screen I came from" for the mobile back button. With React Router:
 
-- Cas simple (retour linéaire) : `navigate(-1)` — historique navigateur natif
-- Cas contextuel (retour vers un onglet précis) : `navigate('/stats/games/42', { state: { from: '/games' } })`, récupéré avec `useLocation().state`
+- Simple case (linear back): `navigate(-1)` — native browser history
+- Contextual case (back to a specific tab): `navigate('/stats/games/42', { state: { from: '/games' } })`, retrieved with `useLocation().state`
 
-## Responsive layout
+## Responsive Layout
 
-La migration React Router est orthogonale au responsive. `BottomNavigation` utilise `useLocation()` pour l'état actif et `<Link>` pour la navigation. Le hook `use-mobile.ts` et les classes Tailwind responsives sont inchangés.
+The React Router migration is orthogonal to responsive design. `BottomNavigation` uses `useLocation()` for active state and `<Link>` for navigation. The `use-mobile.ts` hook and responsive Tailwind classes are unchanged.
 
-## Conséquences
+## Consequences
 
-**Positives :**
-- URLs réelles : deep links, F5, historique navigateur
-- `App.tsx` réduit à son rôle de shell
-- `navigationContext` et `handleNavigation` supprimés (~50 lignes)
-- Standard React — meilleure connaissance de l'écosystème
+**Positive:**
+- Real URLs: deep links, F5, browser history
+- `App.tsx` reduced to its shell role
+- `navigationContext` and `handleNavigation` removed (~50 lines)
+- Standard React — better ecosystem familiarity
 
-**Négatives :**
-- Migration non triviale : chaque appel à `handleNavigation` doit être converti
-- Les cas de navigation contextuelle mobile nécessitent une analyse cas par cas
-- React Router ajoute une dépendance
+**Negative:**
+- Non-trivial migration: every call to `handleNavigation` must be converted
+- Contextual mobile navigation cases require case-by-case analysis
+- React Router adds a dependency
 
-## Alternatives rejetées
+## Rejected Alternatives
 
-- **Garder la navigation state-based** : n'adresse pas les limitations UX (pas d'URL)
-- **TanStack Router** : plus récent, bonne DX, mais moins mature et migration plus coûteuse
+- **Keep state-based navigation**: does not address UX limitations (no URLs)
+- **TanStack Router**: more recent, good DX, but less mature and more costly to migrate

@@ -1,103 +1,103 @@
-# Sécurité
+# Security
 
-## Modèle de menace
+## Threat Model
 
-L'application est exposée sur internet avec un accès restreint par authentification. Les menaces principales pour ce type de projet :
+The application is exposed on the internet with access restricted by authentication. The main threats for this type of project:
 
-| Menace | Probabilité | Mesure |
+| Threat | Probability | Measure |
 |---|---|---|
-| Accès non authentifié aux données | Élevée | JWT sur toutes les routes |
-| Brute-force mot de passe | Élevée | Rate limiting sur `/auth/login` |
-| XSS → vol de token | Moyenne | Cookie HttpOnly (non lisible en JS) |
-| Injection SQL | Faible | Requêtes paramétrées (better-sqlite3) |
-| Information leak via stack traces | Élevée si non géré | Erreurs masquées en production |
-| Dépendances vulnérables | Continue | npm audit en CI |
+| Unauthenticated access to data | High | JWT on all routes |
+| Password brute-force | High | Rate limiting on `/auth/login` |
+| XSS → token theft | Medium | HttpOnly cookie (not readable via JS) |
+| SQL injection | Low | Parameterized queries (better-sqlite3) |
+| Information leak via stack traces | High if unhandled | Errors masked in production |
+| Vulnerable dependencies | Ongoing | npm audit in CI |
 
-## Authentification
+## Authentication
 
 ### JWT
 
-Tokens signés avec `jsonwebtoken` et un secret configuré dans `.env`.
+Tokens signed with `jsonwebtoken` and a secret configured in `.env`.
 
 ```
 POST /api/v1/auth/login
-  Body : { password: string }
-  → valide contre ADMIN_PASSWORD ou USER_PASSWORD
-  → génère : { sub: 'user', role: 'admin'|'user', iat, exp: now+3600 }
-  → web : Set-Cookie: token=<jwt>; HttpOnly; SameSite=Strict; Secure
-  → Android : { token, expiresIn: 3600 }
+  Body: { password: string }
+  → validates against ADMIN_PASSWORD or USER_PASSWORD
+  → generates: { sub: 'user', role: 'admin'|'user', iat, exp: now+3600 }
+  → web: Set-Cookie: token=<jwt>; HttpOnly; SameSite=Strict; Secure
+  → Android: { token, expiresIn: 3600 }
 ```
 
-**Pourquoi HttpOnly cookie pour le web** : un cookie `HttpOnly` n'est pas accessible via `document.cookie` en JavaScript. Une attaque XSS ne peut pas exfiltrer le token. `localStorage` est vulnérable XSS par définition.
+**Why HttpOnly cookie for the web**: an `HttpOnly` cookie is not accessible via `document.cookie` in JavaScript. An XSS attack cannot exfiltrate the token. `localStorage` is inherently vulnerable to XSS.
 
-**Pourquoi un secret .env** : le JWT est signé côté backend. Si le secret est compromis, tous les tokens actifs sont invalides dès que le secret est changé. Ne jamais hardcoder le secret.
+**Why a .env secret**: the JWT is signed server-side. If the secret is compromised, all active tokens are immediately invalidated by changing the secret. Never hardcode the secret.
 
-Générer un secret sécurisé :
+Generate a secure secret:
 ```bash
 openssl rand -hex 32
 ```
 
-### Rôles
+### Roles
 
-| Rôle | Périmètre |
+| Role | Scope |
 |---|---|
-| `user` | Lecture de toutes les données, création/modification jeux/joueurs/sessions, export |
-| `admin` | Tout `user` + import BGG catalog + suppressions en masse |
+| `user` | Read all data, create/edit games/players/sessions, export |
+| `admin` | All `user` access + BGG catalog import + bulk deletions |
 
-Le rôle est dans le payload JWT. Le frontend l'utilise pour afficher/masquer les fonctionnalités admin. Le backend le vérifie via `requireRole('admin')` pour les routes sensibles — la vérification côté frontend est cosmétique uniquement.
+The role is in the JWT payload. The frontend uses it to show/hide admin features. The backend verifies it via `requireRole('admin')` for sensitive routes — frontend-side verification is cosmetic only.
 
-### Expiration et refresh
+### Expiration and Refresh
 
-Tokens valides 1 heure. À l'expiration, le frontend reçoit un 401 et redirige vers `/login`. Pas de refresh token implémenté pour le moment — acceptable pour un usage personnel (reconnexion manuelle toutes les heures si la session est longue).
+Tokens valid for 1 hour. On expiration, the frontend receives a 401 and redirects to `/login`. No refresh token currently implemented — acceptable for personal use (manual reconnection every hour if the session is long).
 
-## Rate limiting
+## Rate Limiting
 
 ```ts
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 5,                     // 5 tentatives max
+  max: 5,                     // 5 max attempts
   standardHeaders: true,
   legacyHeaders: false,
 })
 app.use('/api/v1/auth/login', loginLimiter)
 ```
 
-Les tentatives échouées sont loguées en niveau `warn` avec l'IP source.
+Failed attempts are logged at `warn` level with the source IP.
 
-## Headers HTTP — Helmet
+## HTTP Headers — Helmet
 
 ```ts
 app.use(helmet())
 ```
 
-Headers automatiquement configurés :
-- `X-Content-Type-Options: nosniff` — empêche le MIME sniffing
-- `X-Frame-Options: DENY` — empêche le clickjacking
-- `Strict-Transport-Security` — force HTTPS
-- `Content-Security-Policy` — restreint les sources de scripts
+Automatically configured headers:
+- `X-Content-Type-Options: nosniff` — prevents MIME sniffing
+- `X-Frame-Options: DENY` — prevents clickjacking
+- `Strict-Transport-Security` — enforces HTTPS
+- `Content-Security-Policy` — restricts script sources
 
-## Validation des entrées
+## Input Validation
 
-Toutes les entrées sont validées par des schémas Zod :
-- **Body** : `validateBody(schema)` sur POST/PUT
-- **Paramètres de route** : `validateParams(z.object({ id: z.coerce.number().int().positive() }))`
-- **Query strings** : `validateQuery(schema)` sur les routes avec filtres
+All inputs are validated by Zod schemas:
+- **Body**: `validateBody(schema)` on POST/PUT
+- **Route parameters**: `validateParams(z.object({ id: z.coerce.number().int().positive() }))`
+- **Query strings**: `validateQuery(schema)` on routes with filters
 
-Règle : ne jamais faire confiance à une valeur de `req.params` ou `req.query` sans validation préalable.
+Rule: never trust a value from `req.params` or `req.query` without prior validation.
 
-## Injection SQL
+## SQL Injection
 
-`better-sqlite3` utilise des requêtes paramétrées. Ne jamais interpoler des variables dans les requêtes SQL :
+`better-sqlite3` uses parameterized queries. Never interpolate variables into SQL queries:
 
 ```ts
-// ✅ Sécurisé
+// ✅ Secure
 db.prepare('SELECT * FROM players WHERE player_id = ?').get(id)
 
-// ❌ Vulnérable
+// ❌ Vulnerable
 db.prepare(`SELECT * FROM players WHERE player_id = ${id}`).get()
 ```
 
-## Messages d'erreur en production
+## Error Messages in Production
 
 ```ts
 const isDev = process.env.NODE_ENV !== 'production'
@@ -111,7 +111,7 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
 })
 ```
 
-En production : aucune information interne dans les réponses d'erreur. Les détails sont dans les logs (pino), pas dans la réponse HTTP.
+In production: no internal information in error responses. Details are in the logs (pino), not in the HTTP response.
 
 ## CORS
 
@@ -119,41 +119,41 @@ En production : aucune information interne dans les réponses d'erreur. Les dét
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) ?? []
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true,          // nécessaire pour les cookies HttpOnly
+  credentials: true,          // required for HttpOnly cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }))
 ```
 
-`credentials: true` est requis pour que le navigateur envoie les cookies cross-origin. En production, `allowedOrigins` ne doit contenir que le domaine du frontend.
+`credentials: true` is required for the browser to send cookies cross-origin. In production, `allowedOrigins` must contain only the frontend domain.
 
 ## HTTPS
 
-En production, redirection HTTP → HTTPS et header `Strict-Transport-Security`. Configuré au niveau du reverse proxy (nginx) ou dans `server.ts` si déploiement direct.
+In production, HTTP → HTTPS redirection and `Strict-Transport-Security` header. Configured at the reverse proxy level (nginx) or in `server.ts` for direct deployment.
 
-## Audit des dépendances
+## Dependency Audit
 
 ```bash
 npm audit              # Frontend
 cd backend && npm audit  # Backend
 ```
 
-Exécuté à chaque PR dans le stage de build Docker. Une vulnérabilité de sévérité `high` ou `critical` bloque le build.
+Executed on every PR in the Docker build stage. A `high` or `critical` severity vulnerability blocks the build.
 
-## Import BGG Catalog
+## BGG Catalog Import
 
-L'endpoint d'import (`POST /api/v1/bgg/import-catalog`) traite un fichier CSV de 175k lignes. Il est protégé par `requireRole('admin')` pour deux raisons :
-1. Opération longue — peut saturer les ressources du serveur
-2. Modifie massivement la base de données
+The import endpoint (`POST /api/v1/bgg/import-catalog`) processes a 175k-line CSV file. It is protected by `requireRole('admin')` for two reasons:
+1. Long operation — can saturate server resources
+2. Massively modifies the database
 
-Le fichier CSV doit être uploadé par l'administrateur depuis l'interface Settings (rôle admin requis).
+The CSV file must be uploaded by the administrator from the Settings interface (admin role required).
 
-## Checklist sécurité avant déploiement
+## Pre-Deployment Security Checklist
 
-- [ ] `AUTH_JWT_SECRET` généré avec `openssl rand -hex 32` (32+ chars)
-- [ ] `ADMIN_PASSWORD` et `USER_PASSWORD` forts et différents
-- [ ] `NODE_ENV=production` dans l'environnement de prod
-- [ ] `CORS_ORIGINS` contient uniquement le domaine de prod
-- [ ] `npm audit` → 0 vulnérabilité high/critical
-- [ ] HTTPS configuré (certificat valide)
-- [ ] Logs accessibles (stdout Docker ou agrégateur)
-- [ ] Rate limiting actif sur `/auth/login`
+- [ ] `AUTH_JWT_SECRET` generated with `openssl rand -hex 32` (32+ chars)
+- [ ] `ADMIN_PASSWORD` and `USER_PASSWORD` strong and different
+- [ ] `NODE_ENV=production` in the production environment
+- [ ] `CORS_ORIGINS` contains only the production domain
+- [ ] `npm audit` → 0 high/critical vulnerabilities
+- [ ] HTTPS configured (valid certificate)
+- [ ] Logs accessible (Docker stdout or aggregator)
+- [ ] Rate limiting active on `/auth/login`

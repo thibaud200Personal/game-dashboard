@@ -1,58 +1,58 @@
-# Guide de développement
+# Development Guide
 
-Ce document détaille les patterns d'architecture, les conventions et les bonnes pratiques. Lire aussi `docs/architecture/FRONTEND.md` et `docs/architecture/BACKEND.md`.
+This document details architecture patterns, conventions, and best practices. Also read `docs/architecture/FRONTEND.md` and `docs/architecture/BACKEND.md`.
 
-## 1. Principes fondamentaux
+## 1. Core Principles
 
-### TDD — Tests avant le code
+### TDD — Tests Before Code
 
-Pour toute feature ou bugfix :
-1. Écrire le test qui décrit le comportement attendu (il doit échouer)
-2. Écrire le code minimal pour le faire passer
-3. Refactorer
+For any feature or bugfix:
+1. Write the test describing the expected behavior (it must fail)
+2. Write the minimal code to make it pass
+3. Refactor
 
-Les tests sont la documentation exécutable du comportement attendu.
+Tests are the executable documentation of expected behavior.
 
-### Zéro `any`
+### Zero `any`
 
-`strict: true` dans tous les tsconfig. Aucun `any` autorisé.
+`strict: true` in all tsconfigs. No `any` allowed.
 
 ```ts
-// ✅ Correct — payload sans champs auto-générés
+// ✅ Correct — payload without auto-generated fields
 async createPlayer(data: Omit<Player, 'player_id' | 'created_at'>): Promise<Player>
 
-// ✅ Correct — valeur mixte
+// ✅ Correct — mixed value
 const handleChange = (field: keyof FormData, value: string | number | boolean) => {}
 
-// ✅ Correct — type inféré depuis un hook
+// ✅ Correct — type inferred from a hook
 type GameStats = ReturnType<typeof useGameStatsPage>['gameStats']
 
-// ❌ Interdit
+// ❌ Forbidden
 async createPlayer(data: any): Promise<any>
 ```
 
-Exception documentée : middleware d'erreur Express 5 (`error: any`) — convention Express imposée par la signature à 4 paramètres.
+Documented exception: Express 5 error middleware (`error: any`) — Express convention imposed by the 4-parameter signature.
 
-## 2. Pattern Container/Presenter (feature-based)
+## 2. Container/Presenter Pattern (feature-based)
 
-Chaque feature est organisée en : `<Nom>Page.tsx` (container) + `<Nom>View.tsx` (presenter) + `use<Nom>Page.ts` (hook), co-localisés dans `src/features/<nom>/`.
+Each feature is organized as: `<Name>Page.tsx` (container) + `<Name>View.tsx` (presenter) + `use<Name>Page.ts` (hook), co-located in `src/features/<name>/`.
 
 ```
 features/games/
   GamesPage.tsx (container)        GamesPageView.tsx (presenter)
   ─────────────────────────        ─────────────────────────────
-  useGamesPage() hook         →    Props uniquement
-  logique + état                   JSX pur
-  appels API via hooks             aucun useQuery / useMutation
+  useGamesPage() hook         →    Props only
+  logic + state                    pure JSX
+  API calls via hooks              no useQuery / useMutation
 ```
 
-Un composant `View` qui fait un appel API est une erreur de placement — déplacer la logique dans le hook.
+A `View` component making an API call is misplaced — move the logic into the hook.
 
-**Règle d'isolation** : une feature n'importe jamais depuis une autre feature. Exception : `features/bgg/` est importable par `features/games/` et `features/settings/`.
+**Isolation rule**: a feature never imports from another feature. Exception: `features/bgg/` is importable by `features/games/` and `features/settings/`.
 
-## 3. State management — React Query
+## 3. State Management — React Query
 
-React Query est la **seule** source de vérité pour les données serveur. Pas de `useState` pour des données qui viennent du backend.
+React Query is the **single** source of truth for server data. No `useState` for data coming from the backend.
 
 ```ts
 // features/players/usePlayersPage.ts
@@ -67,21 +67,21 @@ export function usePlayersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.players.all }),
   })
 
-  // État local uniquement pour UI (search, dialog open state)
+  // Local state only for UI (search, dialog open state)
   const [search, setSearch] = useState('')
 
   return { players, isLoading, addPlayer, search, setSearch }
 }
 ```
 
-**Toujours utiliser `queryKeys`** — jamais de clés en dur dans les hooks.
+**Always use `queryKeys`** — never hardcode keys in hooks.
 
-## 4. Dialogs modulaires
+## 4. Modular Dialogs
 
-Chaque dialog :
-- Gère son propre état de formulaire interne
-- Communique via `open`, `onOpenChange`, `onSubmit` / `onAdd` / `onDelete`
-- Ne fait pas d'appels API directement — les mutations sont passées en props ou appelées via callback
+Each dialog:
+- Manages its own internal form state
+- Communicates via `open`, `onOpenChange`, `onSubmit` / `onAdd` / `onDelete`
+- Does not make API calls directly — mutations are passed as props or called via callback
 
 ```ts
 interface AddPlayerDialogProps {
@@ -91,7 +91,7 @@ interface AddPlayerDialogProps {
 }
 ```
 
-### Dialogs de suppression — pattern trigger prop
+### Delete Dialogs — Trigger Prop Pattern
 
 ```tsx
 <DeletePlayerDialog
@@ -105,97 +105,96 @@ interface AddPlayerDialogProps {
 />
 ```
 
-`AlertDialogTrigger asChild` clone le child direct. Passer un `<button>` ou un `DropdownMenuItem` avec `onSelect={e => e.preventDefault()}`. Jamais un composant Radix composite.
+`AlertDialogTrigger asChild` clones the direct child. Pass a `<button>` or a `DropdownMenuItem` with `onSelect={e => e.preventDefault()}`. Never a composite Radix component.
 
-## 5. Conventions de nommage
+## 5. Naming Conventions
 
-| Élément | Convention | Exemple |
+| Element | Convention | Example |
 |---|---|---|
-| Composants | PascalCase | `GameCard.tsx` |
-| Vues | PascalCase + `View` | `GamesPageView.tsx` |
+| Components | PascalCase | `GameCard.tsx` |
+| Views | PascalCase + `View` | `GamesPageView.tsx` |
 | Hooks | camelCase + `use` | `useGamesPage.ts` |
-| Services/Repos | PascalCase + suffixe | `PlayerRepository.ts` |
+| Services/Repos | PascalCase + suffix | `PlayerRepository.ts` |
 | Types | PascalCase | `Player` |
 | Variables | camelCase | `gameList` |
-| Constantes | SCREAMING_SNAKE_CASE | `MAX_PLAYERS` |
+| Constants | SCREAMING_SNAKE_CASE | `MAX_PLAYERS` |
 
-## 6. Types partagés — `shared/types`
+## 6. Shared Types — `shared/types`
 
 ### Architecture
 
-`shared/types/index.d.ts` est le **fichier de déclaration TypeScript écrit à la main** — il n'est pas généré par `tsc`.
+`shared/types/index.d.ts` is the **hand-written TypeScript declaration file** — it is not generated by `tsc`.
 
 ```
 shared/types/
-├── index.d.ts      ← source de vérité, édité directement
-├── index.js        ← compagnon vide (require runtime pour CommonJS)
-└── index.d.ts.map  ← sourcemap (référence index.ts, fichier source non conservé)
+├── index.d.ts      ← source of truth, edited directly
+├── index.js        ← empty companion (runtime require for CommonJS)
+└── index.d.ts.map  ← sourcemap (references index.ts, source file not kept)
 ```
 
-Les deux consommateurs l'importent via l'alias `@shared/types` :
-- **Backend** (`tsconfig.json` → `"@shared/*": ["../shared/*"]`) — résout vers `index.d.ts`
-- **Frontend** (`src/types/index.ts`) — réexporte depuis `../../shared/types`
+Both consumers import it via the `@shared/types` alias:
+- **Backend** (`tsconfig.json` → `"@shared/*": ["../shared/*"]`) — resolves to `index.d.ts`
+- **Frontend** (`src/types/index.ts`) — re-exports from `../../shared/types`
 
-### Pourquoi un `.d.ts` hand-written ?
+### Why a Hand-Written `.d.ts`?
 
-Le fichier `.ts` source original a été compilé puis non conservé. Le `.d.ts` fait maintenant office de source de vérité. C'est une pratique TypeScript valide (les `.d.ts` peuvent être écrits manuellement) et sans risque ici :
-- Le backend a `rootDir: "./"` → ne peut pas compiler ni écraser `../shared/types/index.d.ts`
-- Le frontend a `noEmit: true` → ne génère rien
+The original `.ts` source file was compiled then not kept. The `.d.ts` now serves as the source of truth. This is a valid TypeScript practice (`.d.ts` files can be written manually) and is risk-free here:
+- The backend has `rootDir: "./"` → cannot compile or overwrite `../shared/types/index.d.ts`
+- The frontend has `noEmit: true` → generates nothing
 
-### Modifier ou ajouter un type
+### Modifying or Adding a Type
 
-Éditer directement `shared/types/index.d.ts` — **aucune étape de build**.
+Edit `shared/types/index.d.ts` directly — **no build step**.
 
 ```ts
 // shared/types/index.d.ts
-export interface MonNouveauType {
+export interface MyNewType {
   id: number
   name: string
 }
 ```
 
-Puis importer via `@/types` côté frontend ou `@shared/types` côté backend.
+Then import via `@/types` on the frontend or `@shared/types` on the backend.
 
-## 7. Organisation des imports
-
+## 7. Import Organization
 
 ```ts
 // 1. React
 import React, { useState, useCallback } from 'react'
-// 2. Bibliothèques externes
+// 2. External libraries
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/button'
-// 3. Imports internes absolus
+// 3. Absolute internal imports
 import { Player } from '@/types'
 import { playerApi } from '@/features/players/playerApi'
 import { queryKeys } from '@/shared/services/api/queryKeys'
-// 4. Imports relatifs (dans la même feature uniquement)
+// 4. Relative imports (within the same feature only)
 import './Component.css'
 ```
 
-## 8. Internationalisation — useLabels + t()
+## 8. Internationalization — useLabels + t()
 
-Tous les textes affichés passent par `useLabels`. Les labels sont stockés en BDD (table `labels`) et chargés via `GET /api/v1/labels?locale=<locale>`.
+All displayed text goes through `useLabels`. Labels are stored in the DB (`labels` table) and loaded via `GET /api/v1/labels?locale=<locale>`.
 
 ```tsx
-// Dans n'importe quel composant
+// In any component
 const { t } = useLabels()
 <h1>{t('games.page.title')}</h1>
 ```
 
-**Règle** : aucune chaîne visible par l'utilisateur en dur dans le JSX.
+**Rule**: no user-visible string hardcoded in JSX.
 
-**Ajouter un label :**
-1. Ajouter la clé dans `src/shared/i18n/en.json` (fallback offline)
-2. Créer une migration SQL : `INSERT OR IGNORE INTO labels (key, locale, value) VALUES ...` pour chaque locale (`en`, `fr`, etc.)
+**Adding a label:**
+1. Add the key to `src/shared/i18n/en.json` (offline fallback)
+2. Create a SQL migration: `INSERT OR IGNORE INTO labels (key, locale, value) VALUES ...` for each locale (`en`, `fr`, etc.)
 
-**Changer de langue :** via `setLocale()` de `LocaleContext` — invalide le cache `['labels']` sans refresh.
+**Changing locale:** via `setLocale()` from `LocaleContext` — invalidates the `['labels']` cache without a page refresh.
 
-Les valeurs stockées en BDD (`Beginner`, `competitive`, etc.) sont toujours en anglais. Leur traduction pour l'affichage se fait via `t()` avec une clé dédiée, ou via les maps dans `shared/utils/formatters.ts`.
+Values stored in the DB (`Beginner`, `competitive`, etc.) are always in English. Their translation for display is done via `t()` with a dedicated key, or via maps in `shared/utils/formatters.ts`.
 
-## 9. Backend — pattern Repository/Service
+## 9. Backend — Repository/Service Pattern
 
-### Repository : requêtes SQL uniquement
+### Repository: SQL queries only
 
 ```ts
 // repositories/PlayerRepository.ts
@@ -208,10 +207,10 @@ export class PlayerRepository {
 }
 ```
 
-### Service : logique métier + transactions
+### Service: business logic + transactions
 
 ```ts
-// services/PlayService.ts — transactions confinées au service
+// services/PlayService.ts — transactions confined to the service
 createPlay(payload: CreatePlayRequest): GamePlay {
   return this.db.transaction(() => {
     const playId = this.playRepo.insertPlay(payload)
@@ -221,7 +220,7 @@ createPlay(payload: CreatePlayRequest): GamePlay {
 }
 ```
 
-### Route : HTTP uniquement
+### Route: HTTP only
 
 ```ts
 // routes/players.ts
@@ -231,37 +230,37 @@ router.post('/', validateBody(CreatePlayerSchema), async (req, res) => {
 })
 ```
 
-## 10. Migrations BDD
+## 10. DB Migrations
 
-Créer un fichier numéroté dans `backend/database/migrations/` :
+Create a numbered file in `backend/database/migrations/`:
 
 ```sql
 -- 007_add_favorite_category.sql
 ALTER TABLE players ADD COLUMN favorite_category TEXT;
 ```
 
-Le runner applique automatiquement les migrations non encore appliquées au démarrage. Ne jamais modifier un fichier de migration déjà appliqué — créer un nouveau fichier.
+The runner automatically applies unapplied migrations at startup. Never modify an already-applied migration file — create a new file.
 
-## 10. CSS — packages invisibles au grep TS
+## 10. CSS — Packages Invisible to TS Grep
 
-Ces packages sont importés via `@import` dans les fichiers CSS, pas en TypeScript :
+These packages are imported via `@import` in CSS files, not in TypeScript:
 - `tw-animate-css` → `src/index.css`
 - `@radix-ui/colors` → `src/styles/theme.css`
 
-Ne pas les supprimer sur la seule base d'un grep TypeScript.
+Do not remove them based solely on a TypeScript grep.
 
 ## 11. Performance
 
-- `useMemo` / `useCallback` sur les valeurs/fonctions coûteuses passées en props
-- `React.memo` sur les composants de liste (`GameCard`, `PlayerCard`)
-- `React.lazy` + `Suspense` pour le lazy loading des pages
-- Les vues SQL (`player_statistics`, `game_statistics`) évitent les requêtes N+1
+- `useMemo` / `useCallback` on expensive values/functions passed as props
+- `React.memo` on list components (`GameCard`, `PlayerCard`)
+- `React.lazy` + `Suspense` for lazy loading pages
+- SQL views (`player_statistics`, `game_statistics`) avoid N+1 queries
 
-## 12. Responsive design
+## 12. Responsive Design
 
-L'app supporte trois breakpoints :
-- **Mobile** : `BottomNavigation`, menus contextuels, layout colonne
-- **Tablette** : layout hybride
-- **Desktop** : actions directes, tooltips, layout multi-colonnes
+The app supports three breakpoints:
+- **Mobile**: `BottomNavigation`, contextual menus, column layout
+- **Tablet**: hybrid layout
+- **Desktop**: direct actions, tooltips, multi-column layout
 
-`use-mobile.ts` expose `isMobile`. Les composants utilisent des classes Tailwind conditionnelles. La logique de navigation (React Router) est indépendante du breakpoint.
+`use-mobile.ts` exposes `isMobile`. Components use conditional Tailwind classes. Navigation logic (React Router) is independent of the breakpoint.

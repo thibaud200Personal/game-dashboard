@@ -1,33 +1,33 @@
-# Architecture — Vue d'ensemble
+# Architecture — Overview
 
-## Stack technique (avril 2026)
+## Tech Stack (April 2026)
 
-| Couche | Technologie | Version |
+| Layer | Technology | Version |
 |---|---|---|
 | Runtime | Node.js | 24 LTS |
 | Frontend | React + TypeScript | 19 / 5.9 |
 | Build | Vite + SWC | 8 |
 | Backend | Express | 5 |
-| Base de données | SQLite (better-sqlite3) | 12.2 |
+| Database | SQLite (better-sqlite3) | 12.2 |
 | Validation | Zod | 4 |
-| State serveur | TanStack Query (React Query) | v5 |
+| Server state | TanStack Query (React Query) | v5 |
 | Forms | React Hook Form | — |
 | UI | shadcn/ui + Tailwind CSS | 4 |
-| Tests | Vitest + React Testing Library + MSW | — |
+| Testing | Vitest + React Testing Library + MSW | — |
 
-## Vue globale
+## Global Overview
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   Navigateur                     │
+│                   Browser                        │
 │  React 19 + React Router + React Query           │
 │  Tailwind CSS + shadcn/ui                        │
-│  Responsive : mobile / tablette / desktop        │
+│  Responsive: mobile / tablet / desktop           │
 └──────────────┬──────────────────────────────────┘
                │ HTTPS  /api/v1/*
-               │ JWT (cookie HttpOnly web / Bearer Android)
+               │ JWT (HttpOnly cookie web / Bearer Android)
 ┌──────────────▼──────────────────────────────────┐
-│              Backend Express 5                   │
+│              Express 5 Backend                   │
 │  Routes → Services → Repositories               │
 │  Zod validation · JWT auth · pino logging        │
 │  Rate limiting · Helmet · OpenAPI docs           │
@@ -35,78 +35,78 @@
                │
 ┌──────────────▼──────────────────────────────────┐
 │              SQLite (better-sqlite3)             │
-│  9 tables + 2 vues SQL + catalogue BGG           │
-│  Migrations numérotées (schema_version)          │
+│  9 tables + 2 SQL views + BGG catalog            │
+│  Numbered migrations (schema_version)            │
 └─────────────────────────────────────────────────┘
 ```
 
-## Principes fondamentaux
+## Core Principles
 
-### Source de vérité unique
-- **Types** : `shared/types/index.d.ts` — importé par frontend ET backend (voir [note](#shared-types))
-- **Données** : React Query côté client, vues SQL côté BDD
-- **Styles** : `tailwind.config.js` + `theme.json`
+### Single Source of Truth
+- **Types**: `shared/types/index.d.ts` — imported by both frontend AND backend (see [note](#shared-types))
+- **Data**: React Query on the client, SQL views on the DB
+- **Styles**: `tailwind.config.js` + `theme.json`
 
-### Séparation des responsabilités
-- Frontend ne contient aucune logique métier (tout dans les services)
-- Backend ne connaît pas le type de client (web ou Android)
-- Chaque couche a une responsabilité unique et testable
+### Separation of Concerns
+- Frontend contains no business logic (all in services)
+- Backend is client-agnostic (web or Android)
+- Each layer has a single, testable responsibility
 
-### Sécurité par défaut
-- JWT signé côté backend, stocké en cookie HttpOnly côté web
-- Zod valide body, paramètres de route ET query strings
-- Helmet sur tous les endpoints
-- Erreurs masquées en production
+### Security by Default
+- JWT signed on the backend, stored in HttpOnly cookie on the web
+- Zod validates body, route parameters, AND query strings
+- Helmet on all endpoints
+- Errors masked in production
 
-## Organisation du monorepo
+## Monorepo Structure
 
 ```
 game-dashboard/
-├── shared/                  ← types et utilitaires partagés front/back
+├── shared/                  ← shared types and utilities (front/back)
 │   ├── types/index.ts
 │   └── utils/formatters.ts
-├── src/                     ← frontend React
-├── backend/                 ← API Express
+├── src/                     ← React frontend
+├── backend/                 ← Express API
 ├── docs/                    ← documentation
-├── .env.example             ← template variables d'environnement
+├── .env.example             ← environment variables template
 ├── docker-compose.yml
 └── Dockerfile
 ```
 
-## Flux de données
+## Data Flow
 
 ```
-Composant React
+React Component
   → useQuery / useMutation (React Query)
-  → api/playerApi.ts (fetch HTTP)
+  → api/playerApi.ts (HTTP fetch)
   → Express route /api/v1/players
-  → PlayerService (logique métier)
-  → PlayerRepository (requête SQL)
+  → PlayerService (business logic)
+  → PlayerRepository (SQL query)
   → SQLite
-  → réponse JSON
+  → JSON response
   → React Query cache
-  → composant re-render
+  → component re-render
 ```
 
-## Multi-client (web + Android futur)
+## Multi-Client (web + future Android)
 
-Le backend est un **API first-class**, pas "le backend de ce site". Il sert indifféremment :
-- Le frontend web (cookie HttpOnly)
-- Une app Android future (header `Authorization: Bearer`)
-- Tout autre client HTTP
+The backend is a **first-class API**, not "the backend for this website". It serves equally:
+- The web frontend (HttpOnly cookie)
+- A future Android app (`Authorization: Bearer` header)
+- Any other HTTP client
 
-Le versioning `/api/v1/` permet des évolutions sans breaking change.
+The `/api/v1/` versioning allows evolution without breaking changes.
 
 ## Documentation
 
-| Document | Contenu |
+| Document | Content |
 |---|---|
-| `docs/architecture/FRONTEND.md` | Architecture frontend détaillée |
-| `docs/architecture/BACKEND.md` | Architecture backend détaillée |
-| `docs/architecture/DATABASE.md` | Schéma BDD, vues SQL, migrations |
-| `docs/architecture/DATA_MAPPING.md` | Interfaces TypeScript ↔ tables BDD |
-| `docs/guides/CONTRIBUTING.md` | Onboarding nouveau développeur |
-| `docs/guides/DEVELOPMENT.md` | Patterns et conventions de code |
-| `docs/guides/DEPLOYMENT.md` | Docker, variables d'environnement |
-| `docs/security/SECURITY.md` | Modèle de menace, JWT, pratiques |
+| `docs/architecture/FRONTEND.md` | Frontend architecture deep-dive |
+| `docs/architecture/BACKEND.md` | Backend architecture deep-dive |
+| `docs/architecture/DATABASE.md` | DB schema, SQL views, migrations |
+| `docs/architecture/DATA_MAPPING.md` | TypeScript interfaces ↔ DB tables |
+| `docs/guides/CONTRIBUTING.md` | New developer onboarding |
+| `docs/guides/DEVELOPMENT.md` | Patterns and code conventions |
+| `docs/guides/DEPLOYMENT.md` | Docker, environment variables |
+| `docs/security/SECURITY.md` | Threat model, JWT, security practices |
 | `docs/decisions/` | Architecture Decision Records |

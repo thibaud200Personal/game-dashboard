@@ -1,24 +1,24 @@
-# Guide de déploiement
+# Deployment Guide
 
-## Architecture Docker
+## Docker Architecture
 
-### Maintenant — single container
+### Now — Single Container
 
-Le frontend (fichiers statiques compilés) et le backend (API Express) tournent dans le même conteneur. Express sert à la fois les fichiers statiques et l'API.
+The frontend (compiled static files) and the backend (Express API) run in the same container. Express serves both the static files and the API.
 
 ```
-[Navigateur]
+[Browser]
     ↓ HTTPS
-[Container unique]
+[Single Container]
   ├── Express → GET /api/v1/*  (API)
-  ├── Express → GET /*         (fichiers statiques dist/)
-  └── SQLite volume nommé
+  ├── Express → GET /*         (static dist/ files)
+  └── SQLite named volume
 ```
 
-### Futur — deux containers
+### Future — Two Containers
 
 ```yaml
-# docker-compose.yml (futur)
+# docker-compose.yml (future)
 services:
   nginx:
     image: nginx:alpine
@@ -42,18 +42,18 @@ volumes:
   db_data:
 ```
 
-nginx route `/api/*` vers le backend, tout le reste vers les fichiers statiques.
+nginx routes `/api/*` to the backend, everything else to static files.
 
-**Note** : SQLite reste accessible uniquement par le conteneur backend. Pas de problème de concurrence entre containers.
+**Note**: SQLite remains accessible only by the backend container. No concurrency issue between containers.
 
-## Dockerfile multi-stage
+## Multi-Stage Dockerfile
 
 ```dockerfile
 # Stage 1 — build (sources + tests + compilation)
 FROM node:24-alpine AS builder
 WORKDIR /app
 
-# Shared types (nécessaire pour les deux builds)
+# Shared types (needed for both builds)
 COPY shared/ ./shared/
 
 # Frontend
@@ -62,29 +62,29 @@ COPY tsconfig*.json ./
 COPY vite.config.ts ./
 COPY src/ ./src/
 RUN npm ci
-RUN npm run test:run          # Bloque si tests échouent
+RUN npm run test:run          # Blocks if tests fail
 RUN npm run build             # → dist/
 
 # Backend
 COPY backend/package*.json ./backend/
 RUN cd backend && npm ci
 COPY backend/ ./backend/
-RUN cd backend && npm run test:run   # Bloque si tests échouent
+RUN cd backend && npm run test:run   # Blocks if tests fail
 RUN cd backend && npm run build      # → backend/dist/
 
-# Stage 2 — production (uniquement les artefacts)
+# Stage 2 — production (artifacts only)
 FROM node:24-alpine AS production
 WORKDIR /app
 
-# Fichiers statiques frontend
+# Frontend static files
 COPY --from=builder /app/dist ./dist
 
-# Backend compilé
+# Compiled backend
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/node_modules ./backend/node_modules
 COPY --from=builder /app/backend/package.json ./backend/package.json
 
-# Données persistantes
+# Persistent data
 VOLUME /app/data
 
 ENV NODE_ENV=production
@@ -93,34 +93,34 @@ EXPOSE 3001
 CMD ["node", "backend/dist/server.js"]
 ```
 
-**Garantie** : si un test échoue en Stage 1, l'image ne se construit pas. Tests fonctionnels = condition nécessaire au déploiement.
+**Guarantee**: if a test fails in Stage 1, the image does not build. Passing tests are a necessary condition for deployment.
 
-## Variables d'environnement
+## Environment Variables
 
-Copier `.env.example` vers `.env` et remplir toutes les valeurs.
+Copy `.env.example` to `.env` and fill in all values.
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable | Obligatoire | Description |
+| Variable | Required | Description |
 |---|---|---|
-| `AUTH_JWT_SECRET` | ✅ | Secret signature JWT. Générer : `openssl rand -hex 32` |
-| `ADMIN_PASSWORD` | ✅ | Mot de passe admin (import BGG, features avancées) |
-| `USER_PASSWORD` | ✅ | Mot de passe utilisateur standard |
-| `PORT` | Non | Port backend (défaut : 3001) |
-| `NODE_ENV` | ✅ prod | `production` en prod, `development` en local |
-| `CORS_ORIGINS` | ✅ | Origines CORS autorisées, séparées par `,` |
-| `LOG_LEVEL` | Non | Niveau de log pino (défaut : `info`) |
-| `DB_PATH` | Non | Chemin SQLite (défaut : `/app/data/database.db`) |
+| `AUTH_JWT_SECRET` | ✅ | JWT signing secret. Generate: `openssl rand -hex 32` |
+| `ADMIN_PASSWORD` | ✅ | Admin password (BGG import, advanced features) |
+| `USER_PASSWORD` | ✅ | Standard user password |
+| `PORT` | No | Backend port (default: 3001) |
+| `NODE_ENV` | ✅ prod | `production` in prod, `development` locally |
+| `CORS_ORIGINS` | ✅ | Allowed CORS origins, comma-separated |
+| `LOG_LEVEL` | No | pino log level (default: `info`) |
+| `DB_PATH` | No | SQLite path (default: `/app/data/database.db`) |
 
-## Démarrage en production
+## Starting in Production
 
 ```bash
-# Build de l'image
+# Build the image
 docker build -t game-dashboard .
 
-# Démarrage avec les variables d'environnement
+# Start with environment variables
 docker run -d \
   --name game-dashboard \
   -p 443:3001 \
@@ -131,7 +131,7 @@ docker run -d \
 
 ## Backups
 
-La base de données SQLite est dans le volume `game_db`. Backup manuel :
+The SQLite database is in the `game_db` volume. Manual backup:
 
 ```bash
 docker run --rm \
@@ -140,41 +140,41 @@ docker run --rm \
   alpine tar czf /backups/db-$(date +%Y%m%d).tar.gz -C /data .
 ```
 
-Automatiser avec un cron host ou un conteneur dédié.
+Automate with a host cron job or a dedicated container.
 
-## Import catalogue BGG
+## BGG Catalog Import
 
-Le catalogue BGG (175k jeux) doit être importé manuellement depuis l'interface Settings (rôle admin requis).
+The BGG catalog (175k games) must be imported manually from the Settings interface (admin role required).
 
-1. Télécharger le dump CSV mensuel BGG : `boardgames_ranks.csv`
-2. Uploader via Settings → "Import BGG Catalog"
-3. L'import prend quelques secondes (FTS5 + index)
+1. Download the monthly BGG CSV dump: `boardgames_ranks.csv`
+2. Upload via Settings → "Import BGG Catalog"
+3. Import takes a few seconds (FTS5 + index)
 
-Le catalogue n'est pas inclus dans l'image Docker — il est stocké dans la base de données persistante.
+The catalog is not included in the Docker image — it is stored in the persistent database.
 
 ## HTTPS
 
-En production, configurer HTTPS au niveau du reverse proxy (nginx, Caddy, Traefik) ou d'un service cloud. Certificat Let's Encrypt recommandé.
+In production, configure HTTPS at the reverse proxy level (nginx, Caddy, Traefik) or a cloud service. Let's Encrypt certificate recommended.
 
-Exemple Caddyfile minimal :
+Minimal Caddyfile:
 ```
-ton-domaine.com {
+your-domain.com {
   reverse_proxy localhost:3001
 }
 ```
 
-Caddy gère automatiquement le certificat Let's Encrypt et la redirection HTTP→HTTPS.
+Caddy automatically handles the Let's Encrypt certificate and HTTP→HTTPS redirection.
 
 ## Monitoring
 
-Les logs sont sur stdout au format JSON (pino). Consultation :
+Logs are on stdout in JSON format (pino). Viewing:
 
 ```bash
 docker logs game-dashboard --follow
-docker logs game-dashboard --since 1h | grep '"level":50'  # erreurs uniquement
+docker logs game-dashboard --since 1h | grep '"level":50'  # errors only
 ```
 
-Pour filtrer par niveau :
+To filter by level:
 ```bash
-docker logs game-dashboard | npx pino-pretty  # formatage lisible en dev
+docker logs game-dashboard | npx pino-pretty  # readable formatting in dev
 ```

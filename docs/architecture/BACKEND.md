@@ -1,15 +1,15 @@
-# Architecture Backend
+# Backend Architecture
 
-## Vue d'ensemble
+## Overview
 
-Le backend est une API Express 5 en TypeScript, organisée en couches strictes. Il est conçu comme un **API first-class** capable de servir plusieurs clients (web, Android).
+The backend is an Express 5 API in TypeScript, organized in strict layers. It is designed as a **first-class API** capable of serving multiple clients (web, Android).
 
-## Structure des fichiers
+## File Structure
 
 ```
 backend/
-├── server.ts                    → setup Express + enregistrement routes
-├── routes/                      → handlers HTTP (parsing uniquement)
+├── server.ts                    → Express setup + route registration
+├── routes/                      → HTTP handlers (parsing only)
 │   ├── players.ts
 │   ├── games.ts
 │   ├── plays.ts
@@ -19,14 +19,14 @@ backend/
 │   ├── data.ts
 │   ├── logs.ts
 │   └── auth.ts
-├── services/                    → logique métier + transactions
+├── services/                    → business logic + transactions
 │   ├── PlayerService.ts
 │   ├── GameService.ts
 │   ├── PlayService.ts
 │   ├── StatsService.ts
 │   ├── LabelsService.ts
 │   └── AuthService.ts
-├── repositories/                → accès BDD (une entité par fichier)
+├── repositories/                → DB access (one file per entity)
 │   ├── PlayerRepository.ts
 │   ├── GameRepository.ts
 │   ├── PlayRepository.ts
@@ -35,36 +35,36 @@ backend/
 │   ├── LabelsRepository.ts
 │   └── RefreshTokenRepository.ts
 ├── database/
-│   ├── DatabaseConnection.ts    → connexion SQLite + runner migrations
-│   └── migrations/              → fichiers SQL numérotés (001 → 015)
+│   ├── DatabaseConnection.ts    → SQLite connection + migration runner
+│   └── migrations/              → numbered SQL files (001 → 015)
 ├── middleware/
-│   ├── auth.ts                  → vérification JWT (cookie + Bearer)
-│   ├── requireRole.ts           → guard admin/user
-│   └── errorHandler.ts          → mapping erreurs → HTTP
+│   ├── auth.ts                  → JWT verification (cookie + Bearer)
+│   ├── requireRole.ts           → admin/user guard
+│   └── errorHandler.ts          → error → HTTP mapping
 └── validation/
-    ├── schemas.ts               → schémas Zod
-    └── middleware.ts            → middleware validation
+    ├── schemas.ts               → Zod schemas
+    └── middleware.ts            → validation middleware
 ```
 
-## Flux d'une requête
+## Request Flow
 
 ```
 HTTP Request
   ↓ [cors, helmet, json parser]
-  ↓ [auth middleware]         → vérifie JWT, injecte { sub, role } dans req
-  ↓ [requireRole middleware]  → sur routes protégées admin
-  ↓ [validation middleware]   → Zod : body + params + query
-  ↓ [Route handler]           → extrait les données, appelle le service
-  ↓ [Service]                 → logique métier, transactions
-  ↓ [Repository]              → requêtes SQL typées
+  ↓ [auth middleware]         → verifies JWT, injects { sub, role } into req
+  ↓ [requireRole middleware]  → on admin-protected routes
+  ↓ [validation middleware]   → Zod: body + params + query
+  ↓ [Route handler]           → extracts data, calls the service
+  ↓ [Service]                 → business logic, transactions
+  ↓ [Repository]              → typed SQL queries
   ↓ [DatabaseConnection]      → SQLite
-  ↓ [errorHandler]            → si exception : mappe en code HTTP
+  ↓ [errorHandler]            → on exception: maps to HTTP code
 → JSON Response
 ```
 
-## Couche Routes
+## Routes Layer
 
-**Responsabilité unique** : parsing HTTP. Une route ne contient aucune logique métier.
+**Single responsibility**: HTTP parsing. A route contains no business logic.
 
 ```ts
 // routes/players.ts
@@ -74,16 +74,16 @@ router.post('/', validateBody(CreatePlayerSchema), async (req, res) => {
 })
 ```
 
-Les routes ne savent pas comment les données sont stockées.
+Routes have no knowledge of how data is stored.
 
-## Couche Services
+## Services Layer
 
-**Responsabilité** : logique métier + orchestration de transactions.
+**Responsibility**: business logic + transaction orchestration.
 
-Règles :
-- Un service peut appeler plusieurs repositories
-- Les transactions restent confinées au service — jamais exposées à la route
-- Les services lèvent des erreurs typées (`NotFoundError`, `ConflictError`)
+Rules:
+- A service can call multiple repositories
+- Transactions are confined to the service — never exposed to the route
+- Services throw typed errors (`NotFoundError`, `ConflictError`)
 
 ```ts
 // services/PlayService.ts
@@ -96,9 +96,9 @@ createPlay(payload: CreatePlayRequest): GamePlay {
 }
 ```
 
-## Couche Repositories
+## Repositories Layer
 
-**Responsabilité** : requêtes SQL pour une entité. Chaque repository reçoit `DatabaseConnection` en paramètre (injection de dépendance → testable).
+**Responsibility**: SQL queries for one entity. Each repository receives `DatabaseConnection` as a constructor parameter (dependency injection → testable).
 
 ```ts
 // repositories/PlayerRepository.ts
@@ -115,9 +115,9 @@ export class PlayerRepository {
 }
 ```
 
-Les repositories ne savent pas qu'ils peuvent être dans une transaction.
+Repositories have no knowledge of being inside a transaction.
 
-## Erreurs typées
+## Typed Errors
 
 ```ts
 // middleware/errorHandler.ts
@@ -126,50 +126,50 @@ export class ConflictError extends Error { ... }
 export class ValidationError extends Error { ... }
 export class ForbiddenError extends Error { ... }
 
-// Mapping automatique :
+// Automatic mapping:
 // NotFoundError   → 404
 // ConflictError   → 409
 // ValidationError → 400
 // ForbiddenError  → 403
-// Autres          → 500 (message masqué en prod)
+// Others          → 500 (message hidden in production)
 ```
 
-## Authentification JWT
+## JWT Authentication
 
 ```
 POST /api/v1/auth/login
   Body: { password: string }
-  → valide contre ADMIN_PASSWORD ou USER_PASSWORD (.env)
-  → génère JWT signé : { sub: 'user', role: 'admin'|'user', exp: now+1h }
-  → set cookie HttpOnly (accessToken, 1h) + refreshToken (7j)
-  → web : Set-Cookie httpOnly + SameSite=Strict
-  → Android : { token, expiresIn }
+  → validates against ADMIN_PASSWORD or USER_PASSWORD (.env)
+  → generates signed JWT: { sub: 'user', role: 'admin'|'user', exp: now+1h }
+  → sets HttpOnly cookie (accessToken, 1h) + refreshToken (7d)
+  → web: Set-Cookie httpOnly + SameSite=Strict
+  → Android: { token, expiresIn }
 
 POST /api/v1/auth/refresh
-  → lit le refreshToken depuis le cookie
-  → rotation : ancien token invalidé, nouveau émis
-  → répond avec un nouveau accessToken
+  → reads refreshToken from cookie
+  → rotation: old token invalidated, new one issued
+  → responds with new accessToken
 
-Routes protégées :
-  → middleware auth.ts vérifie le JWT (cookie OU header Authorization)
-  → injecte req.user = { sub, role }
+Protected routes:
+  → auth.ts middleware verifies JWT (cookie OR Authorization header)
+  → injects req.user = { sub, role }
 
-Routes admin-only :
-  → middleware requireRole('admin')
-  → 403 si role !== 'admin'
+Admin-only routes:
+  → requireRole('admin') middleware
+  → 403 if role !== 'admin'
 ```
 
-**Refresh token rotation** : chaque refresh invalide le token précédent (table `refresh_tokens`). Un token réutilisé déclenche la révocation de toute la famille (protection contre le vol de token).
+**Refresh token rotation**: each refresh invalidates the previous token (`refresh_tokens` table). A reused revoked token triggers revocation of the entire family (protection against token theft).
 
-Rôles :
-| Rôle | Accès |
+Roles:
+| Role | Access |
 |---|---|
-| `user` | Lecture + création plays/jeux/joueurs, export données |
-| `admin` | Tout user + import BGG catalog + enrichissement Wikidata + suppression en masse |
+| `user` | Read + create plays/games/players, data export |
+| `admin` | All user access + BGG catalog import + Wikidata enrichment + bulk deletion |
 
-## Migrations BDD
+## DB Migrations
 
-Les migrations sont des fichiers SQL numérotés appliqués séquentiellement au démarrage.
+Migrations are numbered SQL files applied sequentially at startup.
 
 ```
 backend/database/migrations/
@@ -189,7 +189,7 @@ backend/database/migrations/
 └── 014_add_enrich_labels.sql
 ```
 
-Table de suivi :
+Tracking table:
 ```sql
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY,
@@ -197,15 +197,15 @@ CREATE TABLE IF NOT EXISTS schema_version (
 )
 ```
 
-Le runner vérifie `MAX(version)`, applique les fichiers manquants dans une transaction atomique. Un crash en milieu de migration laisse la BDD dans son état précédent.
+The runner checks `MAX(version)`, applies missing files in an atomic transaction. A crash mid-migration leaves the DB in its previous state.
 
-## Ajouter un endpoint — checklist
+## Adding an Endpoint — Checklist
 
-1. Ajouter le type dans `shared/types/index.ts` si nécessaire
-2. Ajouter le schéma Zod dans `backend/validation/schemas.ts`
-3. Ajouter la méthode dans le repository correspondant
-4. Ajouter la logique dans le service correspondant
-5. Ajouter la route dans `backend/routes/`
-6. Enregistrer la route dans `server.ts`
-7. Écrire les tests : repository (DB in-memory) + service (mocks) + route (supertest)
-8. Mettre à jour `docs/architecture/DATA_MAPPING.md` si un type change
+1. Add the type in `shared/types/index.ts` if needed
+2. Add the Zod schema in `backend/validation/schemas.ts`
+3. Add the method in the relevant repository
+4. Add the logic in the relevant service
+5. Add the route in `backend/routes/`
+6. Register the route in `server.ts`
+7. Write tests: repository (in-memory DB) + service (mocks) + route (supertest)
+8. Update `docs/architecture/DATA_MAPPING.md` if a type changes

@@ -1,34 +1,34 @@
-# ADR-001 — Types partagés dans `shared/`
+# ADR-001 — Shared Types in `shared/`
 
-**Date** : 31 mars 2026
-**Statut** : Accepté
+**Date**: March 31, 2026
+**Status**: Accepted
 
-## Contexte
+## Context
 
-Le projet avait deux fichiers de types distincts :
+The project had two distinct type files:
 - `src/types/index.ts` (frontend)
 - `backend/models/interfaces.ts` (backend)
 
-Ces deux fichiers décrivent les mêmes entités (`Player`, `Game`, `GameSession`...) mais sont maintenus indépendamment. Des divergences silencieuses sont apparues (`game_type`, `pseudo`).
+Both files describe the same entities (`Player`, `Game`, `GameSession`...) but are maintained independently. Silent divergences appeared (`game_type`, `pseudo`).
 
-## Décision
+## Decision
 
-Créer un dossier `shared/types/` à la racine du monorepo avec un fichier `index.d.ts` (déclaration TypeScript écrite à la main — pas de `.ts` source compilé). Frontend et backend importent depuis ce fichier via l'alias `@shared/types`. `backend/models/interfaces.ts` est supprimé. `src/types/index.ts` réexporte uniquement depuis `shared/types`.
+Create a `shared/types/` folder at the monorepo root with an `index.d.ts` file (hand-written TypeScript declaration — no compiled `.ts` source). Frontend and backend both import from this file via the `@shared/types` alias. `backend/models/interfaces.ts` is deleted. `src/types/index.ts` only re-exports from `shared/types`.
 
-> **Note implémentation** : `index.d.ts` est intentionnellement hand-written. Le backend a `rootDir: "./"` et le frontend `noEmit: true` — aucun risque d'écrasement par `tsc`. Pour ajouter un type : éditer `shared/types/index.d.ts` directement, sans étape de build. Voir [DEVELOPMENT.md §6](../guides/DEVELOPMENT.md#6-types-partagés--sharedtypes).
+> **Implementation note**: `index.d.ts` is intentionally hand-written. The backend has `rootDir: "./"` and the frontend has `noEmit: true` — no risk of being overwritten by `tsc`. To add a type: edit `shared/types/index.d.ts` directly, no build step required. See [DEVELOPMENT.md §6](../guides/DEVELOPMENT.md#6-shared-types--sharedtypes).
 
-## Conséquences
+## Consequences
 
-**Positives :**
-- Source de vérité unique — un seul endroit à modifier quand un type change
-- TypeScript détecte les incohérences au build (front + back compilent contre les mêmes types)
-- Préparation naturelle pour un client Android futur
+**Positive:**
+- Single source of truth — one place to change when a type changes
+- TypeScript catches inconsistencies at build time (front + back compile against the same types)
+- Natural preparation for a future Android client
 
-**Négatives :**
-- Migration à faire : déplacer les types, mettre à jour les imports, configurer les path aliases dans les deux tsconfig
-- Le Dockerfile doit copier `shared/` avant de builder les deux projets
+**Negative:**
+- Migration required: move types, update imports, configure path aliases in both tsconfigs
+- The Dockerfile must copy `shared/` before building both projects
 
-## Alternatives rejetées
+## Rejected Alternatives
 
-- **Frontend comme source** (`src/types/` → backend importe depuis `../src/types`) : crée une dépendance backend → frontend, sémantiquement fausse
-- **Backend comme source** (`backend/models/` → frontend importe depuis `../backend/models`) : même problème inversé
+- **Frontend as source** (`src/types/` → backend imports from `../src/types`): creates a backend → frontend dependency, semantically wrong
+- **Backend as source** (`backend/models/` → frontend imports from `../backend/models`): same problem in reverse

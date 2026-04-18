@@ -1,16 +1,16 @@
-# Architecture Frontend
+# Frontend Architecture
 
-## Vue d'ensemble
+## Overview
 
-Application React 19 en TypeScript, organisée selon une architecture **feature-based** (fonctionnalités co-localisées). Navigation via React Router v7. Données serveur gérées exclusivement par React Query.
+React 19 application in TypeScript, organized according to a **feature-based** architecture (co-located features). Navigation via React Router v7. Server state managed exclusively by React Query.
 
-## Structure des fichiers
+## File Structure
 
 ```
 src/
-├── features/                    → features co-localisées
+├── features/                    → co-located features
 │   ├── auth/                    → LoginPage
-│   ├── bgg/                     → BGGSearch + bggApi (importable par games et settings)
+│   ├── bgg/                     → BGGSearch + bggApi (importable by games and settings)
 │   ├── dashboard/               → Dashboard, DashboardView, useDashboard
 │   ├── games/                   → GamesPage, GamesPageView, useGamesPage, gameApi, dialogs/
 │   │   ├── detail/              → GameDetailPage, GameDetailView, useGameDetail, GamePageRoute
@@ -22,59 +22,59 @@ src/
 │   └── stats/                   → StatsPage (shell)
 │       ├── game/                → GameStatsView, useGameStatsPage
 │       └── player/              → PlayerStatsView, usePlayerStatsPage
-├── shared/                      → modules transversaux (utilisés par 2+ features)
-│   ├── components/ui/           → composants shadcn/ui (ne pas éditer manuellement)
+├── shared/                      → cross-cutting modules (used by 2+ features)
+│   ├── components/ui/           → shadcn/ui components (do not edit manually)
 │   ├── components/              → Layout.tsx, BottomNavigation.tsx
 │   ├── contexts/                → AuthContext.tsx, DarkModeContext.tsx, LocaleContext.tsx
 │   ├── services/api/            → request.ts, queryKeys.ts, authApi.ts, labelsApi.ts, statsApi.ts
 │   ├── hooks/                   → useLabels, useLocales, useApiReachable, useNavigationAdapter, use-mobile
-│   ├── i18n/                    → en.json (fallback offline)
+│   ├── i18n/                    → en.json (offline fallback)
 │   ├── utils/                   → gameHelpers.ts
 │   ├── lib/                     → utils.ts (cn helper shadcn)
 │   └── styles/                  → theme.css
-│   └── __tests__/               → infrastructure de test partagée (mocks/, fixtures/, utils/)
-├── App.tsx                      → shell : Router + QueryClient + providers
+│   └── __tests__/               → shared test infrastructure (mocks/, fixtures/, utils/)
+├── App.tsx                      → shell: Router + QueryClient + providers
 ├── main.tsx
 ├── ErrorFallback.tsx
-└── types/                       → réexporte shared/types uniquement
+└── types/                       → re-exports from shared/types only
 ```
 
-## Règles d'architecture
+## Architecture Rules
 
-- **Isolation des features** : une feature n'importe **jamais** depuis une autre feature.
-  - Exception unique : `features/bgg/` est importable par `features/games/` et `features/settings/` (feature utilitaire partagée).
-- **Promotion vers shared** : tout module utilisé par 2+ features doit être déplacé dans `src/shared/`.
-- **Alias de chemins** :
-  - `@/` → `src/` (imports intra-feature et vers shared)
-  - `@shared/` → `/shared` (types partagés front+back — à ne pas confondre avec `@/shared/`)
+- **Feature isolation**: a feature **never** imports from another feature.
+  - Single exception: `features/bgg/` is importable by `features/games/` and `features/settings/` (shared utility feature).
+- **Promotion to shared**: any module used by 2+ features must be moved to `src/shared/`.
+- **Path aliases**:
+  - `@/` → `src/` (intra-feature and shared imports)
+  - `@shared/` → `/shared` (front+back shared types — not to be confused with `@/shared/`)
 
-## Pattern Container/Presenter
+## Container/Presenter Pattern
 
-Séparation stricte entre logique et présentation, co-localisés dans la même feature.
+Strict separation between logic and presentation, co-located within the same feature.
 
 ```
 Page (container)            View (presenter)
 ────────────────            ─────────────────
 GamesPage.tsx    →  hooks → GamesPageView.tsx
-  useGamesPage()               JSX pur
-  logique + état               props seulement
-  appels API                   aucun appel API
+  useGamesPage()               pure JSX
+  logic + state                props only
+  API calls                    no API calls
 ```
 
-**Règle** : si un composant `View` contient un `useQuery`, `useMutation` ou un appel direct à une API, c'est une erreur de placement.
+**Rule**: if a `View` component contains a `useQuery`, `useMutation`, or a direct API call, it is misplaced.
 
 ## Navigation — React Router v7
 
-`App.tsx` est un shell pur. Il ne contient aucun état de navigation.
+`App.tsx` is a pure shell. It contains no navigation state.
 
 ```tsx
-// App.tsx — shell pur, providers globaux + routes
+// App.tsx — pure shell, global providers + routes
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LocaleProvider>           {/* langue + invalidation cache labels */}
+      <LocaleProvider>           {/* locale + labels cache invalidation */}
         <AuthProvider>
-          <DarkModeProvider>     {/* dark mode (localStorage + class html) */}
+          <DarkModeProvider>     {/* dark mode (localStorage + html class) */}
             <TooltipProvider>
               <BrowserRouter>
                 <Routes>
@@ -103,42 +103,42 @@ export default function App() {
 }
 ```
 
-**Providers globaux :**
-- `LocaleProvider` — lit/écrit `localStorage.locale`, invalide le cache React Query `['labels']` à chaque changement. Doit envelopper `AuthProvider` (le login peut utiliser des labels traduits)
-- `DarkModeProvider` — lit/écrit `localStorage.darkMode`, applique la classe `dark` sur `<html>`
+**Global providers:**
+- `LocaleProvider` — reads/writes `localStorage.locale`, invalidates the React Query `['labels']` cache on every change. Must wrap `AuthProvider` (login may use translated labels)
+- `DarkModeProvider` — reads/writes `localStorage.darkMode`, applies the `dark` class on `<html>`
 
-### Navigation contextuelle mobile
+### Contextual Mobile Navigation
 
-`location.state` est utilisé pour les cas où l'origine doit être connue :
+`location.state` is used when the origin screen must be known:
 
 ```ts
-// Depuis un jeu, aller aux stats en gardant le contexte
+// From a game page, navigate to stats while keeping context
 navigate('/stats/games/42', { state: { from: '/games' } })
 
-// Dans la page stats, le bouton retour utilise ce contexte
+// In the stats page, the back button uses this context
 const { state } = useLocation()
 const backPath = (state as { from?: string })?.from ?? '/'
 ```
 
-### Responsive layout
+### Responsive Layout
 
-`BottomNavigation` (mobile) utilise `useLocation()` pour l'état actif des onglets. Le layout adaptatif est géré par Tailwind + `use-mobile.ts` — indépendant du routeur.
+`BottomNavigation` (mobile) uses `useLocation()` for the active tab state. The adaptive layout is handled by Tailwind + `use-mobile.ts` — independent of the router.
 
-## State management
+## State Management
 
-React Query est la **seule** source de vérité pour les données serveur.
+React Query is the **single** source of truth for server data.
 
 ```
-Avant (à corriger) :
-  App.tsx [players useState] ← doublon
-  usePlayersPage [useQuery players] ← source réelle
+Before (to fix):
+  App.tsx [players useState] ← duplicate
+  usePlayersPage [useQuery players] ← real source
 
-Après :
-  App.tsx → aucun état serveur
-  usePlayersPage [useQuery players] → unique
+After:
+  App.tsx → no server state
+  usePlayersPage [useQuery players] → single source
 ```
 
-### Clés de cache — queryKeys.ts
+### Cache Keys — queryKeys.ts
 
 ```ts
 export const queryKeys = {
@@ -162,11 +162,11 @@ export const queryKeys = {
 }
 ```
 
-**Règle** : toujours utiliser `queryKeys` pour invalider le cache. Ne jamais écrire des clés en dur dans les hooks.
+**Rule**: always use `queryKeys` to invalidate the cache. Never hardcode keys in hooks.
 
 ## Hooks
 
-Un hook par page, co-localisé dans sa feature. Responsabilité : données + état local de la page.
+One hook per page, co-located in its feature. Responsibility: data + local page state.
 
 ```ts
 // features/games/useGamesPage.ts
@@ -181,7 +181,7 @@ export function useGamesPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.games.all }),
   })
 
-  // état local (recherche, filtres, dialogs)
+  // local state (search, filters, dialogs)
   const [search, setSearch] = useState('')
   const [isAddOpen, setIsAddOpen] = useState(false)
 
@@ -189,11 +189,11 @@ export function useGamesPage() {
 }
 ```
 
-**Règle** : un hook ne fait `useQuery` que sur les données dont sa page a besoin.
+**Rule**: a hook only calls `useQuery` for data that its page actually needs.
 
 ## Dialogs
 
-Chaque dialog gère son propre état de formulaire. Communication via props standard :
+Each dialog manages its own form state. Communication via standard props:
 
 ```tsx
 interface AddGameDialogProps {
@@ -203,44 +203,44 @@ interface AddGameDialogProps {
 }
 ```
 
-### Pattern trigger prop (suppression)
+### Trigger Prop Pattern (deletion)
 
-Les dialogs de suppression utilisent une prop `trigger` pour éviter les conflits Radix :
+Delete dialogs use a `trigger` prop to avoid Radix conflicts:
 
 ```tsx
 <DeleteGameDialog
   gameName={game.name}
   onDelete={() => handleDelete(game.game_id)}
-  trigger={<button>Supprimer</button>}
+  trigger={<button>Delete</button>}
 />
 ```
 
-Ne jamais passer un composant Radix composite (ex: `<Tooltip>`) comme trigger — `AlertDialogTrigger asChild` clone le child direct.
+Never pass a composite Radix component (e.g. `<Tooltip>`) as trigger — `AlertDialogTrigger asChild` clones the direct child.
 
 ## Types
 
-Les types vivent dans `shared/types/index.d.ts` (fichier de déclaration TypeScript écrit à la main — voir [note dans DEVELOPMENT.md §3](../guides/DEVELOPMENT.md#3-types-partagés--sharedtypes)). Le dossier `src/types/` réexporte uniquement :
+Types live in `shared/types/index.d.ts` (hand-written TypeScript declaration file — see [note in DEVELOPMENT.md §3](../guides/DEVELOPMENT.md#3-shared-types--sharedtypes)). The `src/types/` folder only re-exports:
 
 ```ts
 // src/types/index.ts
 export * from '../../shared/types'
 ```
 
-**Règles :**
-- Zéro `any` — utiliser `unknown`, `never`, ou des types précis
-- Zéro interface locale si elle existe dans `shared/types`
-- Les champs d'affichage calculés (`formatPlayerStats`, `formatPlayerCount`) sont des fonctions dans `shared/utils/formatters.ts`, pas des champs de type
+**Rules:**
+- Zero `any` — use `unknown`, `never`, or precise types
+- Zero local interface if it already exists in `shared/types`
+- Display-computed fields (`formatPlayerStats`, `formatPlayerCount`) are functions in `shared/utils/formatters.ts`, not type fields
 
-## Responsive design
+## Responsive Design
 
-L'app gère trois breakpoints :
-- **Mobile** : navigation via `BottomNavigation`, menus contextuels
-- **Tablette** : layout hybride
-- **Desktop** : navigation latérale ou top, actions directes sans menu
+The app handles three breakpoints:
+- **Mobile**: navigation via `BottomNavigation`, contextual menus
+- **Tablet**: hybrid layout
+- **Desktop**: sidebar or top navigation, direct actions without menus
 
-`use-mobile.ts` expose `isMobile: boolean`. Les composants s'adaptent via des classes Tailwind conditionnelles. Aucune logique de navigation ne dépend du breakpoint — le routeur est le même pour tous.
+`use-mobile.ts` exposes `isMobile: boolean`. Components adapt via conditional Tailwind classes. No navigation logic depends on the breakpoint — the router is the same for all.
 
-## Authentification frontend
+## Frontend Authentication
 
 ```ts
 // AuthGuard.tsx
@@ -250,46 +250,46 @@ function AuthGuard() {
 }
 ```
 
-Le rôle JWT est décodé côté client (sans vérification de signature — c'est le backend qui valide). Les features admin-only (import BGG catalog) sont conditionnellement rendues selon `role === 'admin'`.
+The JWT role is decoded on the client (without signature verification — the backend validates it). Admin-only features (BGG catalog import) are conditionally rendered based on `role === 'admin'`.
 
 ```ts
 // useAuth.ts
 const { role } = useAuth()
-// Dans Settings :
+// In Settings:
 {role === 'admin' && <BGGCatalogImport />}
 ```
 
-## Internationalisation (i18n)
+## Internationalization (i18n)
 
-Tous les textes affichés à l'utilisateur passent par le hook `useLabels`.
+All user-facing text goes through the `useLabels` hook.
 
 ```tsx
 const { t } = useLabels()
-// Utilisation :
+// Usage:
 <h1>{t('dashboard.title')}</h1>
 <Button>{t('games.add')}</Button>
 ```
 
-**Flux :**
-1. `LocaleContext` expose `locale` (stocké dans `localStorage`) et `setLocale`
-2. `useLabels` fait `GET /api/v1/labels?locale=<locale>` via React Query (clé `['labels', locale]`)
-3. Si l'API est inaccessible, fallback sur `src/shared/i18n/en.json`
-4. Changer la langue via `setLocale()` invalide le cache et recharge les labels sans refresh
+**Flow:**
+1. `LocaleContext` exposes `locale` (stored in `localStorage`) and `setLocale`
+2. `useLabels` calls `GET /api/v1/labels?locale=<locale>` via React Query (key `['labels', locale]`)
+3. If the API is unreachable, falls back to `src/shared/i18n/en.json`
+4. Changing the locale via `setLocale()` invalidates the cache and reloads labels without a page refresh
 
-**Ajouter un label :**
-- Ajouter la clé dans `src/shared/i18n/en.json` (fallback offline)
-- Créer une migration SQL : `INSERT INTO labels (key, locale, value) VALUES ...` pour chaque locale
+**Adding a label:**
+- Add the key to `src/shared/i18n/en.json` (offline fallback)
+- Create a SQL migration: `INSERT INTO labels (key, locale, value) VALUES ...` for each locale
 
-**Règle :** aucune chaîne de caractères visible par l'utilisateur en dur dans le JSX. Toujours passer par `t()`.
+**Rule:** no user-visible string hardcoded in JSX. Always go through `t()`.
 
-## Ajouter une page — checklist
+## Adding a Page — Checklist
 
-1. Créer le dossier `src/features/<nom>/`
-2. Créer le hook `src/features/<nom>/use<NomPage>.ts`
-3. Créer le container `src/features/<nom>/<NomPage>.tsx`
-4. Créer la view `src/features/<nom>/<NomPage>View.tsx`
-5. Si dialogs nécessaires, créer `src/features/<nom>/dialogs/`
-6. Si API nécessaire, créer `src/features/<nom>/<nom>Api.ts`
-7. Ajouter la route dans `App.tsx`
-8. Ajouter les entrées dans `src/shared/services/api/queryKeys.ts` si nouvelles données
-9. Écrire les tests : hook (unit/functional) + composant (unit/functional) + flux complet (integration)
+1. Create the folder `src/features/<name>/`
+2. Create the hook `src/features/<name>/use<NamePage>.ts`
+3. Create the container `src/features/<name>/<NamePage>.tsx`
+4. Create the view `src/features/<name>/<NamePage>View.tsx`
+5. If dialogs are needed, create `src/features/<name>/dialogs/`
+6. If an API is needed, create `src/features/<name>/<name>Api.ts`
+7. Add the route in `App.tsx`
+8. Add entries in `src/shared/services/api/queryKeys.ts` if new data is required
+9. Write tests: hook (unit/functional) + component (unit/functional) + full flow (integration)

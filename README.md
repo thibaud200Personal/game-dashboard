@@ -1,29 +1,29 @@
 # Board Game Dashboard
 
-Application web de suivi de scores et de gestion de collection de jeux de société.
+Web application for tracking scores and managing a board game collection.
 
 ## Stack
 
-| Couche | Technologie |
+| Layer | Technology |
 |--------|-------------|
 | Frontend | React 19 + TypeScript + Vite |
 | UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
-| Formulaires | React Hook Form + Zod |
-| Graphiques | Recharts 3 + D3 |
+| Forms | React Hook Form + Zod |
+| Charts | Recharts 3 + D3 |
 | Backend | Express 5 + Node.js |
-| Base de données | SQLite (better-sqlite3) |
-| Tests | Vitest + React Testing Library + MSW |
+| Database | SQLite (better-sqlite3) |
+| Testing | Vitest + React Testing Library + MSW |
 
-## Fonctionnalités
+## Features
 
-- **Joueurs** — CRUD, statistiques (parties, victoires, scores), avatars
-- **Jeux** — CRUD, import automatique depuis BoardGameGeek, 4 modes (compétitif / coopératif / campagne / hybride)
-- **Extensions & Personnages** — gestion par jeu, avatars, capacités
-- **Parties (Plays)** — enregistrement des parties, scoring, historique
-- **Statistiques** — dashboard global, stats par joueur et par jeu
-- **BGG Search** — recherche et import depuis l'API BoardGameGeek
+- **Players** — CRUD, statistics (plays, wins, scores), avatars
+- **Games** — CRUD, automatic import from BoardGameGeek, 4 modes (competitive / cooperative / campaign / hybrid)
+- **Expansions & Characters** — management per game, avatars, abilities
+- **Plays** — play recording, scoring, history
+- **Statistics** — global dashboard, stats per player and per game
+- **BGG Search** — search and import from the BoardGameGeek API
 
-## Lancer le projet
+## Running the Project
 
 ### Frontend
 
@@ -37,16 +37,16 @@ npm run dev        # http://localhost:5173
 ```bash
 cd backend
 npm install
-npm run init-db    # initialise la base SQLite
+npm run init-db    # initialize the SQLite database
 npm run dev        # http://localhost:3001
 ```
 
 ### Tests
 
 ```bash
-npm test               # mode watch
+npm test               # watch mode
 npm run test:run       # one-shot
-npm run test:coverage  # avec couverture
+npm run test:coverage  # with coverage
 ```
 
 ## Structure
@@ -54,7 +54,7 @@ npm run test:coverage  # avec couverture
 ```
 game-dashboard/
 ├── src/
-│   ├── features/        # Features co-localisées (container + view + hook + api + dialogs)
+│   ├── features/        # Co-located features (container + view + hook + api + dialogs)
 │   │   ├── auth/        # LoginPage
 │   │   ├── bgg/         # BGGSearch + bggApi
 │   │   ├── dashboard/   # Dashboard
@@ -63,40 +63,43 @@ game-dashboard/
 │   │   ├── plays/       # NewPlayPage + playApi
 │   │   ├── settings/    # SettingsPage
 │   │   └── stats/       # StatsPage shell + game/ + player/
-│   ├── shared/          # Modules transversaux (2+ features)
+│   ├── shared/          # Cross-cutting modules (2+ features)
 │   │   ├── components/  # Layout, BottomNavigation
-│   │   ├── components/ui/ # Composants shadcn/ui (ne pas éditer manuellement)
+│   │   ├── components/ui/ # shadcn/ui components (do not edit manually)
 │   │   ├── contexts/    # AuthContext
 │   │   ├── services/api/ # request, queryKeys, authApi, labelsApi, statsApi
 │   │   ├── hooks/       # useLabels, useLocale, useApiReachable, etc.
-│   │   └── i18n/        # en.json (fallback offline)
-│   └── types/           # Réexporte shared/types uniquement
+│   │   └── i18n/        # en.json (offline fallback)
+│   └── types/           # Re-exports from shared/types only
 │
 └── backend/
     ├── server.ts
-    ├── routes/          # Handlers HTTP par domaine
-    ├── services/        # Logique métier
-    ├── repositories/    # Requêtes SQL par entité
+    ├── routes/          # HTTP handlers per domain
+    ├── services/        # Business logic
+    ├── repositories/    # SQL queries per entity
     ├── database/        # DatabaseConnection + migrations/
-    └── validation/      # Schémas Zod + middleware
+    └── validation/      # Zod schemas + middleware
 ```
 
 ## Documentation
 
-| Fichier | Contenu |
+| File | Content |
 |---------|---------|
-| `src/docs/ARCHITECTURE.md` | Architecture frontend, patterns, conventions |
-| `src/docs/DEVELOPMENT_GUIDE.md` | Guide de développement, ajout de pages/hooks |
-| `src/docs/DATA_MAPPING.md` | Correspondance interfaces TypeScript ↔ tables BDD |
-| `src/docs/NAVIGATION_CONTEXT.md` | Système de navigation contextuelle |
-| `src/docs/TROUBLESHOOTING.md` | Problèmes courants et solutions |
-| `backend/README.md` | Endpoints API et setup backend |
-| `backend/database/database-structure.md` | Schéma BDD détaillé |
-| `ROADMAP.md` | Feuille de route et état d'avancement |
+| `docs/architecture/OVERVIEW.md` | Full-stack architecture overview |
+| `docs/architecture/FRONTEND.md` | Frontend architecture, patterns, conventions |
+| `docs/architecture/BACKEND.md` | Backend architecture deep-dive |
+| `docs/architecture/DATABASE.md` | Database schema, SQL views, migrations |
+| `docs/architecture/DATA_MAPPING.md` | TypeScript interfaces ↔ DB tables |
+| `docs/guides/CONTRIBUTING.md` | Developer onboarding, conventions, checklists |
+| `docs/guides/DEVELOPMENT.md` | Patterns and code conventions |
+| `docs/guides/DEPLOYMENT.md` | Docker, environment variables |
+| `docs/security/SECURITY.md` | Threat model, JWT, security practices |
+| `docs/decisions/` | Architecture Decision Records |
+| `ROADMAP.md` | Roadmap and progress status |
 
-## Base de données
+## Database
 
-6 tables : `players`, `games`, `game_expansions`, `game_characters`, `game_sessions`, `session_players`
-2 vues SQL : `player_statistics`, `game_statistics`
+12 tables: `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `players_play`, `bgg_catalog`, `bgg_catalog_language`, `labels`, `refresh_tokens`, `log_import`, `schema_version`
+2 SQL views: `player_statistics`, `game_statistics`
 
-Voir `backend/database/database-structure.md` pour le schéma complet.
+See `docs/architecture/DATABASE.md` for the full schema.

@@ -1,24 +1,24 @@
-# ADR-003 — Pattern Repository pour le backend
+# ADR-003 — Repository Pattern for the Backend
 
-**Date** : 31 mars 2026
-**Statut** : Accepté
+**Date**: March 31, 2026
+**Status**: Accepted
 
-## Contexte
+## Context
 
-`DatabaseManager.ts` (896 lignes) est une classe dieu qui gère toutes les entités sans séparation de responsabilités. Impossible à tester en isolation. Chaque nouvelle entité l'alourdit.
+`DatabaseManager.ts` (896 lines) is a god class managing all entities with no separation of concerns. Impossible to test in isolation. Every new entity makes it heavier.
 
-## Décision
+## Decision
 
-Éclater `DatabaseManager` en :
-- `DatabaseConnection.ts` — connexion SQLite + runner de migrations uniquement
-- Un repository par domaine : `PlayerRepository`, `GameRepository`, `SessionRepository`, `StatsRepository`, `BGGRepository`
-- Une couche service par domaine : `PlayerService`, `GameService`, `SessionService`, `StatsService`, `AuthService`
+Split `DatabaseManager` into:
+- `DatabaseConnection.ts` — SQLite connection + migration runner only
+- One repository per domain: `PlayerRepository`, `GameRepository`, `SessionRepository`, `StatsRepository`, `BGGRepository`
+- One service layer per domain: `PlayerService`, `GameService`, `SessionService`, `StatsService`, `AuthService`
 
-Injection de dépendance : les repositories reçoivent `DatabaseConnection` en paramètre de constructeur.
+Dependency injection: repositories receive `DatabaseConnection` as a constructor parameter.
 
-## Gestion des transactions
+## Transaction Management
 
-Les transactions qui couvrent plusieurs tables restent dans la couche service :
+Transactions that span multiple tables stay in the service layer:
 
 ```ts
 // PlayService.ts
@@ -31,21 +31,21 @@ createPlay(payload) {
 }
 ```
 
-Règle : **une transaction ne sort jamais d'un service**. Les repositories ne savent pas qu'ils sont dans une transaction — ils font leurs requêtes normalement.
+Rule: **a transaction never leaves a service**. Repositories are unaware of being inside a transaction — they execute their queries normally.
 
-## Conséquences
+## Consequences
 
-**Positives :**
-- Chaque repository est testable isolément (DB SQLite in-memory injectée)
-- Chaque service est testable avec repositories mockés
-- Responsabilité unique par fichier
-- `server.ts` simplifié (délègue aux routes, plus de logique inline)
+**Positive:**
+- Each repository is testable in isolation (injected in-memory SQLite DB)
+- Each service is testable with mocked repositories
+- Single responsibility per file
+- `server.ts` simplified (delegates to routes, no inline logic)
 
-**Négatives :**
-- Plus de fichiers à maintenir
-- La transaction cross-repository nécessite que le service ait accès à `DatabaseConnection` directement (pour `.transaction()`) en plus des repositories
+**Negative:**
+- More files to maintain
+- Cross-repository transactions require the service to have direct access to `DatabaseConnection` (for `.transaction()`) in addition to the repositories
 
-## Alternatives rejetées
+## Rejected Alternatives
 
-- **Garder `DatabaseManager` monolithique** : n'adresse pas le problème de testabilité
-- **ORM (Prisma, Knex)** : ajoute une dépendance lourde, perd le contrôle sur les vues SQL qui sont un avantage du schéma actuel, support SQLite limité pour les migrations Prisma
+- **Keep monolithic `DatabaseManager`**: does not address the testability problem
+- **ORM (Prisma, Knex)**: adds a heavy dependency, loses control over SQL views which are an advantage of the current schema, limited SQLite support for Prisma migrations
