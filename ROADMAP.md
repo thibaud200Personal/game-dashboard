@@ -34,7 +34,7 @@
 
 ## 🎯 Phase en cours — Phase 3 : Finitions UX
 
-Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), graphiques temporels et sélection personnages en session à implémenter. → [voir détail](#-phase-3--finitions-ux)
+Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), graphiques temporels + cache BGG backend à implémenter. → [voir détail](#-phase-3--finitions-ux)
 
 ---
 
@@ -108,7 +108,6 @@ Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), 
 - ✅ **Migrations automatiques** : `runMigrations()` dans `DatabaseConnection.ts` — transactions SQLite
 - ✅ **Unification interfaces BGG** : `BGGGame`, `BGGSearchResult`, `BGGExpansion`, `BGGCharacter` dans `shared/types/index.d.ts` — voir [DEVELOPMENT.md §6](docs/guides/DEVELOPMENT.md#6-types-partagés--sharedtypes)
 - ~~**Formulaire pré-import BGG**~~ — Annulé : le formulaire d'ajout gère déjà saisie manuelle + BGG
-- **Cache BGG backend** — différé à la séparation front/back. Cache persistant résultats BGG + sync périodique métadonnées.
 
 </details>
 
@@ -127,9 +126,9 @@ Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), 
 - Infrastructure Recharts prête, placeholders "coming soon" en place
 - Scope : évolution scores, tendances jeux, performances temporelles
 
-#### **Sélection Personnages en Session** — non démarré
-- Détection `has_characters` en place, interface sélection manquante
-- Interface modale sélection personnages pour sessions
+#### **Cache BGG backend** — non démarré
+- Cache persistant résultats BGG + sync périodique métadonnées
+- Différé à la séparation front/back — inspiration : board-game-scorekeep
 
 #### **Harmonisation UI/UX Globale** — reporté
 - Boutons, couleurs, tailles, cohérence visuelle — à reprendre après stabilisation technique
@@ -142,6 +141,10 @@ Thème sombre/clair fonctionnel (à migrer prop-drilling → Tailwind `dark:`), 
 
 <details>
 <summary>Voir le détail</summary>
+
+#### **Sélection Personnages en Session** — non démarré
+- Détection `has_characters` en place, interface sélection manquante
+- Interface modale sélection personnages pour sessions
 
 #### **Enrichissement Données**
 - **Service Personnages UltraBoardGames** : scraping HTML UltraBoardGames.com (pas d'API). ⚠️ Fragile + légalement ambigu — à aborder quand les autres features sont stables.
