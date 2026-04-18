@@ -391,11 +391,12 @@ Les images `cf.geekdo-images.com` représentent la majorité des économies sign
 </details>
 
 <details open>
-<summary><b>🔀 Unification Interfaces BGG (Impact ⭐⭐) - 1 jour</b></summary>
+<summary><b>✅ Unification Interfaces BGG — avril 2026</b></summary>
 
-- **État** : `BGGGame`/`BGGGameDetails` dupliquées entre frontend et backend
-- **Reste à faire** : Source de vérité unique dans `src/types/index.ts`
-- **Impact** : Prévention désynchronisation silencieuse
+- `BGGGame`, `BGGSearchResult`, `BGGExpansion`, `BGGCharacter` unifiés dans `shared/types/index.d.ts`
+- Frontend : `src/types/index.ts` réexporte depuis `../../shared/types`
+- Backend : tous les fichiers importent depuis `@shared/types`
+- Aucune interface BGG locale restante — voir [DEVELOPMENT.md §6](docs/guides/DEVELOPMENT.md#6-types-partagés--sharedtypes)
 
 </details>
 
@@ -668,7 +669,7 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 1. ✅ **🗄️ Migration schema BGG étendu** — PR #55 : thumbnail, playing_time, min/max_playtime, categories/mechanics (JSON), families
 2. ~~**📝 Formulaire pré-import BGG**~~ — Annulé (formulaire actuel gère saisie manuelle + import BGG, mobile-first)
 3. **📊 Cache BGG local** : localStorage + expiration (2-3 jours) → [détail](changelog/sprint1-bgg-cache.md)
-4. **🔀 Unifier BGGGame/BGGGameDetails** : Source de vérité unique dans `src/types/index.ts` (1 jour) → [détail](changelog/sprint1-bgg-interfaces-unification.md)
+4. ✅ **🔀 Unifier BGGGame/BGGGameDetails** : `shared/types/index.d.ts` — source de vérité unique, frontend + backend alignés
 
 </details>
 
