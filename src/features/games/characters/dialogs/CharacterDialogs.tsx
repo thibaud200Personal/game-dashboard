@@ -21,6 +21,7 @@ interface CharacterFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   submitText: string;
+  cancelText: string;
 }
 
 const CharacterForm = ({
@@ -28,7 +29,8 @@ const CharacterForm = ({
   setFormData,
   onSubmit,
   onCancel,
-  submitText
+  submitText,
+  cancelText,
 }: CharacterFormProps) => {
   const { t } = useLabels();
   return (
@@ -105,7 +107,7 @@ const CharacterForm = ({
           onClick={onCancel}
           className="border-slate-600 text-slate-300 hover:bg-slate-700/50"
         >
-          {t('common.buttons.cancel')}
+          {cancelText}
         </Button>
         <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
           {submitText}
@@ -148,6 +150,7 @@ export function AddCharacterDialog({
           onSubmit={onSubmit}
           onCancel={() => onOpenChange(false)}
           submitText={t('common.buttons.add')}
+          cancelText={t('common.buttons.cancel')}
         />
       </DialogContent>
     </Dialog>
@@ -187,6 +190,7 @@ export function EditCharacterDialog({
           onSubmit={onSubmit}
           onCancel={() => onOpenChange(false)}
           submitText={t('common.buttons.edit')}
+          cancelText={t('common.buttons.cancel')}
         />
       </DialogContent>
     </Dialog>
@@ -215,8 +219,8 @@ export function DeleteCharacterDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className={darkMode ? "text-white" : "text-slate-900"}>{t('character.dialog.delete.title')}</AlertDialogTitle>
           <AlertDialogDescription className={darkMode ? "text-slate-300" : "text-slate-700"}>
+            {characterName && <><strong>"{characterName}"</strong> — </>}
             {t('character.dialog.delete.description')}
-            {characterName && <strong className="block mt-1">"{characterName}"</strong>}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

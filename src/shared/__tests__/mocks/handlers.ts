@@ -25,7 +25,13 @@ const mockWingspan = {
 
 export const handlers = [
   // ── Labels ────────────────────────────────────────────────────────────────
-  http.get('/api/v1/labels', () => HttpResponse.json(enLabels)),
+  // Only en.json is available as a test fixture — FR labels come from the DB at runtime.
+  http.get('/api/v1/labels', ({ request }) => {
+    const locale = new URL(request.url).searchParams.get('locale');
+    return locale === 'fr'
+      ? HttpResponse.json({}, { status: 404 })
+      : HttpResponse.json(enLabels);
+  }),
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   http.get('/api/v1/auth/me', () => HttpResponse.json({ role: 'admin' })),

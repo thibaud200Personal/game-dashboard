@@ -20,6 +20,7 @@ interface ExpansionFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   submitText: string;
+  cancelText: string;
 }
 
 const ExpansionForm = ({
@@ -27,7 +28,8 @@ const ExpansionForm = ({
   setFormData,
   onSubmit,
   onCancel,
-  submitText
+  submitText,
+  cancelText,
 }: ExpansionFormProps) => {
   const { t } = useLabels();
   return (
@@ -93,7 +95,7 @@ const ExpansionForm = ({
           onClick={onCancel}
           className="border-slate-600 text-slate-300 hover:bg-slate-700/50"
         >
-          {t('common.buttons.cancel')}
+          {cancelText}
         </Button>
         <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
           {submitText}
@@ -136,6 +138,7 @@ export function AddExpansionDialog({
           onSubmit={onSubmit}
           onCancel={() => onOpenChange(false)}
           submitText={t('common.buttons.add')}
+          cancelText={t('common.buttons.cancel')}
         />
       </DialogContent>
     </Dialog>
@@ -175,6 +178,7 @@ export function EditExpansionDialog({
           onSubmit={onSubmit}
           onCancel={() => onOpenChange(false)}
           submitText={t('common.buttons.edit')}
+          cancelText={t('common.buttons.cancel')}
         />
       </DialogContent>
     </Dialog>
@@ -203,8 +207,8 @@ export function DeleteExpansionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className={darkMode ? "text-white" : "text-slate-900"}>{t('expansion.dialog.delete.title')}</AlertDialogTitle>
           <AlertDialogDescription className={darkMode ? "text-slate-300" : "text-slate-700"}>
+            {expansionName && <><strong>"{expansionName}"</strong> — </>}
             {t('expansion.dialog.delete.description')}
-            {expansionName && <strong className="block mt-1">"{expansionName}"</strong>}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
