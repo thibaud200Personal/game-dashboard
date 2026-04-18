@@ -119,7 +119,45 @@ interface AddPlayerDialogProps {
 | Variables | camelCase | `gameList` |
 | Constantes | SCREAMING_SNAKE_CASE | `MAX_PLAYERS` |
 
-## 6. Organisation des imports
+## 6. Types partagés — `shared/types`
+
+### Architecture
+
+`shared/types/index.d.ts` est le **fichier de déclaration TypeScript écrit à la main** — il n'est pas généré par `tsc`.
+
+```
+shared/types/
+├── index.d.ts      ← source de vérité, édité directement
+├── index.js        ← compagnon vide (require runtime pour CommonJS)
+└── index.d.ts.map  ← sourcemap (référence index.ts, fichier source non conservé)
+```
+
+Les deux consommateurs l'importent via l'alias `@shared/types` :
+- **Backend** (`tsconfig.json` → `"@shared/*": ["../shared/*"]`) — résout vers `index.d.ts`
+- **Frontend** (`src/types/index.ts`) — réexporte depuis `../../shared/types`
+
+### Pourquoi un `.d.ts` hand-written ?
+
+Le fichier `.ts` source original a été compilé puis non conservé. Le `.d.ts` fait maintenant office de source de vérité. C'est une pratique TypeScript valide (les `.d.ts` peuvent être écrits manuellement) et sans risque ici :
+- Le backend a `rootDir: "./"` → ne peut pas compiler ni écraser `../shared/types/index.d.ts`
+- Le frontend a `noEmit: true` → ne génère rien
+
+### Modifier ou ajouter un type
+
+Éditer directement `shared/types/index.d.ts` — **aucune étape de build**.
+
+```ts
+// shared/types/index.d.ts
+export interface MonNouveauType {
+  id: number
+  name: string
+}
+```
+
+Puis importer via `@/types` côté frontend ou `@shared/types` côté backend.
+
+## 7. Organisation des imports
+
 
 ```ts
 // 1. React
@@ -135,7 +173,7 @@ import { queryKeys } from '@/shared/services/api/queryKeys'
 import './Component.css'
 ```
 
-## 7. Internationalisation — useLabels + t()
+## 8. Internationalisation — useLabels + t()
 
 Tous les textes affichés passent par `useLabels`. Les labels sont stockés en BDD (table `labels`) et chargés via `GET /api/v1/labels?locale=<locale>`.
 
@@ -155,7 +193,7 @@ const { t } = useLabels()
 
 Les valeurs stockées en BDD (`Beginner`, `competitive`, etc.) sont toujours en anglais. Leur traduction pour l'affichage se fait via `t()` avec une clé dédiée, ou via les maps dans `shared/utils/formatters.ts`.
 
-## 8. Backend — pattern Repository/Service
+## 9. Backend — pattern Repository/Service
 
 ### Repository : requêtes SQL uniquement
 
@@ -193,7 +231,7 @@ router.post('/', validateBody(CreatePlayerSchema), async (req, res) => {
 })
 ```
 
-## 9. Migrations BDD
+## 10. Migrations BDD
 
 Créer un fichier numéroté dans `backend/database/migrations/` :
 

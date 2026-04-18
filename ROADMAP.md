@@ -2,7 +2,7 @@
 
 Ce document présente l'état d'avancement et les prochaines étapes pour l'application Board Game Dashboard. La roadmap est organisée pour séparer clairement ce qui est **terminé** de ce qui **reste à faire**.
 
-**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (163/163 backend ✅, 134/134 frontend ✅). Les gaps restants sont des finitions techniques.
+**📈 Statut Global** : Le projet **dépasse largement** les objectifs de la roadmap v1 avec une architecture plus robuste, des fonctionnalités bonus et une UX moderne. **Infrastructure tests solide** (206/206 backend ✅, 134/134 frontend ✅ — 340 tests au total). Les gaps restants sont des finitions techniques.
 
 **🎯 Stratégie Smart** : Exploiter au maximum le code existant des projets boardGameScore et board-game-scorekeep plutôt que de repartir de zéro.
 
@@ -154,9 +154,9 @@ Ce document présente l'état d'avancement et les prochaines étapes pour l'appl
 
 - ✅ **`BGGGameDetails.characters` non initialisé** — `parseGeekdoItem` retourne `characters: []` (Sprint 0). Alimenter depuis des données BGG réelles reste à faire quand une source de personnages sera identifiée.
 - ✅ **`has_expansion`/`has_characters` non recalculés à l'import BGG** — `handleBGGSearch` (`useGamesPage.ts`) calcule `has_expansion: (bggGame.expansions?.length || 0) > 0` et `has_characters: false` (correct, BGG ne fournit pas de personnages).
-- ✅ **`BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — Unifié dans `shared/types/index.d.ts`, re-exporté par `src/types/index.ts` et importé par `backend/bggService.ts` (avril 2026).
+- ✅ **`BGGGame` / `BGGGameDetails` — deux interfaces dupliquées** — Unifié dans `shared/types/index.d.ts`, re-exporté par `src/types/index.ts` et importé par `backend/bggService.ts` (avril 2026). Note : `index.d.ts` est écrit à la main (pas de `.ts` source) — voir [DEVELOPMENT.md §6](docs/guides/DEVELOPMENT.md#6-types-partagés--sharedtypes).
 - ✅ **Tests BGG backend couverts** — `backend/__tests__/unit/services/BGGService.test.ts` (22 tests : cache, parsing, modes de jeu, difficultés, erreurs réseau) + `BGGRepository.test.ts` (13 tests : upsert, search, status). `src/__tests__/services/bggApi.test.ts` réécrit avec MSW sur les routes `/api/v1/bgg/*`. 73/73 backend ✅, 74/74 frontend ✅ (avril 2026).
-- ✅ **Couverture backend complète** — 20 fichiers de tests, **163/163 tests** ✅ (avril 2026). Ajouts : StatsRepository, GameService, PlayerService, StatsService, + 7 suites de tests de routes HTTP via supertest (auth, games, players, sessions, stats, data, bgg). `PlayerService` et `routes/players.ts` mis à jour pour lever `duplicate_pseudo` (cohérent avec `duplicate_game`). Plans frontend et CI/Docker prêts, non démarrés.
+- ✅ **Couverture backend complète** — 26 fichiers de tests, **206/206 tests** ✅ (avril 2026). Ajouts : StatsRepository, GameService, PlayerService, StatsService, LabelsService, AuthService, RefreshTokenRepository + 8 suites de tests de routes HTTP via supertest (auth, games, players, plays, stats, data, bgg, labels). `PlayerService` et `routes/players.ts` mis à jour pour lever `duplicate_pseudo` (cohérent avec `duplicate_game`).
 - **📅 Filtre par année dans la recherche BGG** — Permettre de restreindre la recherche à une année de publication (ex. "Cascadia 2021"). À étudier : l'API geekdo search (`/api/geekitems?search=...`) ne semble pas exposer de paramètre `yearpublished` côté serveur — le filtrage serait probablement à faire côté client sur les résultats retournés. Faible priorité.
 - **🗄️ Index local BGG — recherche à brancher** — Infrastructure livrée (PR #59). Reste : brancher `searchGames()` sur `bgg_catalog` (local) au lieu de l'API geekdo — FTS5 à envisager pour 175k entrées.
   - **UI `BGGSearch`** : une fois le catalogue local branché, ajouter un champ année (filtre optionnel) et une case à cocher "inclure les extensions" (exploite `is_expansion` — impossible avec l'API geekdo actuelle).
@@ -346,11 +346,11 @@ Les images `cf.geekdo-images.com` représentent la majorité des économies sign
 <summary><b>🧪 Tests & Qualité TERMINÉS</b></summary>
 
 -   ✅ **Infrastructure Tests** : Vitest + React Testing Library + MSW configurés
--   ✅ **163/163 Tests Backend Passent** : 100% de réussite (20 fichiers, repos + services + routes HTTP)
--   ✅ **74/74 Tests Frontend Passent** : coverage seuils 80% — plan ~52 tests supplémentaires à venir
+-   ✅ **206/206 Tests Backend Passent** : 100% de réussite (26 fichiers — repos, services, routes HTTP, avril 2026)
+-   ✅ **134/134 Tests Frontend Passent** : 23 fichiers — hooks, flows, composants, services (avril 2026)
 -   ✅ **Tests Services** : BGG API service avec mocks MSW fonctionnels
--   ✅ **Tests Hooks** : useGamesPage et autres hooks React validés
--   ✅ **Tests Components** : BottomNavigation, BGGSearch, SimpleDashboard, helpers purs
+-   ✅ **Tests Hooks** : useGamesPage, usePlayersPage, useNewPlayPage, useDashboard, useGameStatsPage, usePlayerStatsPage validés
+-   ✅ **Tests Components** : BottomNavigation, BGGSearch, flows CRUD Players/Games/Plays/Stats
 -   ✅ **React Query** : TanStack Query v5 intégré pour le server state
 
 </details>
@@ -472,27 +472,27 @@ Les images `cf.geekdo-images.com` représentent la majorité des économies sign
 <summary>Voir le détail</summary>
 
 <details>
-<summary><b>🧪 Tests Avancés (Impact ⭐⭐⭐) - 3-4 jours</b></summary>
+<summary><b>🧪 Tests Avancés (Impact ⭐⭐⭐)</b></summary>
 
-#### **Restructuration & E2E**
-- **État** : 163/163 backend ✅, 74/74 frontend ✅ — plans frontend + CI/Docker écrits, non exécutés
-- **Objectif** : Organisation mature (unit/technical/, unit/functional/, integration/) + 7 workflows E2E BGG
-- **Référence** : board-game-scorekeep (52/52 tests ✅)
-- **Impact** : Qualité code et robustesse application
+#### ✅ **Restructuration tests** — avril 2026
+- Organisation feature-based : `src/features/<feature>/__tests__/` + `src/shared/__tests__/{hooks,services,components,mocks}`
+- **206 backend** (26 fichiers) + **134 frontend** (23 fichiers) = **340 tests** ✅
 
-#### **Tests Unitaires Core Étendus** - 1-2 semaines
-- **Scope** : BGGService, DatabaseManager, validation Zod, hooks principaux
-- **Objectif** : Couverture 80%+ des fonctions critiques, 63 → 80+ tests
-- **Impact** : Prévention régressions et debugging facilité
+#### ✅ **Tests Unitaires Core** — avril 2026
+- Hooks : useGamesPage, usePlayersPage, useNewPlayPage, useDashboard, useGameStatsPage, usePlayerStatsPage
+- Services backend : BGGService, GameService, PlayerService, PlayService, StatsService, AuthService, LabelsService
+- Repositories : BGG, Game, Player, Play, Stats, Labels, RefreshToken
+- **Coverage frontend : 35% global** — les composants UI shadcn (non testés, non pertinents) font baisser la moyenne. Les fonctions critiques (hooks + services + utils) sont couvertes.
 
-#### **Tests d'Intégration** - 1 semaine
-- **Scope** : Workflow BGG, CRUD complet, navigation
-- **Objectif** : Tests end-to-end des fonctionnalités principales
-- **Impact** : Validation parcours utilisateur
+#### ✅ **Tests d'Intégration** — avril 2026
+- Flows CRUD : Players, Games, Plays, Stats, BGGSearch via MSW
+- Routes HTTP : 8 suites supertest (auth, games, players, plays, stats, bgg, labels, data)
+- Navigation : `routing.test.tsx`
+- Ce qui reste : transitions inter-features (ex: game → game detail → retour)
 
-#### **Tests Performance** - 1-2 jours
-- **Objectif** : Benchmarking et optimisation suite de tests
-- **Impact** : Qualité et rapidité CI
+#### **Tests Performance** — non démarré
+- **Objectif** : Benchmarking et optimisation suite de tests Vitest
+- **Note** : 340 tests passent en ~25s — faible priorité tant que la CI reste rapide
 
 </details>
 
@@ -520,8 +520,10 @@ Les images `cf.geekdo-images.com` représentent la majorité des économies sign
 - **Impact** : Performance optimisée et réduction calls API
 - **Inspiration** : Système cache de board-game-scorekeep
 
-#### **Gestion d'Erreurs Globale** - 2-3 jours
-- **Objectif** : Error boundaries et toasts cohérents
+#### **Gestion d'Erreurs Globale** - partiellement fait
+- ✅ `ErrorBoundary` global dans `main.tsx` + `ErrorFallback.tsx` (UI de repli)
+- ✅ Toasts `sonner` cohérents dans tous les hooks CRUD
+- **Reste** : error boundaries granulaires par feature (si BGGSearch plante, seule la section crashe, pas toute l'app)
 - **Impact** : UX robuste et debugging facilité
 
 #### **Fonctionnalités Découverte** - 1 semaine
@@ -673,10 +675,10 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 <details open>
 <summary><b>Sprint 2 — Tests & Qualité (1-2 semaines)</b></summary>
 
-1. **🧪 Tests BGG backend** : Mocker geekdo.com avec MSW, couvrir bggService.ts + routes `/api/bgg/*` → [détail](changelog/sprint2-bgg-backend-tests.md)
-2. **🏗️ Restructuration tests** : Dossiers `unit/technical/`, `unit/functional/`, `integration/`, `fixtures/` → [détail](changelog/sprint2-tests-restructure.md)
-3. **📊 Fixtures réalistes** : Données BGG authentiques (Gloomhaven, Wingspan, Catan) → [détail](changelog/sprint2-realistic-fixtures.md)
-4. **📈 63 → 80+ tests** : Compléter coverage → [détail](changelog/sprint2-tests-coverage-50plus.md)
+1. ✅ **🧪 Tests BGG backend** : MSW + BGGService (22 tests) + routes `/api/v1/bgg/*` couverts
+2. ✅ **🏗️ Restructuration tests** : Organisation feature-based + `src/shared/__tests__/{hooks,services,components,mocks}`
+3. ✅ **📊 Fixtures réalistes** : Wingspan, Gloomhaven, Catan dans les fixtures MSW
+4. ✅ **📈 340 tests** : 206 backend + 134 frontend (cible 80+ largement dépassée)
 
 </details>
 
@@ -703,7 +705,7 @@ Voir le design doc complet : `docs/superpowers/specs/2026-03-31-architecture-red
 <details>
 <summary><b>Sprint 5 — Évolutions Long Terme (1-3 mois)</b></summary>
 
-1. ~~**🌍 Internationalisation DB-driven**~~ — ✅ **Infrastructure livrée** — Table `labels(key, locale, value)`, endpoints `GET /api/v1/labels?locale=xx` + `GET /api/v1/labels/locales` (public), hooks `useLabels` / `useLocale` / `useLocales` / `useApiReachable`, sélecteur dynamique dans Settings avec grisage offline + bouton Retry. **Reste :** câbler `t('key')` dans chaque vue/dialog (travail mécanique vue par vue).
+1. ✅ **🌍 Internationalisation DB-driven** — **Complète** (PR #85, avril 2026) — Infrastructure + migration complète : tous les strings hardcodés remplacés par `t()` dans 9 composants (LoginPage, BGGSearch, DashboardView, GameCharactersView, CharacterDialogs, GameDetailView, AddGameDialog, GameExpansionsView, ExpansionDialogs). 6 migrations SQL (017-022) avec labels EN/FR.
    - **Note :** Traduire le *contenu* des entités (description d'un jeu, noms localisés) est un sujet séparé impliquant une refonte du schéma BDD (`games_translations` etc.) — à investiguer si le besoin est confirmé.
 2. Système Migration BDD (knex.js / versioning) → [détail](changelog/sprint5-db-migration-system.md)
 2. Mode campagne multi-scénarios → [détail](changelog/sprint5-campaign-mode.md)

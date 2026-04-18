@@ -43,7 +43,7 @@
 ## Principes fondamentaux
 
 ### Source de vérité unique
-- **Types** : `shared/types/index.ts` — importé par frontend ET backend
+- **Types** : `shared/types/index.d.ts` — importé par frontend ET backend (voir [note](#shared-types))
 - **Données** : React Query côté client, vues SQL côté BDD
 - **Styles** : `tailwind.config.js` + `theme.json`
 

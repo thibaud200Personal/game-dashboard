@@ -219,7 +219,7 @@ Ne jamais passer un composant Radix composite (ex: `<Tooltip>`) comme trigger �
 
 ## Types
 
-Les types vivent dans `shared/types/index.ts`. Le dossier `src/types/` réexporte uniquement :
+Les types vivent dans `shared/types/index.d.ts` (fichier de déclaration TypeScript écrit à la main — voir [note dans DEVELOPMENT.md §3](../guides/DEVELOPMENT.md#3-types-partagés--sharedtypes)). Le dossier `src/types/` réexporte uniquement :
 
 ```ts
 // src/types/index.ts
