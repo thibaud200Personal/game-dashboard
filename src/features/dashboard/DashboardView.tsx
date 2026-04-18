@@ -121,7 +121,7 @@ export function DashboardView({
               >
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 flex items-center justify-center shadow-lg">
                   <div className="text-center">
-                    <div className="text-xs text-white/80">Players</div>
+                    <div className="text-xs text-white/80">{t('players.page.title')}</div>
                     <div className="text-lg font-bold text-white">
                       {stats.playersCount}
                     </div>
@@ -144,7 +144,7 @@ export function DashboardView({
               >
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
                   <div className="text-center">
-                    <div className="text-xs text-white/80">Games</div>
+                    <div className="text-xs text-white/80">{t('games.page.title')}</div>
                     <div className="text-lg font-bold text-white">
                       {stats.gamesCount}
                     </div>
@@ -261,7 +261,7 @@ export function DashboardView({
                         {game.name}
                       </div>
                       <div className={descClass}>
-                        {game.players} players
+                        {game.players} {t('games.card.players')}
                       </div>
                     </div>
                   </div>

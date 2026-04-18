@@ -16,6 +16,7 @@ import GameExpansionsPage from '../expansions/GameExpansionsPage';
 import GameCharactersPage from '../characters/GameCharactersPage';
 import { UseGameDetailProps } from './useGameDetail';
 import { Game, GameExpansion, GameCharacter } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface GameDetailViewProps extends UseGameDetailProps {
   activeTab: string;
@@ -59,6 +60,8 @@ export default function GameDetailView({
   onNavigation,
   darkMode
 }: GameDetailViewProps) {
+  const { t } = useLabels();
+
   return (
     <div className={darkMode ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800" : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300"}>
       {/* Header */}
@@ -74,17 +77,17 @@ export default function GameDetailView({
                   className="text-white/80 hover:text-white hover:bg-white/10 p-2"
                 >
                   <ArrowLeft className="w-4 h-4 md:mr-2" />
-                  <span className="hidden md:inline">Retour aux jeux</span>
+                  <span className="hidden md:inline">{t('game.detail.back')}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Back to Games List</p>
+                <p>{t('expansion.view.back_to_games')}</p>
               </TooltipContent>
             </Tooltip>
             <div className="h-6 w-px bg-slate-600 hidden md:block"></div>
             <h1 className="text-lg md:text-xl font-semibold text-white flex-1 truncate">{game.name}</h1>
             <h1 className={darkMode ? "text-lg md:text-xl font-semibold text-white flex-1 truncate" : "text-lg md:text-xl font-semibold text-slate-900 flex-1 truncate"}>{game.name}</h1>
-            
+
             {/* Mobile Context Menu */}
             <div className="md:hidden">
               <DropdownMenu>
@@ -97,45 +100,45 @@ export default function GameDetailView({
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>More Options</p>
+                    <p>{t('game.detail.more_options')}</p>
                   </TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align="end" className={darkMode ? "bg-slate-800 border-slate-700 text-white w-56" : "bg-white border-slate-200 text-slate-900 w-56"}>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={tabHandlers.setOverview}
                     className="hover:bg-slate-700 focus:bg-slate-700"
                   >
                     <GameController className="w-4 h-4 mr-2" />
-                    Vue générale
+                    {t('game.detail.tab.overview')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={tabHandlers.setExpansions}
                     className="hover:bg-slate-700 focus:bg-slate-700"
                   >
                     <Crown className="w-4 h-4 mr-2" />
-                    Extensions ({game.expansions?.length || 0})
+                    {t('expansion.view.title')} ({game.expansions?.length || 0})
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={tabHandlers.setCharacters}
                     className="hover:bg-slate-700 focus:bg-slate-700"
                   >
                     <User className="w-4 h-4 mr-2" />
-                    Personnages ({game.characters?.length || 0})
+                    {t('character.view.title')} ({game.characters?.length || 0})
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-slate-600" />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleNavigation.expansions}
                     className="hover:bg-slate-700 focus:bg-slate-700"
                   >
                     <Crown className="w-4 h-4 mr-2" />
-                    Gérer les extensions
+                    {t('game.detail.manage_expansions')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleNavigation.characters}
                     className="hover:bg-slate-700 focus:bg-slate-700"
                   >
                     <User className="w-4 h-4 mr-2" />
-                    Gérer les personnages
+                    {t('game.detail.manage_characters')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -149,23 +152,23 @@ export default function GameDetailView({
         <div className="hidden md:block">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={darkMode ? "grid w-full grid-cols-3 bg-slate-800/50 border-slate-700/50" : "grid w-full grid-cols-3 bg-white border-slate-200"}>
-              <TabsTrigger 
-                value="overview" 
+              <TabsTrigger
+                value="overview"
                 className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
               >
-                Vue générale
+                {t('game.detail.tab.overview')}
               </TabsTrigger>
-              <TabsTrigger 
-                value="expansions" 
+              <TabsTrigger
+                value="expansions"
                 className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
               >
-                Extensions ({game.expansions?.length || 0})
+                {t('expansion.view.title')} ({game.expansions?.length || 0})
               </TabsTrigger>
-              <TabsTrigger 
-                value="characters" 
+              <TabsTrigger
+                value="characters"
                 className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
               >
-                Personnages ({game.characters?.length || 0})
+                {t('character.view.title')} ({game.characters?.length || 0})
               </TabsTrigger>
             </TabsList>
 
@@ -243,28 +246,28 @@ export default function GameDetailView({
             className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
           >
             <TrendUp className="w-6 h-6 mb-1" />
-            <span className="text-xs">Dashboard</span>
+            <span className="text-xs">{t('dashboard.title')}</span>
           </button>
           <button
             onClick={handleNavigation.players}
             className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
           >
             <Users className="w-6 h-6 mb-1" />
-            <span className="text-xs">Players</span>
+            <span className="text-xs">{t('players.page.title')}</span>
           </button>
           <button
             onClick={handleNavigation.games}
             className="flex flex-col items-center p-3 transition-colors text-primary"
           >
             <GameController className="w-6 h-6 mb-1" />
-            <span className="text-xs">Games</span>
+            <span className="text-xs">{t('games.page.title')}</span>
           </button>
           <button
             onClick={handleNavigation.settings}
             className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
           >
             <Gear className="w-6 h-6 mb-1" />
-            <span className="text-xs">Settings</span>
+            <span className="text-xs">{t('settings.page.title')}</span>
           </button>
         </div>
       </div>
@@ -280,6 +283,8 @@ interface GameOverviewProps {
 }
 
 function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewProps) {
+  const { t } = useLabels();
+
   return (
     <div className={darkMode ? "" : "bg-white text-slate-900"}>
       {/* Game Overview Card */}
@@ -289,8 +294,8 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             {/* Game Image */}
             <div className="flex-shrink-0 self-center md:self-start">
               {game.image ? (
-                <img 
-                  src={game.image} 
+                <img
+                  src={game.image}
                   alt={game.name}
                   className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-slate-600"
                 />
@@ -322,7 +327,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
                 <div className="flex items-center gap-2 text-slate-300">
                   <Users className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{game.min_players}-{game.max_players} joueurs</span>
+                  <span className="text-sm">{game.min_players}-{game.max_players} {t('games.card.players')}</span>
                 </div>
                 {game.duration && (
                   <div className="flex items-center gap-2 text-slate-300">
@@ -333,7 +338,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 {game.weight && (
                   <div className="flex items-center gap-2 text-slate-300">
                     <Barbell className="w-4 h-4 text-primary" />
-                    <span className="text-sm">Complexité {game.weight}/5</span>
+                    <span className="text-sm">{t('game.detail.weight_complexity')} {game.weight}/5</span>
                   </div>
                 )}
                 {game.year_published && (
@@ -393,7 +398,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
                 <Crown className="w-5 h-5 text-primary" />
-                Extensions ({game.expansions?.length || 0})
+                {t('expansion.view.title')} ({game.expansions?.length || 0})
               </CardTitle>
               <Button
                 size="sm"
@@ -401,7 +406,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 onClick={() => onNavigation('game-expansions', game.game_id, 'game-detail')}
                 className="border-slate-600 text-slate-300 hover:bg-slate-700/50 text-xs"
               >
-                Gérer
+                {t('game.detail.manage')}
               </Button>
             </div>
           </CardHeader>
@@ -420,12 +425,12 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 ))}
                 {game.expansions.length > 3 && (
                   <p className="text-slate-400 text-sm text-center">
-                    et {game.expansions.length - 3} autre(s)...
+                    {game.expansions.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-400 text-sm">Aucune extension ajoutée.</p>
+              <p className="text-slate-400 text-sm">{t('game.detail.no_expansions')}</p>
             )}
           </CardContent>
         </Card>
@@ -436,7 +441,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
-                Personnages ({game.characters?.length || 0})
+                {t('character.view.title')} ({game.characters?.length || 0})
               </CardTitle>
               <Button
                 size="sm"
@@ -444,7 +449,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 onClick={() => onNavigation('game-characters', game.game_id, 'game-detail')}
                 className="border-slate-600 text-slate-300 hover:bg-slate-700/50 text-xs"
               >
-                Gérer
+                {t('game.detail.manage')}
               </Button>
             </div>
           </CardHeader>
@@ -454,8 +459,8 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 {game.characters.slice(0, 3).map((character: GameCharacter) => (
                   <div key={character.character_id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
                     {character.avatar ? (
-                      <img 
-                        src={character.avatar} 
+                      <img
+                        src={character.avatar}
                         alt={character.name}
                         className="w-10 h-10 rounded-full object-cover border border-slate-600"
                       />
@@ -474,12 +479,12 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 ))}
                 {game.characters.length > 3 && (
                   <p className="text-slate-400 text-sm text-center">
-                    et {game.characters.length - 3} autre(s)...
+                    {game.characters.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-400 text-sm">Aucun personnage ajouté.</p>
+              <p className="text-slate-400 text-sm">{t('game.detail.no_characters')}</p>
             )}
           </CardContent>
         </Card>

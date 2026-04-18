@@ -6,9 +6,11 @@ import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { useAuth } from '@/shared/contexts/AuthContext';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useLabels();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export default function LoginPage() {
       await login(password);
       navigate('/', { replace: true });
     } catch {
-      setError('Mot de passe incorrect. Veuillez réessayer.');
+      setError(t('auth.error.wrong_password'));
     } finally {
       setLoading(false);
     }
@@ -35,16 +37,16 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
             <Lock size={28} className="text-primary" />
           </div>
-          <CardTitle className="text-white text-xl">Board Game Dashboard</CardTitle>
+          <CardTitle className="text-white text-xl">{t('auth.title')}</CardTitle>
           <CardDescription className="text-white/60">
-            Entrez votre mot de passe pour continuer
+            {t('auth.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="password" className="text-white/80">
-                Mot de passe
+                {t('auth.password.label')}
               </Label>
               <Input
                 id="password"
@@ -64,7 +66,7 @@ export default function LoginPage() {
               </p>
             )}
             <Button type="submit" disabled={loading || password.length === 0} className="w-full">
-              {loading ? 'Connexion...' : 'Se connecter'}
+              {loading ? t('auth.submit.loading') : t('auth.submit')}
             </Button>
           </form>
         </CardContent>

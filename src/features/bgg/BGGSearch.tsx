@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { bggApiService } from '@/features/bgg/bggApi';
 import type { BGGGame, BGGSearchResult } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface BGGSearchProps {
   onGameSelect: (game: BGGGame) => void
@@ -14,6 +15,7 @@ interface BGGSearchProps {
 }
 
 export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BGGSearchProps) {
+  const { t } = useLabels();
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BGGSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -62,7 +64,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
         }
       }
     } catch {
-      setSearchError('Échec de la recherche sur BoardGameGeek. Veuillez réessayer.');
+      setSearchError(t('bgg.search.error.search_failed'));
     } finally {
       setIsSearching(false);
     }
@@ -76,7 +78,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       onGameSelect(gameDetails);
       onClose();
     } catch {
-      setSearchError('Impossible de charger les détails du jeu. Veuillez réessayer.');
+      setSearchError(t('bgg.search.error.load_failed'));
     } finally {
       setIsLoadingDetails(false);
     }
@@ -90,7 +92,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       onGameSelect(gameDetails);
       onClose();
     } catch {
-      setSearchError('Impossible de charger les détails du jeu. Veuillez réessayer.');
+      setSearchError(t('bgg.search.error.load_failed'));
     } finally {
       setIsLoadingDetails(false);
     }
@@ -113,7 +115,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Rechercher par nom ou ID BGG..."
+            placeholder={t('bgg.search.placeholder')}
             className={darkMode ? "pl-10 bg-slate-700 border-slate-600 text-white" : "pl-10 bg-white border-slate-300 text-slate-900"}
             disabled={isSearching || isLoadingDetails}
           />
@@ -140,7 +142,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
       {isLoadingDetails && (
         <div className="flex items-center justify-center py-8">
           <Circle className={darkMode ? "w-6 h-6 animate-spin text-teal-400" : "w-6 h-6 animate-spin text-blue-700"} />
-          <span className={darkMode ? "ml-2 text-white/60" : "ml-2 text-blue-700/80"}>Chargement des détails...</span>
+          <span className={darkMode ? "ml-2 text-white/60" : "ml-2 text-blue-700/80"}>{t('bgg.search.loading_details')}</span>
         </div>
       )}
 
@@ -173,7 +175,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
                       </Badge>
                     )}
                     <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
-                      {result.is_expansion ? 'Extension' : 'Jeu de base'}
+                      {result.is_expansion ? t('games.card.expansion') : t('bgg.search.badge.base_game')}
                     </Badge>
                   </div>
                 </div>
@@ -185,13 +187,13 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
         
         {searchResults.length === 0 && query && !isSearching && (
           <div className={darkMode ? "text-center py-8 text-white/60" : "text-center py-8 text-slate-500"}>
-            Aucun jeu trouvé. Essayez un autre terme de recherche.
+            {t('bgg.search.empty')}
           </div>
         )}
       </div>
 
       <div className={darkMode ? "text-xs text-white/40 text-center" : "text-xs text-slate-400 text-center"}>
-        Données de BoardGameGeek.com · Entrez un ID BGG pour un chargement direct
+        {t('bgg.search.footer')}
       </div>
     </div>
   );

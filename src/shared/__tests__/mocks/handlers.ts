@@ -4,6 +4,7 @@ import {
   mockPlayers, mockGames, mockSessions,
   mockDashboard, mockGameStats,
 } from '@/shared/__tests__/fixtures';
+import enLabels from '@/shared/i18n/en.json';
 
 // BGG game full details (used by BGGService / bggApi tests)
 const mockWingspan = {
@@ -23,6 +24,9 @@ const mockWingspan = {
 };
 
 export const handlers = [
+  // ── Labels ────────────────────────────────────────────────────────────────
+  http.get('/api/v1/labels', () => HttpResponse.json(enLabels)),
+
   // ── Auth ──────────────────────────────────────────────────────────────────
   http.get('/api/v1/auth/me', () => HttpResponse.json({ role: 'admin' })),
 
