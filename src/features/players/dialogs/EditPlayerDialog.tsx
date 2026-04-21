@@ -67,7 +67,7 @@ export function EditPlayerDialog({
   };
 
   const inputClass = (field: keyof ValidationErrors) =>
-    errors[field] ? 'border-red-500' : '';
+    errors[field] ? 'border-destructive' : '';
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
