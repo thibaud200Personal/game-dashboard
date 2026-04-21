@@ -1,17 +1,11 @@
 import React from 'react';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/shared/components/ui/alert-dialog';
-
 import { Game } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface DeleteGameDialogProps {
   game: Game
@@ -19,32 +13,25 @@ interface DeleteGameDialogProps {
   trigger: React.ReactNode
 }
 
-export default function DeleteGameDialog({
-  game,
-  onDeleteGame,
-  trigger
-}: DeleteGameDialogProps) {
+export default function DeleteGameDialog({ game, onDeleteGame, trigger }: DeleteGameDialogProps) {
+  const { t } = useLabels();
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        {trigger}
-      </AlertDialogTrigger>
-      <AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Game</AlertDialogTitle>
-          <AlertDialogDescription className="text-white/70">
-            Are you sure you want to delete "{game.name}"? This action cannot be undone and will also remove all associated expansions and characters.
+          <AlertDialogTitle>{t('games.delete_dialog.title')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('games.delete_dialog.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogCancel>{t('common.buttons.cancel')}</AlertDialogCancel>
+          <AlertDialogAction
             onClick={() => onDeleteGame(game.game_id)}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Delete
+            {t('common.buttons.delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
