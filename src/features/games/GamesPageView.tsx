@@ -63,7 +63,6 @@ interface GamesPageViewProps {
   setBGGSearchOpen: (open: boolean) => void;
   setExpandedGame: (gameId: number | null) => void;
   setEditDialogOpen: (open: boolean) => void;
-  darkMode: boolean;
   addGameError?: string | null;
   isAddDuplicate?: boolean;
   updateGameError?: string | null;
@@ -149,7 +148,6 @@ interface GameCardProps {
   onNavigation: (view: string, id?: number, source?: string) => void;
   onEditGame: (game: Game) => void;
   onDeleteGame: (id: number) => void;
-  darkMode: boolean;
   cardClass: string;
   titleClass: string;
   descClass: string;
@@ -157,9 +155,9 @@ interface GameCardProps {
 }
 
 
-const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, darkMode, cardClass, titleClass, descClass, isFirst }: GameCardProps) {
+const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedGame, onNavigation, onEditGame, onDeleteGame, cardClass, titleClass, descClass, isFirst }: GameCardProps) {
   const { t } = useLabels();
-  const { ghostBtn: ghostBtnClass, meta: metaClass, credit: creditClass, dropdownItem: dropdownItemClass } = getGameCardStyles(darkMode);
+  const { ghostBtn: ghostBtnClass, meta: metaClass, credit: creditClass, dropdownItem: dropdownItemClass } = getGameCardStyles();
 
   return (
     <Card className={cardClass}>
@@ -201,18 +199,18 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                       {t('games.card.expansion')}
                     </Badge>
                   )}
-                  <Badge variant="secondary" className={darkMode ? "bg-teal-600/20 text-teal-300 text-xs" : "bg-teal-100 text-teal-700 text-xs"}>
+                  <Badge variant="secondary" className="bg-teal-100 dark:bg-teal-600/20 text-teal-700 dark:text-teal-300 text-xs">
                     {game.category}
                   </Badge>
                   {getGameModesBadges(game, t)}
-                  <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
+                  <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
                     {game.min_players === game.max_players ? `${game.min_players}` : `${game.min_players}-${game.max_players}`} {t('games.card.players')}
                   </Badge>
-                  <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
+                  <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
                     <Clock className="w-3 h-3 mr-1" />
                     {game.duration}
                   </Badge>
-                  <Badge variant="outline" className={`border-white/20 text-xs ${getDifficultyColor(game.difficulty)} ${!darkMode ? 'border-slate-300 text-slate-500' : ''}`}>
+                  <Badge variant="outline" className={`border-slate-300 dark:border-white/20 text-xs ${getDifficultyColor(game.difficulty)}`}>
                     <Target className="w-3 h-3 mr-1" />
                     {game.difficulty}
                   </Badge>
@@ -318,7 +316,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         <DotsThree className="w-5 h-5" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700 text-white">
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onNavigation('game-detail', game.game_id, 'games')} className={`cursor-pointer ${dropdownItemClass}`}>
                         <Eye className="w-4 h-4 mr-2" />{t('games.menu.view_details')}
                       </DropdownMenuItem>
@@ -341,7 +339,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                         game={game}
                         onDeleteGame={onDeleteGame}
                         trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className={`cursor-pointer ${darkMode ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-100 text-red-600'}`}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400">
                             <Trash className="w-4 h-4 mr-2" />{t('games.menu.delete')}
                           </DropdownMenuItem>
                         }
@@ -381,20 +379,15 @@ export function GamesPageView(props: GamesPageViewProps) {
     onDeleteGame,
     setBGGSearchOpen,
     setExpandedGame,
-    darkMode
   } = props;
 
   const safeGames = games || [];
-  const mainClass = darkMode
-    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
-    : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900";
-  const cardClass = darkMode
-    ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl"
-    : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl";
-  const titleClass = darkMode ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900";
-  const descClass = darkMode ? "text-white/60 text-sm" : "text-slate-500 text-sm";
-  const statCardClass = `${darkMode ? 'bg-white/10 border-white/20' : 'bg-slate-50 border-slate-200'} backdrop-blur-md rounded-xl p-3 text-center border`;
-  const statSubClass = darkMode ? "text-xs text-white/80" : "text-xs text-slate-500";
+  const mainClass = "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white";
+  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
+  const titleClass = "text-lg font-semibold text-slate-900 dark:text-white";
+  const descClass = "text-slate-500 dark:text-white/60 text-sm";
+  const statCardClass = "bg-slate-50 dark:bg-white/10 border-slate-200 dark:border-white/20 backdrop-blur-md rounded-xl p-3 text-center border";
+  const statSubClass = "text-xs text-slate-500 dark:text-white/80";
 
   return (
     <div className={mainClass}>
@@ -437,31 +430,31 @@ export function GamesPageView(props: GamesPageViewProps) {
 
         {/* Search */}
         <div className="relative mb-6">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             id="games-search"
             name="games-search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t('games.search.placeholder')}
-            className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+            className="pl-10"
           />
         </div>
 
         {/* Games Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className={statCardClass}>
-            <div className={darkMode ? "text-2xl font-bold text-emerald-400" : "text-2xl font-bold text-emerald-700"}>{totalGames}</div>
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalGames}</div>
             <div className={statSubClass}>{t('games.stats.total')}</div>
           </div>
           <div className={statCardClass}>
-            <div className={darkMode ? "text-2xl font-bold text-blue-400" : "text-2xl font-bold text-blue-700"}>
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
               {[...new Set(safeGames.map(g => g.category || 'Unknown'))].length}
             </div>
             <div className={statSubClass}>{t('games.stats.categories')}</div>
           </div>
           <div className={statCardClass}>
-            <div className={darkMode ? "text-2xl font-bold text-purple-400" : "text-2xl font-bold text-purple-700"}>
+            <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">
               {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
             </div>
             <div className={statSubClass}>{t('games.stats.avg_rating')}</div>
@@ -482,7 +475,6 @@ export function GamesPageView(props: GamesPageViewProps) {
               onNavigation={onNavigation}
               onEditGame={onEditGame}
               onDeleteGame={onDeleteGame}
-              darkMode={darkMode}
               cardClass={cardClass}
               titleClass={titleClass}
               descClass={descClass}
@@ -501,15 +493,10 @@ export function GamesPageView(props: GamesPageViewProps) {
       {/* Floating Add Game Button */}
       <button
         onClick={onAddDialogToggle}
-        className={
-          `fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center z-50 ` +
-          (darkMode
-            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
-            : 'bg-gradient-to-r from-emerald-200 to-emerald-400 hover:from-emerald-300 hover:to-emerald-500 border border-emerald-400')
-        }
+        className="fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center z-50 bg-gradient-to-r from-emerald-200 to-emerald-400 hover:from-emerald-300 hover:to-emerald-500 border border-emerald-400 dark:from-emerald-500 dark:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-700 dark:border-0"
         aria-label="Add new game"
       >
-        <Plus className={darkMode ? "w-6 h-6 text-white" : "w-6 h-6 text-emerald-700"} />
+        <Plus className="w-6 h-6 text-emerald-700 dark:text-white" />
       </button>
     </div>
   );
