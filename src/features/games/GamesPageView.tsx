@@ -419,7 +419,6 @@ export function GamesPageView(props: GamesPageViewProps) {
               onResetForm={onResetForm}
               isBGGSearchOpen={isBGGSearchOpen}
               onBGGSearchToggle={setBGGSearchOpen}
-              darkMode={darkMode}
               serverError={props.addGameError}
               disabled={props.isAddDuplicate}
             />
@@ -431,7 +430,6 @@ export function GamesPageView(props: GamesPageViewProps) {
               onUpdateGame={onUpdateGame}
               onResetForm={onResetForm}
               editingGame={props.editingGame}
-              darkMode={darkMode}
               serverError={props.updateGameError}
             />
           </div>

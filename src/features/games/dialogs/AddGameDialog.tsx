@@ -81,7 +81,6 @@ interface AddGameDialogProps {
   onResetForm: () => void
   isBGGSearchOpen: boolean
   onBGGSearchToggle: (open: boolean) => void
-  darkMode: boolean
   serverError?: string | null
   disabled?: boolean
 }
@@ -96,7 +95,6 @@ export default function AddGameDialog({
   onResetForm,
   isBGGSearchOpen,
   onBGGSearchToggle,
-  darkMode,
   serverError,
   disabled
 }: AddGameDialogProps) {
@@ -243,12 +241,10 @@ export default function AddGameDialog({
           <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={
-        `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
-      } onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{t('games.add_dialog.title')}</DialogTitle>
-          <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
+          <DialogDescription>
             {t('games.add_dialog.description')}
           </DialogDescription>
         </DialogHeader>
@@ -265,7 +261,7 @@ export default function AddGameDialog({
           </div>
 
           {isBGGSearchOpen && (
-            <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
+            <div className="p-4 bg-muted rounded-lg border border-border">
               <BGGSearch 
                 onGameSelect={(bggGame) => {
                   onFormDataChange({
@@ -305,7 +301,7 @@ export default function AddGameDialog({
               name="game-name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white ${errors.name ? 'border-red-500' : ''}`}
+              className={errors.name ? 'border-red-500' : ''}
               placeholder={t('games.form.name.placeholder')}
             />
             {errors.name && (
@@ -319,7 +315,7 @@ export default function AddGameDialog({
               name="game-image"
               value={formData.image}
               onChange={(e) => handleInputChange('image', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white ${errors.image ? 'border-red-500' : ''}`}
+              className={errors.image ? 'border-red-500' : ''}
               placeholder="https://..."
             />
             {errors.image && (
@@ -332,7 +328,7 @@ export default function AddGameDialog({
               id="edit-game-thumbnail"
               value={formData.thumbnail || ''}
               onChange={(e) => onFormDataChange({ thumbnail: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder="https://..."
             />
           </div>
@@ -346,7 +342,7 @@ export default function AddGameDialog({
                 min="1"
                 value={formData.min_players}
                 onChange={(e) => handleInputChange('min_players', parseInt(e.target.value) || 1)}
-                className={`bg-slate-700 border-slate-600 text-white ${errors.min_players ? 'border-red-500' : ''}`}
+                className={errors.min_players ? 'border-red-500' : ''}
               />
               {errors.min_players && (
                 <p className="text-red-400 text-sm mt-1">{errors.min_players}</p>
@@ -361,7 +357,7 @@ export default function AddGameDialog({
                 min="1"
                 value={formData.max_players}
                 onChange={(e) => handleInputChange('max_players', parseInt(e.target.value) || 1)}
-                className={`bg-slate-700 border-slate-600 text-white ${errors.max_players ? 'border-red-500' : ''}`}
+                className={errors.max_players ? 'border-red-500' : ''}
               />
               {errors.max_players && (
                 <p className="text-red-400 text-sm mt-1">{errors.max_players}</p>
@@ -376,7 +372,7 @@ export default function AddGameDialog({
                 name="duration"
                 value={formData.duration}
                 onChange={(e) => onFormDataChange({ duration: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="30-60 min"
               />
             </div>
@@ -389,7 +385,7 @@ export default function AddGameDialog({
                 min="1"
                 value={formData.age_min}
                 onChange={(e) => onFormDataChange({ age_min: parseInt(e.target.value) || 1 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
           </div>
@@ -402,7 +398,7 @@ export default function AddGameDialog({
                 min="0"
                 value={formData.min_playtime ?? ''}
                 onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="—"
               />
             </div>
@@ -414,7 +410,7 @@ export default function AddGameDialog({
                 min="0"
                 value={formData.playing_time ?? ''}
                 onChange={(e) => onFormDataChange({ playing_time: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="—"
               />
             </div>
@@ -426,7 +422,7 @@ export default function AddGameDialog({
                 min="0"
                 value={formData.max_playtime ?? ''}
                 onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="—"
               />
             </div>
@@ -435,10 +431,10 @@ export default function AddGameDialog({
             <div>
               <Label htmlFor="difficulty">{t('games.form.difficulty.label')}</Label>
               <Select value={formData.difficulty} onValueChange={(value) => onFormDataChange({ difficulty: value })}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent>
                   <SelectItem value="Beginner">{t('games.form.difficulty.beginner')}</SelectItem>
                   <SelectItem value="Intermediate">{t('games.form.difficulty.intermediate')}</SelectItem>
                   <SelectItem value="Expert">{t('games.form.difficulty.expert')}</SelectItem>
@@ -456,7 +452,7 @@ export default function AddGameDialog({
                     id="supports-competitive"
                     checked={formData.supports_competitive}
                     onCheckedChange={(checked) => onFormDataChange({ supports_competitive: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="supports-competitive" className="text-sm flex items-center">
                     <Sword className="w-3 h-3 mr-1 text-red-400" />
@@ -468,7 +464,7 @@ export default function AddGameDialog({
                     id="supports-cooperative"
                     checked={formData.supports_cooperative}
                     onCheckedChange={(checked) => onFormDataChange({ supports_cooperative: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="supports-cooperative" className="text-sm flex items-center">
                     <Shield className="w-3 h-3 mr-1 text-blue-400" />
@@ -480,7 +476,7 @@ export default function AddGameDialog({
                     id="supports-campaign"
                     checked={formData.supports_campaign}
                     onCheckedChange={(checked) => onFormDataChange({ supports_campaign: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="supports-campaign" className="text-sm flex items-center">
                     <Crown className="w-3 h-3 mr-1 text-purple-400" />
@@ -492,7 +488,7 @@ export default function AddGameDialog({
                     id="supports-hybrid"
                     checked={formData.supports_hybrid}
                     onCheckedChange={(checked) => onFormDataChange({ supports_hybrid: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="supports-hybrid" className="text-sm flex items-center">
                     <Target className="w-3 h-3 mr-1 text-orange-400" />
@@ -509,7 +505,7 @@ export default function AddGameDialog({
               name="category"
               value={formData.category}
               onChange={(e) => onFormDataChange({ category: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder={t('games.form.category.placeholder')}
             />
           </div>
@@ -521,7 +517,7 @@ export default function AddGameDialog({
               onChange={(e) => onFormDataChange({
                 categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
               })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder={t('games.form.categories.placeholder')}
             />
           </div>
@@ -533,7 +529,7 @@ export default function AddGameDialog({
               onChange={(e) => onFormDataChange({
                 mechanics: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
               })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder={t('games.form.mechanics.placeholder')}
             />
           </div>
@@ -545,7 +541,7 @@ export default function AddGameDialog({
                 name="designer"
                 value={formData.designer}
                 onChange={(e) => onFormDataChange({ designer: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder={t('games.form.designer.placeholder')}
               />
             </div>
@@ -556,7 +552,7 @@ export default function AddGameDialog({
                 name="publisher"
                 value={formData.publisher}
                 onChange={(e) => onFormDataChange({ publisher: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder={t('games.form.publisher.placeholder')}
               />
             </div>
@@ -572,7 +568,7 @@ export default function AddGameDialog({
                 max="2030"
                 value={formData.year_published}
                 onChange={(e) => onFormDataChange({ year_published: parseInt(e.target.value) || new Date().getFullYear() })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
             <div>
@@ -586,7 +582,7 @@ export default function AddGameDialog({
                 step="0.1"
                 value={formData.bgg_rating}
                 onChange={(e) => onFormDataChange({ bgg_rating: parseFloat(e.target.value) || 0 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
             <div>
@@ -600,7 +596,7 @@ export default function AddGameDialog({
                 step="0.1"
                 value={formData.weight}
                 onChange={(e) => onFormDataChange({ weight: parseFloat(e.target.value) || 0 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
           </div>
@@ -611,7 +607,7 @@ export default function AddGameDialog({
               name="description"
               value={formData.description}
               onChange={(e) => onFormDataChange({ description: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder={t('games.form.description.placeholder')}
               rows={3}
             />
@@ -667,7 +663,7 @@ export default function AddGameDialog({
                     onFormDataChange({ expansions: parsedExpansions });
                   }}
                   placeholder="Extension 1 (2023), Extension 2 (2024), ..."
-                  className="bg-slate-700 border-slate-600 text-white"
+                  className=""
                   rows={3}
                 />
               </div>
@@ -692,20 +688,20 @@ export default function AddGameDialog({
                     type="button"
                     onClick={addCharacter}
                     variant="outline"
-                    className="border-slate-600 text-white hover:bg-slate-600"
+                    className=""
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Add Character
                   </Button>
                 </div>
                 {(formData.characters || []).map((character, charIndex) => (
-              <div key={charIndex} className="p-3 bg-slate-700 rounded-lg border border-slate-600 space-y-2">
+              <div key={charIndex} className="p-3 bg-muted rounded-lg border border-border space-y-2">
                 <div className="flex space-x-2">
                   <Input
                     value={character.name}
                     onChange={(e) => updateCharacter(charIndex, 'name', e.target.value)}
                     placeholder={t('games.form.characters.name.placeholder')}
-                    className="bg-slate-600 border-slate-500 text-white"
+                    className=""
                   />
                   <Button
                     type="button"
@@ -721,7 +717,7 @@ export default function AddGameDialog({
                   value={character.description}
                   onChange={(e) => updateCharacter(charIndex, 'description', e.target.value)}
                   placeholder={t('games.form.character.description.placeholder')}
-                  className="bg-slate-600 border-slate-500 text-white"
+                  className=""
                 />
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
@@ -730,7 +726,7 @@ export default function AddGameDialog({
                       type="button"
                       onClick={() => addAbility(charIndex)}
                       variant="outline"
-                      className="border-slate-500 text-white hover:bg-slate-500 h-6 text-xs"
+                      className="h-6 text-xs"
                     >
                       <Plus className="w-2 h-2 mr-1" />
                       {t('games.form.character.add_ability')}
@@ -742,7 +738,7 @@ export default function AddGameDialog({
                         value={ability}
                         onChange={(e) => updateAbility(charIndex, abilityIndex, e.target.value)}
                         placeholder={t('games.form.characters.ability.placeholder')}
-                        className="bg-slate-600 border-slate-500 text-white text-xs"
+                        className="text-xs"
                       />
                       <Button
                         type="button"

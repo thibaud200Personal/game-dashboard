@@ -60,7 +60,6 @@ interface EditGameDialogProps {
   onFormDataChange: (data: Partial<FormData>) => void
   onUpdateGame: () => void
   onResetForm: () => void
-  darkMode: boolean
   serverError?: string | null
 }
 
@@ -71,7 +70,6 @@ export default function EditGameDialog({
   onFormDataChange,
   onUpdateGame,
   onResetForm,
-  darkMode,
   serverError
 }: EditGameDialogProps) {
   const { t } = useLabels();
@@ -141,54 +139,52 @@ export default function EditGameDialog({
         onResetForm();
       }
     }}>
-      <DialogContent className={
-        `${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} max-w-2xl max-h-[90vh] overflow-y-auto`
-      } onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className={darkMode ? 'text-white' : 'text-blue-700'}>{t('games.edit_dialog.title')}</DialogTitle>
-          <DialogDescription className={darkMode ? 'text-white/70' : 'text-slate-500'}>
+          <DialogTitle>{t('games.edit_dialog.title')}</DialogTitle>
+          <DialogDescription>
             Update game information and details.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           {/* Champs standards */}
           <div>
-            <Label htmlFor="edit-game-name" className={darkMode ? 'text-white' : 'text-blue-700'}>Game Name *</Label>
+            <Label htmlFor="edit-game-name" className="">Game Name *</Label>
             <Input
               id="edit-game-name"
               name="edit-game-name"
               value={formData.name}
               onChange={(e) => onFormDataChange({ name: e.target.value })}
-              className={darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}
+              className=""
               placeholder="Enter game name"
             />
           </div>
           <div>
-            <Label htmlFor="edit-game-image" className={darkMode ? 'text-white' : 'text-blue-700'}>Image URL</Label>
+            <Label htmlFor="edit-game-image" className="">Image URL</Label>
             <Input
               id="edit-game-image"
               name="edit-game-image"
               value={formData.image}
               onChange={(e) => onFormDataChange({ image: e.target.value })}
-              className={darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}
+              className=""
               placeholder="https://..."
             />
           </div>
           {/* Champs BGG */}
           <div>
-            <Label htmlFor="edit-game-thumbnail" className={darkMode ? 'text-white' : 'text-blue-700'}>Thumbnail URL</Label>
+            <Label htmlFor="edit-game-thumbnail" className="">Thumbnail URL</Label>
             <Input
               id="edit-game-thumbnail"
               value={formData.thumbnail || ''}
               onChange={(e) => onFormDataChange({ thumbnail: e.target.value })}
-              className={darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}
+              className=""
               placeholder="https://..."
             />
           </div>
           {/* ...le reste du bloc principal (Game Modes, Expansions, Characters, etc.)... */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="edit-min-players" className={darkMode ? 'text-white' : 'text-blue-700'}>Min Players</Label>
+              <Label htmlFor="edit-min-players" className="">Min Players</Label>
               <Input
                 id="edit-min-players"
                 name="edit-min-players"
@@ -196,11 +192,11 @@ export default function EditGameDialog({
                 min="1"
                 value={formData.min_players}
                 onChange={(e) => onFormDataChange({ min_players: parseInt(e.target.value) || 1 })}
-                className={darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}
+                className=""
               />
             </div>
             <div>
-              <Label htmlFor="edit-max-players" className={darkMode ? 'text-white' : 'text-blue-700'}>Max Players</Label>
+              <Label htmlFor="edit-max-players" className="">Max Players</Label>
               <Input
                 id="edit-max-players"
                 name="edit-max-players"
@@ -208,7 +204,7 @@ export default function EditGameDialog({
                 min="1"
                 value={formData.max_players}
                 onChange={(e) => onFormDataChange({ max_players: parseInt(e.target.value) || 1 })}
-                className={darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}
+                className=""
               />
             </div>
           </div>
@@ -220,7 +216,7 @@ export default function EditGameDialog({
                 name="edit-duration"
                 value={formData.duration}
                 onChange={(e) => onFormDataChange({ duration: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="30-60 min"
               />
             </div>
@@ -233,7 +229,7 @@ export default function EditGameDialog({
                 min="1"
                 value={formData.age_min}
                 onChange={(e) => onFormDataChange({ age_min: parseInt(e.target.value) || 1 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
           </div>
@@ -246,7 +242,7 @@ export default function EditGameDialog({
                 min="0"
                 value={formData.playing_time ?? ''}
                 onChange={(e) => onFormDataChange({ playing_time: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="min"
               />
             </div>
@@ -258,7 +254,7 @@ export default function EditGameDialog({
                 min="0"
                 value={formData.min_playtime ?? ''}
                 onChange={(e) => onFormDataChange({ min_playtime: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="min"
               />
             </div>
@@ -270,7 +266,7 @@ export default function EditGameDialog({
                 min="0"
                 value={formData.max_playtime ?? ''}
                 onChange={(e) => onFormDataChange({ max_playtime: parseInt(e.target.value) || undefined })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="max"
               />
             </div>
@@ -278,10 +274,10 @@ export default function EditGameDialog({
           <div>
             <Label htmlFor="edit-difficulty">Difficulty</Label>
               <Select value={formData.difficulty} onValueChange={(value) => onFormDataChange({ difficulty: value })}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent>
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
                   <SelectItem value="Expert">Expert</SelectItem>
@@ -297,7 +293,7 @@ export default function EditGameDialog({
                     id="edit-supports-competitive"
                     checked={formData.supports_competitive}
                     onCheckedChange={(checked) => onFormDataChange({ supports_competitive: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="edit-supports-competitive" className="text-sm flex items-center">
                     <Sword className="w-3 h-3 mr-1 text-red-400" />
@@ -309,7 +305,7 @@ export default function EditGameDialog({
                     id="edit-supports-cooperative"
                     checked={formData.supports_cooperative}
                     onCheckedChange={(checked) => onFormDataChange({ supports_cooperative: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="edit-supports-cooperative" className="text-sm flex items-center">
                     <Shield className="w-3 h-3 mr-1 text-blue-400" />
@@ -321,7 +317,7 @@ export default function EditGameDialog({
                     id="edit-supports-campaign"
                     checked={formData.supports_campaign}
                     onCheckedChange={(checked) => onFormDataChange({ supports_campaign: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="edit-supports-campaign" className="text-sm flex items-center">
                     <Crown className="w-3 h-3 mr-1 text-purple-400" />
@@ -333,7 +329,7 @@ export default function EditGameDialog({
                     id="edit-supports-hybrid"
                     checked={formData.supports_hybrid}
                     onCheckedChange={(checked) => onFormDataChange({ supports_hybrid: checked as boolean })}
-                    className="border-slate-600"
+                    className="border-border"
                   />
                   <Label htmlFor="edit-supports-hybrid" className="text-sm flex items-center">
                     <Target className="w-3 h-3 mr-1 text-orange-400" />
@@ -349,7 +345,7 @@ export default function EditGameDialog({
               id="edit-category"
               value={formData.category}
               onChange={(e) => onFormDataChange({ category: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder="Strategy, Party, etc."
             />
           </div>
@@ -359,7 +355,7 @@ export default function EditGameDialog({
               id="edit-categories"
               value={(formData.categories || []).join(', ')}
               onChange={(e) => onFormDataChange({ categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder="Adventure, Fantasy, ..."
             />
           </div>
@@ -369,7 +365,7 @@ export default function EditGameDialog({
               id="edit-mechanics"
               value={(formData.mechanics || []).join(', ')}
               onChange={(e) => onFormDataChange({ mechanics: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder="Hand Management, Cooperative Game, ..."
             />
           </div>
@@ -380,7 +376,7 @@ export default function EditGameDialog({
                 id="edit-designer"
                 value={formData.designer}
                 onChange={(e) => onFormDataChange({ designer: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="Game designer"
               />
             </div>
@@ -390,7 +386,7 @@ export default function EditGameDialog({
                 id="edit-publisher"
                 value={formData.publisher}
                 onChange={(e) => onFormDataChange({ publisher: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
                 placeholder="Publisher"
               />
             </div>
@@ -405,7 +401,7 @@ export default function EditGameDialog({
                 max="2030"
                 value={formData.year_published}
                 onChange={(e) => onFormDataChange({ year_published: parseInt(e.target.value) || new Date().getFullYear() })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
             <div>
@@ -418,7 +414,7 @@ export default function EditGameDialog({
                 step="0.1"
                 value={formData.bgg_rating}
                 onChange={(e) => onFormDataChange({ bgg_rating: parseFloat(e.target.value) || 0 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
             <div>
@@ -431,7 +427,7 @@ export default function EditGameDialog({
                 step="0.1"
                 value={formData.weight}
                 onChange={(e) => onFormDataChange({ weight: parseFloat(e.target.value) || 0 })}
-                className="bg-slate-700 border-slate-600 text-white"
+                className=""
               />
             </div>
           </div>
@@ -441,7 +437,7 @@ export default function EditGameDialog({
               id="edit-description"
               value={formData.description}
               onChange={(e) => onFormDataChange({ description: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
+              className=""
               placeholder="Brief game description"
               rows={3}
             />
@@ -499,7 +495,7 @@ export default function EditGameDialog({
                     
                     onFormDataChange({ expansions: parsedExpansions });
                   }}
-                  className="bg-slate-700 border-slate-600 text-white"
+                  className=""
                   placeholder="Extension 1 (2023), Extension 2 (2024), etc..."
                   rows={3}
                   />
@@ -525,20 +521,20 @@ export default function EditGameDialog({
                     type="button"
                     onClick={addCharacter}
                     variant="outline"
-                    className="border-slate-600 text-white hover:bg-slate-600"
+                    className=""
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Character
                   </Button>
                 </div>
                 {(formData.characters || []).map((character, charIndex) => (
-                  <div key={charIndex} className="p-3 bg-slate-700 rounded-lg border border-slate-600 space-y-2">
+                  <div key={charIndex} className="p-3 bg-muted rounded-lg border border-border space-y-2">
                     <div className="flex space-x-2">
                       <Input
                         value={character.name}
                         onChange={(e) => updateCharacter(charIndex, 'name', e.target.value)}
                         placeholder="Character name"
-                        className="bg-slate-600 border-slate-500 text-white"
+                        className=""
                       />
                       <Button
                         type="button"
@@ -554,7 +550,7 @@ export default function EditGameDialog({
                       value={character.description}
                       onChange={(e) => updateCharacter(charIndex, 'description', e.target.value)}
                       placeholder="Character description"
-                      className="bg-slate-600 border-slate-500 text-white"
+                      className=""
                     />
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
@@ -563,7 +559,7 @@ export default function EditGameDialog({
                           type="button"
                           onClick={() => addAbility(charIndex)}
                           variant="outline"
-                          className="border-slate-500 text-white hover:bg-slate-500 h-6 text-xs"
+                          className="h-6 text-xs"
                         >
                           <Plus className="w-2 h-2 mr-1" />
                           Add Ability
@@ -575,7 +571,7 @@ export default function EditGameDialog({
                             value={ability}
                             onChange={(e) => updateAbility(charIndex, abilityIndex, e.target.value)}
                             placeholder="Ability name"
-                            className="bg-slate-600 border-slate-500 text-white text-xs"
+                            className="text-xs"
                           />
                           <Button
                             type="button"
