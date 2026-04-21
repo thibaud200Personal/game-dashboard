@@ -4,6 +4,7 @@ import {
   Plus,
   ArrowLeft,
   MagnifyingGlass,
+  GameController,
   Trash,
   Users,
   PencilSimple,
@@ -35,6 +36,7 @@ import { AddGameDialog, EditGameDialog, DeleteGameDialog } from './dialogs';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
 
 interface GamesPageViewProps {
   games: Game[];
@@ -68,37 +70,24 @@ interface GamesPageViewProps {
 }
 
 
+const MODE_ICONS: Record<GameMode, React.ReactElement> = {
+  competitive: <Sword className="w-3 h-3 mr-1" />,
+  cooperative: <Shield className="w-3 h-3 mr-1" />,
+  campaign:    <Crown className="w-3 h-3 mr-1" />,
+  hybrid:      <Target className="w-3 h-3 mr-1" />,
+};
+
 function getGameModesBadges(game: Game, t: (key: string) => string): React.ReactElement[] {
-  const modes: React.ReactElement[] = [];
-  if (game.supports_competitive) {
-    modes.push(
-      <Badge key="competitive" variant="outline" className="border-red-400/30 text-red-400 text-xs">
-        <Sword className="w-3 h-3 mr-1" />{t('games.card.modes.competitive')}
+  return (['competitive', 'cooperative', 'campaign', 'hybrid'] as GameMode[]).flatMap(mode => {
+    const prop = `supports_${mode}` as keyof typeof game;
+    if (!game[prop]) return [];
+    const colors = gameModeColors[mode] ?? gameModeFallback;
+    return [
+      <Badge key={mode} variant="outline" className={`${colors.badge} text-xs`}>
+        {MODE_ICONS[mode]}{t(`games.mode.${mode}`)}
       </Badge>
-    );
-  }
-  if (game.supports_cooperative) {
-    modes.push(
-      <Badge key="cooperative" variant="outline" className="border-blue-400/30 text-blue-400 text-xs">
-        <Shield className="w-3 h-3 mr-1" />{t('games.card.modes.cooperative')}
-      </Badge>
-    );
-  }
-  if (game.supports_campaign) {
-    modes.push(
-      <Badge key="campaign" variant="outline" className="border-purple-400/30 text-purple-400 text-xs">
-        <Crown className="w-3 h-3 mr-1" />{t('games.card.modes.campaign')}
-      </Badge>
-    );
-  }
-  if (game.supports_hybrid) {
-    modes.push(
-      <Badge key="hybrid" variant="outline" className="border-orange-400/30 text-orange-400 text-xs">
-        <Target className="w-3 h-3 mr-1" />{t('games.card.modes.hybrid')}
-      </Badge>
-    );
-  }
-  return modes;
+    ];
+  });
 }
 
 
@@ -505,7 +494,7 @@ export function GamesPageView(props: GamesPageViewProps) {
 
         {games.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 text-white/20 mx-auto mb-4" />
+            <GameController className="w-16 h-16 mx-auto mb-4 opacity-20" />
             <p className="text-white/60">{t('games.empty')}</p>
           </div>
         )}

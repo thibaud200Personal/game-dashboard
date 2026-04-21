@@ -13,6 +13,7 @@ import { Game, Player } from '@/types';
 import { useGameStatsPage } from './useGameStatsPage';
 import { getMedalClass } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
 
 interface GameStatsViewProps {
   selectedPeriod: 'week' | 'month' | 'year' | 'all'
@@ -32,13 +33,6 @@ const SESSION_TYPE_COLORS: Record<string, string> = {
   cooperative: 'from-blue-400 to-blue-600',
   campaign: 'from-purple-400 to-purple-600',
   hybrid: 'from-green-400 to-green-600',
-};
-
-const SESSION_TYPE_DOT_COLORS: Record<string, string> = {
-  competitive: 'bg-red-400',
-  cooperative: 'bg-blue-400',
-  campaign: 'bg-purple-400',
-  hybrid: 'bg-green-400',
 };
 
 
@@ -321,7 +315,7 @@ export default function GameStatsView({
             const winner = players.find(p => p.player_id === session.winner_player_id);
             return (
               <div key={index} className={isDark ? "flex items-center space-x-3 p-3 bg-white/5 rounded-xl" : "flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"}>
-                <div className={`w-3 h-3 rounded-full ${SESSION_TYPE_DOT_COLORS[session.play_type] ?? 'bg-gray-400'}`} />
+                <div className={`w-3 h-3 rounded-full ${(gameModeColors[session.play_type as GameMode] ?? gameModeFallback).dot}`} />
                 <div className="flex-1">
                   <div className={`${valueClass} font-medium capitalize`}>{session.play_type}</div>
                   <div className={labelClass}>
