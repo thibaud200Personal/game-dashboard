@@ -12,7 +12,7 @@ interface DeletePlayerDialogProps {
   trigger: React.ReactNode;
 }
 
-export function DeletePlayerDialog({ playerName, onDelete, trigger }: DeletePlayerDialogProps) {
+export function DeletePlayerDialog({ playerName: _playerName, onDelete, trigger }: DeletePlayerDialogProps) {
   const { t } = useLabels();
   return (
     <AlertDialog>
