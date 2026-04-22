@@ -13,7 +13,7 @@ interface EditPlayerDialogProps {
   setFormData: (data: PlayerFormData) => void;
   onUpdate: () => void;
   onCancel: () => void;
-  darkMode: boolean;
+  darkMode?: boolean;
   serverError?: string | null;
 }
 
