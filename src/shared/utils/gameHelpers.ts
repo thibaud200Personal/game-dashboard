@@ -42,10 +42,9 @@ export function getGameCardStyles() {
 // ---------------------------------------------------------------------------
 // Expansion view layout
 // ---------------------------------------------------------------------------
-export function getContentClass(embedded: boolean, darkMode: boolean): string {
+export function getContentClass(embedded: boolean): string {
   if (embedded) return '';
-  const base = 'max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8';
-  return darkMode ? base : base + ' bg-slate-100';
+  return 'max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8';
 }
 
 // ---------------------------------------------------------------------------

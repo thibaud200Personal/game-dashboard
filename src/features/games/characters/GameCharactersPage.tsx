@@ -10,9 +10,8 @@ interface GameCharactersPageProps {
   onUpdateCharacter: (characterId: number, characterData: Omit<GameCharacter, 'character_id' | 'game_id'>) => Promise<void>
   onDeleteCharacter: (characterId: number) => Promise<void>
   embedded?: boolean;
-  darkMode?: boolean;
 }
 
 export default function GameCharactersPage(props: GameCharactersPageProps) {
-  return <GameCharactersView {...props} darkMode={!!props.darkMode} />;
+  return <GameCharactersView {...props} />;
 }

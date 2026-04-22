@@ -38,7 +38,6 @@ interface GameDetailViewProps extends UseGameDetailProps {
   setActiveTab: (tab: string) => void;
   hasExpansionHandlers: boolean;
   hasCharacterHandlers: boolean;
-  darkMode: boolean;
 }
 
 export default function GameDetailView({
@@ -58,15 +57,14 @@ export default function GameDetailView({
   onUpdateCharacter,
   onDeleteCharacter,
   onNavigation,
-  darkMode
 }: GameDetailViewProps) {
   const { t } = useLabels();
 
   return (
-    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800" : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300"}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
-      <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-10">
-    <div className={darkMode ? "max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4" : "max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 bg-white border-b border-slate-200"}>
+      <div className="bg-white border-b border-slate-200 dark:bg-slate-800/50 dark:backdrop-blur-sm dark:border-b dark:border-slate-700/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center gap-3 md:gap-4">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -74,7 +72,7 @@ export default function GameDetailView({
                   variant="ghost"
                   size="sm"
                   onClick={handleNavigation.back}
-                  className="text-white/80 hover:text-white hover:bg-white/10 p-2"
+                  className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10 p-2"
                 >
                   <ArrowLeft className="w-4 h-4 md:mr-2" />
                   <span className="hidden md:inline">{t('game.detail.back')}</span>
@@ -84,9 +82,8 @@ export default function GameDetailView({
                 <p>{t('expansion.view.back_to_games')}</p>
               </TooltipContent>
             </Tooltip>
-            <div className="h-6 w-px bg-slate-600 hidden md:block"></div>
-            <h1 className="text-lg md:text-xl font-semibold text-white flex-1 truncate">{game.name}</h1>
-            <h1 className={darkMode ? "text-lg md:text-xl font-semibold text-white flex-1 truncate" : "text-lg md:text-xl font-semibold text-slate-900 flex-1 truncate"}>{game.name}</h1>
+            <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 hidden md:block"></div>
+            <h1 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white flex-1 truncate">{game.name}</h1>
 
             {/* Mobile Context Menu */}
             <div className="md:hidden">
@@ -94,7 +91,7 @@ export default function GameDetailView({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 p-2">
+                      <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10 p-2">
                         <DotsThree className="w-5 h-5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -103,40 +100,25 @@ export default function GameDetailView({
                     <p>{t('game.detail.more_options')}</p>
                   </TooltipContent>
                 </Tooltip>
-                <DropdownMenuContent align="end" className={darkMode ? "bg-slate-800 border-slate-700 text-white w-56" : "bg-white border-slate-200 text-slate-900 w-56"}>
-                  <DropdownMenuItem
-                    onClick={tabHandlers.setOverview}
-                    className="hover:bg-slate-700 focus:bg-slate-700"
-                  >
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={tabHandlers.setOverview}>
                     <GameController className="w-4 h-4 mr-2" />
                     {t('game.detail.tab.overview')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={tabHandlers.setExpansions}
-                    className="hover:bg-slate-700 focus:bg-slate-700"
-                  >
+                  <DropdownMenuItem onClick={tabHandlers.setExpansions}>
                     <Crown className="w-4 h-4 mr-2" />
                     {t('expansion.view.title')} ({game.expansions?.length || 0})
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={tabHandlers.setCharacters}
-                    className="hover:bg-slate-700 focus:bg-slate-700"
-                  >
+                  <DropdownMenuItem onClick={tabHandlers.setCharacters}>
                     <User className="w-4 h-4 mr-2" />
                     {t('character.view.title')} ({game.characters?.length || 0})
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-slate-600" />
-                  <DropdownMenuItem
-                    onClick={handleNavigation.expansions}
-                    className="hover:bg-slate-700 focus:bg-slate-700"
-                  >
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleNavigation.expansions}>
                     <Crown className="w-4 h-4 mr-2" />
                     {t('game.detail.manage_expansions')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleNavigation.characters}
-                    className="hover:bg-slate-700 focus:bg-slate-700"
-                  >
+                  <DropdownMenuItem onClick={handleNavigation.characters}>
                     <User className="w-4 h-4 mr-2" />
                     {t('game.detail.manage_characters')}
                   </DropdownMenuItem>
@@ -151,29 +133,20 @@ export default function GameDetailView({
         {/* Desktop Layout with Tabs */}
         <div className="hidden md:block">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className={darkMode ? "grid w-full grid-cols-3 bg-slate-800/50 border-slate-700/50" : "grid w-full grid-cols-3 bg-white border-slate-200"}>
-              <TabsTrigger
-                value="overview"
-                className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
-              >
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">
                 {t('game.detail.tab.overview')}
               </TabsTrigger>
-              <TabsTrigger
-                value="expansions"
-                className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
-              >
+              <TabsTrigger value="expansions">
                 {t('expansion.view.title')} ({game.expansions?.length || 0})
               </TabsTrigger>
-              <TabsTrigger
-                value="characters"
-                className={darkMode ? "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-white" : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-slate-900"}
-              >
+              <TabsTrigger value="characters">
                 {t('character.view.title')} ({game.characters?.length || 0})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-6">
-              <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} darkMode={darkMode} />
+              <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />
             </TabsContent>
 
             <TabsContent value="expansions" className="mt-6">
@@ -186,7 +159,6 @@ export default function GameDetailView({
                   onUpdateExpansion={onUpdateExpansion!}
                   onDeleteExpansion={onDeleteExpansion!}
                   embedded={true}
-                  darkMode={darkMode}
                 />
               )}
             </TabsContent>
@@ -201,7 +173,6 @@ export default function GameDetailView({
                   onUpdateCharacter={onUpdateCharacter!}
                   onDeleteCharacter={onDeleteCharacter!}
                   embedded={true}
-                  darkMode={darkMode}
                 />
               )}
             </TabsContent>
@@ -210,7 +181,7 @@ export default function GameDetailView({
 
         {/* Mobile Layout - Show current tab content */}
         <div className="md:hidden pb-32">
-          {activeTab === 'overview' && <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} darkMode={darkMode} />}
+          {activeTab === 'overview' && <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />}
           {activeTab === 'expansions' && hasExpansionHandlers && (
             <GameExpansionsPage
               game={game}
@@ -220,7 +191,6 @@ export default function GameDetailView({
               onUpdateExpansion={onUpdateExpansion!}
               onDeleteExpansion={onDeleteExpansion!}
               embedded={true}
-              darkMode={darkMode}
             />
           )}
           {activeTab === 'characters' && hasCharacterHandlers && (
@@ -232,25 +202,24 @@ export default function GameDetailView({
               onUpdateCharacter={onUpdateCharacter!}
               onDeleteCharacter={onDeleteCharacter!}
               embedded={true}
-              darkMode={darkMode}
             />
           )}
         </div>
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-md border-t border-white/10 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-md border-t border-slate-200 dark:border-white/10 md:hidden">
         <div className="flex justify-around items-center py-2">
           <button
             onClick={handleNavigation.dashboard}
-            className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
+            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
           >
             <TrendUp className="w-6 h-6 mb-1" />
             <span className="text-xs">{t('dashboard.title')}</span>
           </button>
           <button
             onClick={handleNavigation.players}
-            className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
+            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
           >
             <Users className="w-6 h-6 mb-1" />
             <span className="text-xs">{t('players.page.title')}</span>
@@ -264,7 +233,7 @@ export default function GameDetailView({
           </button>
           <button
             onClick={handleNavigation.settings}
-            className="flex flex-col items-center p-3 transition-colors text-white/60 hover:text-white"
+            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
           >
             <Gear className="w-6 h-6 mb-1" />
             <span className="text-xs">{t('settings.page.title')}</span>
@@ -279,16 +248,15 @@ interface GameOverviewProps {
   game: Game;
   gameTypes: string[];
   onNavigation: (view: string, gameId?: number, source?: string) => void;
-  darkMode: boolean;
 }
 
-function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewProps) {
+function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
   const { t } = useLabels();
 
   return (
-    <div className={darkMode ? "" : "bg-white text-slate-900"}>
+    <div>
       {/* Game Overview Card */}
-      <Card className="bg-slate-800/50 border-slate-700/50 mb-6 md:mb-8">
+      <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 mb-6 md:mb-8">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             {/* Game Image */}
@@ -297,11 +265,11 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 <img
                   src={game.image}
                   alt={game.name}
-                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-slate-600"
+                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-slate-300 dark:border-slate-600"
                 />
               ) : (
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-700/50 rounded-lg border border-slate-600 flex items-center justify-center">
-                  <GameController className="w-8 h-8 md:w-12 md:h-12 text-slate-400" />
+                <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-100 dark:bg-slate-700/50 rounded-lg border border-slate-300 dark:border-slate-600 flex items-center justify-center">
+                  <GameController className="w-8 h-8 md:w-12 md:h-12 text-slate-500 dark:text-slate-400" />
                 </div>
               )}
             </div>
@@ -310,9 +278,9 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
                 <div className="mb-4 md:mb-0">
-                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2">{game.name}</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2">{game.name}</h2>
                   {game.description && (
-                    <p className="text-slate-300 mb-4 text-sm md:text-base max-w-2xl">{game.description}</p>
+                    <p className="text-slate-600 dark:text-slate-300 mb-4 text-sm md:text-base max-w-2xl">{game.description}</p>
                   )}
                 </div>
                 {game.bgg_rating && (
@@ -325,24 +293,24 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
 
               {/* Game Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
-                <div className="flex items-center gap-2 text-slate-300">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm">{game.min_players}-{game.max_players} {t('games.card.players')}</span>
                 </div>
                 {game.duration && (
-                  <div className="flex items-center gap-2 text-slate-300">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Clock className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.duration}</span>
                   </div>
                 )}
                 {game.weight && (
-                  <div className="flex items-center gap-2 text-slate-300">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Barbell className="w-4 h-4 text-primary" />
                     <span className="text-sm">{t('game.detail.weight_complexity')} {game.weight}/5</span>
                   </div>
                 )}
                 {game.year_published && (
-                  <div className="flex items-center gap-2 text-slate-300">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Calendar className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.year_published}</span>
                   </div>
@@ -352,13 +320,13 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
               {/* Additional Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
                 {game.publisher && (
-                  <div className="flex items-center gap-2 text-slate-300">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <Buildings className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.publisher}</span>
                   </div>
                 )}
                 {game.designer && (
-                  <div className="flex items-center gap-2 text-slate-300">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <User className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.designer}</span>
                   </div>
@@ -374,12 +342,12 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                     </Badge>
                   ))}
                   {game.category && (
-                    <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs">
+                    <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs">
                       {game.category}
                     </Badge>
                   )}
                   {game.difficulty && (
-                    <Badge variant="outline" className="border-slate-600 text-slate-300 text-xs">
+                    <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs">
                       {game.difficulty}
                     </Badge>
                   )}
@@ -393,10 +361,10 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
       {/* Quick Overview of Extensions and Characters - Desktop Only */}
       <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Extensions Preview */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
                 <Crown className="w-5 h-5 text-primary" />
                 {t('expansion.view.title')} ({game.expansions?.length || 0})
               </CardTitle>
@@ -404,7 +372,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 size="sm"
                 variant="outline"
                 onClick={() => onNavigation('game-expansions', game.game_id, 'game-detail')}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700/50 text-xs"
+                className="text-xs"
               >
                 {t('game.detail.manage')}
               </Button>
@@ -414,32 +382,32 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             {game.expansions && game.expansions.length > 0 ? (
               <div className="space-y-3">
                 {game.expansions.slice(0, 3).map((expansion: GameExpansion) => (
-                  <div key={expansion.expansion_id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                  <div key={expansion.expansion_id} className="flex items-center justify-between p-3 bg-slate-100/50 dark:bg-slate-700/30 rounded-lg">
                     <div>
-                      <h4 className="text-white font-medium">{expansion.name}</h4>
+                      <h4 className="text-slate-900 dark:text-white font-medium">{expansion.name}</h4>
                       {expansion.year_published && (
-                        <p className="text-slate-400 text-sm">{expansion.year_published}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">{expansion.year_published}</p>
                       )}
                     </div>
                   </div>
                 ))}
                 {game.expansions.length > 3 && (
-                  <p className="text-slate-400 text-sm text-center">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
                     {game.expansions.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-400 text-sm">{t('game.detail.no_expansions')}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('game.detail.no_expansions')}</p>
             )}
           </CardContent>
         </Card>
 
         {/* Characters Preview */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
                 {t('character.view.title')} ({game.characters?.length || 0})
               </CardTitle>
@@ -447,7 +415,7 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
                 size="sm"
                 variant="outline"
                 onClick={() => onNavigation('game-characters', game.game_id, 'game-detail')}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700/50 text-xs"
+                className="text-xs"
               >
                 {t('game.detail.manage')}
               </Button>
@@ -457,34 +425,34 @@ function GameOverview({ game, gameTypes, onNavigation, darkMode }: GameOverviewP
             {game.characters && game.characters.length > 0 ? (
               <div className="space-y-3">
                 {game.characters.slice(0, 3).map((character: GameCharacter) => (
-                  <div key={character.character_id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                  <div key={character.character_id} className="flex items-center gap-3 p-3 bg-slate-100/50 dark:bg-slate-700/30 rounded-lg">
                     {character.avatar ? (
                       <img
                         src={character.avatar}
                         alt={character.name}
-                        className="w-10 h-10 rounded-full object-cover border border-slate-600"
+                        className="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600"
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-slate-400" />
+                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                       </div>
                     )}
                     <div>
-                      <h4 className="text-white font-medium">{character.name}</h4>
+                      <h4 className="text-slate-900 dark:text-white font-medium">{character.name}</h4>
                       {character.description && (
-                        <p className="text-slate-400 text-sm">{character.description}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">{character.description}</p>
                       )}
                     </div>
                   </div>
                 ))}
                 {game.characters.length > 3 && (
-                  <p className="text-slate-400 text-sm text-center">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
                     {game.characters.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-400 text-sm">{t('game.detail.no_characters')}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('game.detail.no_characters')}</p>
             )}
           </CardContent>
         </Card>

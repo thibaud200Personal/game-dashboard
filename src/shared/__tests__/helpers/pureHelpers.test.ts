@@ -192,19 +192,12 @@ describe('withRemovedAbility', () => {
 // ---------------------------------------------------------------------------
 describe('getContentClass', () => {
   it('returns empty string when embedded', () => {
-    expect(getContentClass(true, true)).toBe('');
-    expect(getContentClass(true, false)).toBe('');
+    expect(getContentClass(true)).toBe('');
   });
 
-  it('returns base class without bg in dark mode', () => {
-    const result = getContentClass(false, true);
+  it('returns base layout class when not embedded', () => {
+    const result = getContentClass(false);
     expect(result).toContain('max-w-7xl');
-    expect(result).not.toContain('bg-slate-100');
-  });
-
-  it('appends bg-slate-100 in light mode', () => {
-    const result = getContentClass(false, false);
-    expect(result).toContain('bg-slate-100');
   });
 });
 
