@@ -77,7 +77,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
         <div className={cardClass}>
           <h2 className={titleClass}>{t('settings.section.preferences')}</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-40 cursor-not-allowed">
               <div className="flex items-center space-x-3">
                 <Moon className="w-5 h-5 text-purple-400" />
                 <div>
@@ -85,9 +85,9 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                   <div className={descClass}>{t('settings.dark_mode.desc')}</div>
                 </div>
               </div>
-              <Switch 
-                checked={props.darkMode} 
-                onCheckedChange={props.handleDarkModeChange}
+              <Switch
+                checked={props.darkMode}
+                disabled
               />
             </div>
 
