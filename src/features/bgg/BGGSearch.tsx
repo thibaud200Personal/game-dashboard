@@ -11,10 +11,9 @@ import { useLabels } from '@/shared/hooks/useLabels';
 interface BGGSearchProps {
   onGameSelect: (game: BGGGame) => void
   onClose: () => void
-  darkMode?: boolean;
 }
 
-export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BGGSearchProps) {
+export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
   const { t } = useLabels();
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BGGSearchResult[]>([]);
@@ -105,10 +104,10 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
   };
 
   return (
-    <div className={darkMode ? "space-y-4" : "space-y-4 bg-slate-50 text-slate-900 p-4 rounded-xl border border-slate-200"}>
+    <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <div className="relative flex-1">
-          <MagnifyingGlass className={darkMode ? "absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" : "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"} />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-white/60 w-4 h-4" />
           <Input
             id="bgg-search"
             name="bgg-search"
@@ -116,33 +115,32 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('bgg.search.placeholder')}
-            className={darkMode ? "pl-10 bg-slate-700 border-slate-600 text-white" : "pl-10 bg-white border-slate-300 text-slate-900"}
+            className="pl-10"
             disabled={isSearching || isLoadingDetails}
           />
         </div>
-        <Button 
-          onClick={handleSearch} 
+        <Button
+          onClick={handleSearch}
           disabled={isSearching || isLoadingDetails || !query.trim()}
-          className={darkMode ? "bg-teal-600 hover:bg-teal-700" : "bg-blue-100 hover:bg-blue-200 text-blue-700"}
         >
           {isSearching ? (
-            <Circle className={darkMode ? "w-4 h-4 animate-spin" : "w-4 h-4 animate-spin text-blue-700"} />
+            <Circle className="w-4 h-4 animate-spin" />
           ) : (
-            <MagnifyingGlass className={darkMode ? "w-4 h-4" : "w-4 h-4 text-blue-700"} />
+            <MagnifyingGlass className="w-4 h-4" />
           )}
         </Button>
       </div>
 
       {searchError && (
-        <div className={darkMode ? "text-red-400 text-sm p-3 bg-red-500/10 rounded-lg border border-red-500/20" : "text-red-700 text-sm p-3 bg-red-100 rounded-lg border border-red-200"}>
+        <div className="text-red-700 dark:text-red-400 text-sm p-3 bg-red-100 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
           {searchError}
         </div>
       )}
 
       {isLoadingDetails && (
         <div className="flex items-center justify-center py-8">
-          <Circle className={darkMode ? "w-6 h-6 animate-spin text-teal-400" : "w-6 h-6 animate-spin text-blue-700"} />
-          <span className={darkMode ? "ml-2 text-white/60" : "ml-2 text-blue-700/80"}>{t('bgg.search.loading_details')}</span>
+          <Circle className="w-6 h-6 animate-spin text-teal-400" />
+          <span className="ml-2 text-slate-500 dark:text-white/60">{t('bgg.search.loading_details')}</span>
         </div>
       )}
 
@@ -150,7 +148,7 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
         {searchResults.map((result, index) => (
           <Card
             key={`${result.bgg_id}-${index}`}
-            className={darkMode ? "bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all cursor-pointer" : "bg-white border-slate-200 hover:bg-slate-100 transition-all cursor-pointer"}
+            className="bg-white dark:bg-white/5 dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             onClick={() => handleGameSelect(result)}
           >
             <CardContent className="p-3">
@@ -162,37 +160,37 @@ export default function BGGSearch({ onGameSelect, onClose, darkMode = true }: BG
                     className="w-12 h-12 object-cover rounded flex-shrink-0"
                   />
                 ) : (
-                  <div className={darkMode ? "w-12 h-12 rounded flex-shrink-0 bg-white/10 flex items-center justify-center" : "w-12 h-12 rounded flex-shrink-0 bg-slate-200 flex items-center justify-center"}>
-                    <MagnifyingGlass className={darkMode ? "w-5 h-5 text-white/30" : "w-5 h-5 text-slate-400"} />
+                  <div className="w-12 h-12 rounded flex-shrink-0 bg-slate-200 dark:bg-white/10 flex items-center justify-center">
+                    <MagnifyingGlass className="w-5 h-5 text-slate-400 dark:text-white/30" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className={darkMode ? "font-medium text-white truncate" : "font-medium text-slate-900 truncate"}>{result.name}</h3>
+                  <h3 className="font-medium text-slate-900 dark:text-white truncate">{result.name}</h3>
                   <div className="flex items-center space-x-2 mt-1">
                     {result.year_published > 0 && (
-                      <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
+                      <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
                         {result.year_published}
                       </Badge>
                     )}
-                    <Badge variant="outline" className={darkMode ? "border-white/20 text-white/60 text-xs" : "border-slate-300 text-slate-500 text-xs"}>
+                    <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
                       {result.is_expansion ? t('games.card.expansion') : t('bgg.search.badge.base_game')}
                     </Badge>
                   </div>
                 </div>
-                <Link className={darkMode ? "w-4 h-4 text-white/40 flex-shrink-0" : "w-4 h-4 text-blue-400 flex-shrink-0"} />
+                <Link className="w-4 h-4 text-blue-400 dark:text-white/40 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
         ))}
-        
+
         {searchResults.length === 0 && query && !isSearching && (
-          <div className={darkMode ? "text-center py-8 text-white/60" : "text-center py-8 text-slate-500"}>
+          <div className="text-center py-8 text-slate-500 dark:text-white/60">
             {t('bgg.search.empty')}
           </div>
         )}
       </div>
 
-      <div className={darkMode ? "text-xs text-white/40 text-center" : "text-xs text-slate-400 text-center"}>
+      <div className="text-xs text-slate-400 dark:text-white/40 text-center">
         {t('bgg.search.footer')}
       </div>
     </div>

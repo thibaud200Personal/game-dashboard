@@ -41,7 +41,6 @@ interface PlayerStatsViewProps {
   selectedPlayer: Player | null
   onNavigation: (view: string) => void
   currentView: string
-  darkMode: boolean
 }
 
 interface StatCardProps {
@@ -100,18 +99,16 @@ export default function PlayerStatsView({
   selectedPlayer,
   onNavigation: _onNavigation,
   currentView: _currentView,
-  darkMode
 }: PlayerStatsViewProps) {
   const { t } = useLabels();
-  const isDark = darkMode;
-  const labelClass = isDark ? "text-white/60 text-sm" : "text-slate-500 text-sm";
-  const titleClass = isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900";
-  const cardClass = isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl";
-  const cardSmClass = isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl";
-  const subLabelClass = isDark ? "text-white/60 text-xs" : "text-slate-400 text-xs";
-  const valueClass = isDark ? "text-white" : "text-slate-900";
-  const sectionTitleClass = isDark ? "text-lg font-semibold mb-4 flex items-center text-white" : "text-lg font-semibold mb-4 flex items-center text-slate-900";
-  const rowClass = isDark ? "bg-white/5" : "bg-slate-100";
+  const labelClass = "text-slate-500 dark:text-white/60 text-sm";
+  const titleClass = "text-2xl font-bold text-slate-900 dark:text-white";
+  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-6 border border-slate-300 dark:border-white/20 shadow-xl";
+  const cardSmClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
+  const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
+  const valueClass = "text-slate-900 dark:text-white";
+  const sectionTitleClass = "text-lg font-semibold mb-4 flex items-center text-slate-900 dark:text-white";
+  const rowClass = "bg-slate-100 dark:bg-white/5";
 
   return (
     <div className="space-y-6">
@@ -201,12 +198,12 @@ export default function PlayerStatsView({
                 primary={activity.game_name}
                 secondary={`Score: ${activity.score} pts`}
                 score={activity.score}
-                rowClass="bg-white/5"
+                rowClass="bg-slate-100 dark:bg-white/5"
                 valueClass={valueClass}
                 labelClass={labelClass}
               />
             )) : (
-              <div className="text-center py-4 text-white/60">{t('stats.player.recent.empty')}</div>
+              <div className="text-center py-4 text-slate-500 dark:text-white/60">{t('stats.player.recent.empty')}</div>
             )}
           </div>
         </div>
@@ -236,17 +233,6 @@ export default function PlayerStatsView({
         </div>
       )}
 
-      {/* Performance Charts Placeholder */}
-      <div className={cardSmClass}>
-        <h2 className={sectionTitleClass}>
-          <ChartBar className="w-5 h-5 mr-2 text-purple-400" />
-          {selectedPlayer ? `${selectedPlayer.player_name}'s Performance` : 'Performance Overview'}
-        </h2>
-        <div className={labelClass + " text-center py-8"}>
-          <ChartBar className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p>{t('stats.player.performance.coming_soon')}</p>
-        </div>
-      </div>
     </div>
   );
 }

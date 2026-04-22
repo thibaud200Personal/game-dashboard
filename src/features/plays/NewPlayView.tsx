@@ -65,7 +65,6 @@ interface NewGameViewProps {
   // Navigation
   onNavigation: (view: string) => void
   currentView: string
-  darkMode: boolean
 }
 
 export default function NewGameView({ 
@@ -108,7 +107,6 @@ export default function NewGameView({
   players,
   onNavigation,
   currentView: _currentView,
-  darkMode
 }: NewGameViewProps) {
   const { t } = useLabels();
   // Safety checks for arrays
@@ -122,24 +120,24 @@ export default function NewGameView({
   };
 
   return (
-    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white" : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900"}>
-      <div className={darkMode ? "container mx-auto px-4 py-6 pb-32 space-y-6" : "container mx-auto px-4 py-6 pb-32 space-y-6 bg-slate-50"}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
+      <div className="container mx-auto px-4 py-6 pb-32 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
             onClick={() => onNavigation('dashboard')}
             variant="ghost"
-            className={darkMode ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}
+            className="text-slate-600 dark:text-white hover:text-slate-900 dark:hover:bg-white/10 hover:bg-slate-100"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className={darkMode ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900"}>{t('sessions.new.title')}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('sessions.new.title')}</h1>
         </div>
 
         {/* Game Setup */}
-        <Card className={darkMode ? "bg-white/10 backdrop-blur-md border-white/20" : "bg-slate-50 backdrop-blur-md border-slate-200"}>
+        <Card className="bg-slate-50 dark:bg-white/10 dark:backdrop-blur-md border-slate-200 dark:border-white/20">
           <CardHeader>
-            <CardTitle className={darkMode ? "flex items-center gap-2 text-white" : "flex items-center gap-2 text-slate-900"}>
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
               <Play className="w-5 h-5" />
               {t('sessions.setup.title')}
             </CardTitle>

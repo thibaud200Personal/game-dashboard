@@ -39,20 +39,9 @@ export const usePlayerStatsPage = (
       .slice(0, 5);
   }, [displayPlayers]);
 
-  // No per-play API yet — recentActivity is empty until a plays/history endpoint is added
-  const recentActivity: Array<{
-    game_id: number;
-    game_name: string;
-    player_id: number;
-    score: number;
-    is_winner: boolean;
-    player_name: string;
-  }> = [];
-
   return {
     stats,
     topPlayers,
-    recentActivity,
     selectedPlayer,
     displayPlayers,
   };
