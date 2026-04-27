@@ -27,10 +27,9 @@ const customRender = (
 
 // eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
-export { customRender as render };
 
 // Utilitaires pour les tests
-export const createMockNavigation = () => {
+const createMockNavigation = () => {
   const mockNavigation = vi.fn();
   return {
     onNavigation: mockNavigation,
@@ -38,12 +37,12 @@ export const createMockNavigation = () => {
   };
 };
 
-export const createMockMobile = (isMobile = false): MockMobileHook => ({
+const createMockMobile = (isMobile = false): MockMobileHook => ({
   isMobile
 });
 
 // Mock data communes
-export const mockPlayers = [
+const mockPlayers = [
   {
     player_id: 1,
     player_name: 'Alice',
@@ -163,7 +162,7 @@ export function createHookWrapper(initialPath = '/') {
   };
 }
 
-export const mockBGGGameData = {
+const mockBGGGameData = {
   id: 266192,
   name: 'Wingspan',
   thumbnail: 'https://cf.geekdo-images.com/yLZJCVLlIx4c7eJEWUNJ7w__thumb/img/test.jpg',

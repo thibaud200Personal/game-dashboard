@@ -69,6 +69,29 @@ describe('GET /api/v1/stats/games', () => {
   })
 })
 
+describe('GET /api/v1/stats/players/:id/recent-plays', () => {
+  it('retourne les parties récentes du joueur', async () => {
+    const res = await request(app).get(`/api/v1/stats/players/${playerId}/recent-plays`).set(headers)
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(1)
+    expect(res.body[0].game_name).toBe('Catan')
+    expect(res.body[0].player_id).toBe(playerId)
+  })
+
+  it('joueur sans parties → tableau vide', async () => {
+    const p2 = await request(app).post('/api/v1/players').set(headers).send({ player_name: 'Bob', pseudo: 'bob' })
+    const res = await request(app).get(`/api/v1/stats/players/${p2.body.player_id}/recent-plays`).set(headers)
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(0)
+  })
+
+  it('respecte le paramètre limit', async () => {
+    const res = await request(app).get(`/api/v1/stats/players/${playerId}/recent-plays?limit=1`).set(headers)
+    expect(res.status).toBe(200)
+    expect(res.body.length).toBeLessThanOrEqual(1)
+  })
+})
+
 describe('GET /api/v1/stats/games/:id', () => {
   it('retourne les stats du jeu', async () => {
     const res = await request(app).get(`/api/v1/stats/games/${gameId}`).set(headers)

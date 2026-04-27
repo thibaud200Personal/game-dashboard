@@ -167,7 +167,7 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-slate-900 dark:text-white truncate">{result.name}</h3>
                   <div className="flex items-center space-x-2 mt-1">
-                    {result.year_published > 0 && (
+                    {result.year_published !== undefined &&result.year_published > 0 && (
                       <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
                         {result.year_published}
                       </Badge>

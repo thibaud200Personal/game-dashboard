@@ -13,7 +13,6 @@ interface EditPlayerDialogProps {
   setFormData: (data: PlayerFormData) => void;
   onUpdate: () => void;
   onCancel: () => void;
-  darkMode?: boolean;
   serverError?: string | null;
 }
 
@@ -27,7 +26,7 @@ const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
 
 export function EditPlayerDialog({
   isOpen, onOpenChange, formData, setFormData,
-  onUpdate, onCancel, darkMode: _darkMode = true, serverError,
+  onUpdate, onCancel, serverError,
 }: EditPlayerDialogProps) {
   const { t } = useLabels();
   const [errors, setErrors] = useState<ValidationErrors>({});

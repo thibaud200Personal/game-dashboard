@@ -51,7 +51,7 @@ function validateAddPlayerForm(formData: PlayerFormData, t: (key: string) => str
 }
 
 function getInputClass(field: keyof ValidationErrors, errors: ValidationErrors): string {
-  return errors[field] ? 'border-red-500' : '';
+  return errors[field] ? 'border-destructive' : '';
 }
 
 export function AddPlayerDialog({
@@ -111,43 +111,43 @@ export function AddPlayerDialog({
         <DialogHeader>
           <DialogTitle>{t('players.add_dialog.title')}</DialogTitle>
           <DialogDescription>
-            Create a new player profile by filling out the form below.
+            {t('players.add_dialog.description')}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="player_name">Nom *</Label>
+            <Label htmlFor="player_name">{t('players.form.name.label')} *</Label>
             <Input
               id="player_name"
               name="player_name"
               value={formData.player_name}
               onChange={(e) => handleNameChange(e.target.value)}
               className={getInputClass('player_name', errors)}
-              placeholder="Prénom ou nom complet"
+              placeholder={t('players.form.name.placeholder')}
             />
             {errors.player_name && <p className="text-destructive text-sm mt-1">{errors.player_name}</p>}
           </div>
           <div>
-            <Label htmlFor="pseudo">Pseudo *</Label>
+            <Label htmlFor="pseudo">{t('players.form.pseudo.label')} *</Label>
             <Input
               id="pseudo"
               name="pseudo"
               value={formData.pseudo}
               onChange={(e) => handlePseudoChange(e.target.value)}
               className={getInputClass('pseudo', errors)}
-              placeholder="Identifiant unique"
+              placeholder={t('players.form.pseudo.placeholder')}
             />
             {errors.pseudo && <p className="text-destructive text-sm mt-1">{errors.pseudo}</p>}
           </div>
           <div>
-            <Label htmlFor="avatar">Avatar URL</Label>
+            <Label htmlFor="avatar">{t('players.form.avatar.label')}</Label>
             <Input
               id="avatar"
               name="avatar"
               value={formData.avatar}
               onChange={(e) => handleInputChange('avatar', e.target.value)}
               className={getInputClass('avatar', errors)}
-              placeholder="https://example.com/avatar.jpg (optional)"
+              placeholder={t('players.form.avatar.placeholder')}
             />
             {errors.avatar && <p className="text-destructive text-sm mt-1">{errors.avatar}</p>}
           </div>

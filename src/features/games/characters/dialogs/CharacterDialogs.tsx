@@ -1,13 +1,14 @@
+// Gestion des extensions de jeux
 import React from 'react';
-import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/shared/components/ui/alert-dialog';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { BaseFormDialog, BaseDeleteDialog } from '../../../../shared/components/dialogs/generic-dialogs';
+import { FormActions, useFormHandler } from '../../../../shared/components/dialogs/form-utils';
 
-interface CharacterFormData {
+/** @public */
+export interface CharacterFormData {
   name: string;
   character_key: string;
   avatar: string;
@@ -15,216 +16,58 @@ interface CharacterFormData {
   abilities: string;
 }
 
-interface CharacterFormProps {
-  formData: CharacterFormData;
-  setFormData: (data: CharacterFormData | ((prev: CharacterFormData) => CharacterFormData)) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
-  submitText: string;
-  cancelText: string;
-}
-
-const CharacterForm = ({
-  formData,
-  setFormData,
-  onSubmit,
-  onCancel,
-  submitText,
-  cancelText,
-}: CharacterFormProps) => {
+/** @public */
+export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormData, onSubmit }: any) {
   const { t } = useLabels();
+  const onFieldChange = useFormHandler(setFormData);
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">{t('character.form.name.label')}</Label>
-        <Input
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={(e) => setFormData((prev: CharacterFormData) => ({ ...prev, name: e.target.value }))}
-          placeholder={t('character.form.name.placeholder')}
-          required
-        />
-      </div>
+    <BaseFormDialog 
+      mode={mode} 
+      isOpen={isOpen} 
+      onOpenChange={onOpenChange}
+      titleKey={`character.dialog.${mode}.title`}
+      descriptionKey={`character.dialog.${mode}.description`}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">{t('character.form.name.label')}</Label>
+          <Input id="name" name="name" value={formData.name} onChange={onFieldChange} required />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="character_key">{t('character.form.key.label')}</Label>
-        <Input
-          id="character_key"
-          name="character_key"
-          value={formData.character_key}
-          onChange={(e) => setFormData((prev: CharacterFormData) => ({ ...prev, character_key: e.target.value }))}
-          placeholder={t('character.form.key.placeholder')}
-          required
-        />
-        <p className="text-slate-500 dark:text-slate-400 text-xs">{t('character.form.key.hint')}</p>
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="character_key">{t('character.form.key.label')}</Label>
+          <Input id="character_key" name="character_key" value={formData.character_key} onChange={onFieldChange} required />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="avatar">{t('character.form.avatar.label')}</Label>
-        <Input
-          id="avatar"
-          name="avatar"
-          value={formData.avatar}
-          onChange={(e) => setFormData((prev: CharacterFormData) => ({ ...prev, avatar: e.target.value }))}
-          placeholder="https://example.com/avatar.jpg"
-          type="url"
-        />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="avatar">{t('character.form.avatar.label')}</Label>
+          <Input id="avatar" name="avatar" type="url" value={formData.avatar} onChange={onFieldChange} />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">{t('character.form.description.label')}</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={(e) => setFormData((prev: CharacterFormData) => ({ ...prev, description: e.target.value }))}
-          className="min-h-[80px]"
-          placeholder={t('character.form.description.placeholder')}
-        />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="description">{t('character.form.description.label')}</Label>
+          <Textarea id="description" name="description" value={formData.description} onChange={onFieldChange} className="min-h-[80px]" />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="abilities">{t('character.form.abilities.label')}</Label>
-        <Textarea
-          id="abilities"
-          name="abilities"
-          value={formData.abilities}
-          onChange={(e) => setFormData((prev: CharacterFormData) => ({ ...prev, abilities: e.target.value }))}
-          className="min-h-[80px]"
-          placeholder={t('character.form.abilities.placeholder')}
-        />
-        <p className="text-slate-500 dark:text-slate-400 text-xs">{t('character.form.abilities.hint')}</p>
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="abilities">{t('character.form.abilities.label')}</Label>
+          <Textarea id="abilities" name="abilities" value={formData.abilities} onChange={onFieldChange} className="min-h-[80px]" />
+        </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
-          {cancelText}
-        </Button>
-        <Button type="submit">
-          {submitText}
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-interface AddCharacterDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  formData: CharacterFormData;
-  setFormData: (data: CharacterFormData | ((prev: CharacterFormData) => CharacterFormData)) => void;
-  onSubmit: (e: React.FormEvent) => void;
-}
-
-export function AddCharacterDialog({
-  isOpen,
-  onOpenChange,
-  formData,
-  setFormData,
-  onSubmit,
-}: AddCharacterDialogProps) {
-  const { t } = useLabels();
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-4" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>{t('character.dialog.add.title')}</DialogTitle>
-          <DialogDescription>
-            {t('character.dialog.add.description')}
-          </DialogDescription>
-        </DialogHeader>
-        <CharacterForm
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={onSubmit}
-          onCancel={() => onOpenChange(false)}
-          submitText={t('common.buttons.add')}
-          cancelText={t('common.buttons.cancel')}
-        />
-      </DialogContent>
-    </Dialog>
+        <FormActions mode={mode} onCancel={() => onOpenChange(false)} />
+      </form>
+    </BaseFormDialog>
   );
 }
 
-interface EditCharacterDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  formData: CharacterFormData;
-  setFormData: (data: CharacterFormData | ((prev: CharacterFormData) => CharacterFormData)) => void;
-  onSubmit: (e: React.FormEvent) => void;
-}
-
-export function EditCharacterDialog({
-  isOpen,
-  onOpenChange,
-  formData,
-  setFormData,
-  onSubmit,
-}: EditCharacterDialogProps) {
-  const { t } = useLabels();
+export function DeleteCharacterDialog(props: any) {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-4" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>{t('character.dialog.edit.title')}</DialogTitle>
-          <DialogDescription>
-            {t('character.dialog.edit.description')}
-          </DialogDescription>
-        </DialogHeader>
-        <CharacterForm
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={onSubmit}
-          onCancel={() => onOpenChange(false)}
-          submitText={t('common.buttons.edit')}
-          cancelText={t('common.buttons.cancel')}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-interface DeleteCharacterDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  characterName: string;
-  onConfirm: () => void;
-}
-
-export function DeleteCharacterDialog({
-  isOpen,
-  onOpenChange,
-  characterName,
-  onConfirm,
-}: DeleteCharacterDialogProps) {
-  const { t } = useLabels();
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t('character.dialog.delete.title')}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {characterName && <><strong>"{characterName}"</strong> — </>}
-            {t('character.dialog.delete.description')}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>
-            {t('common.buttons.cancel')}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-          >
-            {t('common.buttons.delete')}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <BaseDeleteDialog 
+      {...props}
+      titleKey="character.dialog.delete.title"
+      descriptionKey="character.dialog.delete.description"
+      itemName={props.characterName}
+    />
   );
 }

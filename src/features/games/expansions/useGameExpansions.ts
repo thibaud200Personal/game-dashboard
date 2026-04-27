@@ -119,20 +119,6 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
     resetForm();
   };
 
-  const handleNavigation = {
-    back: () => {
-      if (navigationSource === 'game-detail') {
-        onNavigation('game-detail', game.game_id);
-      } else {
-        onNavigation('games');
-      }
-    },
-    dashboard: () => onNavigation('dashboard'),
-    players: () => onNavigation('players'),
-    games: () => onNavigation('games'),
-    settings: () => onNavigation('settings')
-  };
-
   return {
     // State
     isAddDialogOpen,
@@ -153,7 +139,6 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
     openEditDialog,
     closeDialogs,
     resetForm,
-    handleNavigation,
 
     // Props
     game,

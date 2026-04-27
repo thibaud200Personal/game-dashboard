@@ -14,6 +14,11 @@ export function createStatsRouter(statsService: StatsService): Router {
     res.json(stats)
   })
 
+  router.get('/players/:id/recent-plays', (req, res) => {
+    const limit = req.query.limit ? Number(req.query.limit) : 10
+    res.json(statsService.getPlayerRecentPlays(Number(req.params.id), limit))
+  })
+
   router.get('/games', (_req, res) => res.json(statsService.getGameStats()))
 
   router.get('/games/:id', (req, res) => {

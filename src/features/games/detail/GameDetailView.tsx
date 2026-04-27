@@ -60,6 +60,22 @@ export default function GameDetailView({
 }: GameDetailViewProps) {
   const { t } = useLabels();
 
+  const expansionPageProps = {
+    game, onNavigation, navigationSource,
+    onAddExpansion: onAddExpansion!,
+    onUpdateExpansion: onUpdateExpansion!,
+    onDeleteExpansion: onDeleteExpansion!,
+    embedded: true as const,
+  };
+
+  const characterPageProps = {
+    game, onNavigation, navigationSource,
+    onAddCharacter: onAddCharacter!,
+    onUpdateCharacter: onUpdateCharacter!,
+    onDeleteCharacter: onDeleteCharacter!,
+    embedded: true as const,
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
@@ -150,31 +166,11 @@ export default function GameDetailView({
             </TabsContent>
 
             <TabsContent value="expansions" className="mt-6">
-              {hasExpansionHandlers && (
-                <GameExpansionsPage
-                  game={game}
-                  onNavigation={onNavigation}
-                  navigationSource={navigationSource}
-                  onAddExpansion={onAddExpansion!}
-                  onUpdateExpansion={onUpdateExpansion!}
-                  onDeleteExpansion={onDeleteExpansion!}
-                  embedded={true}
-                />
-              )}
+              {hasExpansionHandlers && <GameExpansionsPage {...expansionPageProps} />}
             </TabsContent>
 
             <TabsContent value="characters" className="mt-6">
-              {hasCharacterHandlers && (
-                <GameCharactersPage
-                  game={game}
-                  onNavigation={onNavigation}
-                  navigationSource={navigationSource}
-                  onAddCharacter={onAddCharacter!}
-                  onUpdateCharacter={onUpdateCharacter!}
-                  onDeleteCharacter={onDeleteCharacter!}
-                  embedded={true}
-                />
-              )}
+              {hasCharacterHandlers && <GameCharactersPage {...characterPageProps} />}
             </TabsContent>
           </Tabs>
         </div>
@@ -182,28 +178,8 @@ export default function GameDetailView({
         {/* Mobile Layout - Show current tab content */}
         <div className="md:hidden pb-32">
           {activeTab === 'overview' && <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />}
-          {activeTab === 'expansions' && hasExpansionHandlers && (
-            <GameExpansionsPage
-              game={game}
-              onNavigation={onNavigation}
-              navigationSource={navigationSource}
-              onAddExpansion={onAddExpansion!}
-              onUpdateExpansion={onUpdateExpansion!}
-              onDeleteExpansion={onDeleteExpansion!}
-              embedded={true}
-            />
-          )}
-          {activeTab === 'characters' && hasCharacterHandlers && (
-            <GameCharactersPage
-              game={game}
-              onNavigation={onNavigation}
-              navigationSource={navigationSource}
-              onAddCharacter={onAddCharacter!}
-              onUpdateCharacter={onUpdateCharacter!}
-              onDeleteCharacter={onDeleteCharacter!}
-              embedded={true}
-            />
-          )}
+          {activeTab === 'expansions' && hasExpansionHandlers && <GameExpansionsPage {...expansionPageProps} />}
+          {activeTab === 'characters' && hasCharacterHandlers && <GameCharactersPage {...characterPageProps} />}
         </div>
       </div>
 

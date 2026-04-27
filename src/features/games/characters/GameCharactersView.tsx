@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
 import { ArrowLeft, Plus, PencilSimple, Trash, User, Lightning } from '@phosphor-icons/react';
 import { useGameCharacters, UseGameCharactersProps } from './useGameCharacters';
-import { AddCharacterDialog, EditCharacterDialog, DeleteCharacterDialog } from './dialogs/CharacterDialogs';
+import { CharacterDialog, DeleteCharacterDialog } from './dialogs/CharacterDialogs';
+import MobileDetailNav from '@/shared/components/MobileDetailNav';
 import { useLabels } from '@/shared/hooks/useLabels';
 
 export default function GameCharactersView(props: UseGameCharactersProps) {
@@ -175,7 +176,8 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
       )}
 
       {/* Dialogs */}
-      <AddCharacterDialog
+      <CharacterDialog
+        mode="add"
         isOpen={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         formData={formData}
@@ -183,7 +185,8 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
         onSubmit={handleAddCharacter}
       />
 
-      <EditCharacterDialog
+      <CharacterDialog
+        mode="edit"
         isOpen={!!editingCharacter}
         onOpenChange={(open) => !open && closeDialogs()}
         formData={formData}
@@ -198,28 +201,11 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
         onConfirm={() => handleDeleteCharacter(deleteCharacterId!)}
       />
 
-      {/* Bottom Navigation - Mobile Only - Only show when not embedded */}
-      {!embedded && (
-        <div className="fixed bottom-0 left-0 right-0 md:hidden">
-          <div className="bg-slate-100 border-t border-slate-300 dark:bg-slate-800 dark:border-t dark:border-slate-700 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onNavigation(navigationSource === 'game-detail' ? 'game-detail' : 'games', game.game_id)}
-                className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t('common.buttons.back')}
-              </Button>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                {t('common.buttons.add')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileDetailNav
+        embedded={embedded}
+        onBack={() => onNavigation(navigationSource === 'game-detail' ? 'game-detail' : 'games', game.game_id)}
+        onAdd={() => setIsAddDialogOpen(true)}
+      />
     </div>
   );
 }

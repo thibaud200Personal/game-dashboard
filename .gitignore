@@ -61,3 +61,10 @@ shared/**/*.js
 shared/**/*.js.map
 shared/**/*.d.ts.map
 .worktrees/
+.aider*
+
+# BGG import data — local work files
+backend/database/import/*.csv
+backend/database/import/*.json
+backend/database/import/*.txt
+backend/database/import/*.py

@@ -27,12 +27,6 @@ interface GameStatsViewProps {
   players: Player[]
 }
 
-const SESSION_TYPE_COLORS: Record<string, string> = {
-  competitive: 'from-red-400 to-red-600',
-  cooperative: 'from-blue-400 to-blue-600',
-  campaign: 'from-purple-400 to-purple-600',
-  hybrid: 'from-green-400 to-green-600',
-};
 
 
 interface StatCardProps {
@@ -234,7 +228,7 @@ export default function GameStatsView({
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div
-                    className={`bg-gradient-to-r ${SESSION_TYPE_COLORS[type] ?? 'from-gray-400 to-gray-600'} h-2 rounded-full transition-all duration-300`}
+                    className={`bg-gradient-to-r ${(gameModeColors[type as GameMode] ?? gameModeFallback).gradient} h-2 rounded-full transition-all duration-300`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

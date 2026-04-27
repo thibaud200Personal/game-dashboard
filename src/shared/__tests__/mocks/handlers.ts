@@ -88,6 +88,11 @@ export const handlers = [
     const p = mockPlayers.find(p => p.player_id === Number(params.id));
     return p ? HttpResponse.json(p) : HttpResponse.json({ error: 'Not found' }, { status: 404 });
   }),
+  http.get('/api/v1/stats/players/:id/recent-plays', ({ params }) => {
+    return HttpResponse.json([
+      { play_id: 1, game_id: 1, game_name: 'Wingspan', player_id: Number(params.id), player_name: 'Alice', score: 42, is_winner: true, play_date: '2026-04-01' },
+    ]);
+  }),
   http.get('/api/v1/stats/games', () => HttpResponse.json(mockGameStats)),
   http.get('/api/v1/stats/games/:id', ({ params }) => {
     const g = mockGameStats.find(g => g.game_id === Number(params.id));

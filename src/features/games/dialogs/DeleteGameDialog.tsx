@@ -22,6 +22,7 @@ export default function DeleteGameDialog({ game, onDeleteGame, trigger }: Delete
         <AlertDialogHeader>
           <AlertDialogTitle>{t('games.delete_dialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
+            {game.name && <><strong>"{game.name}"</strong> — </>}
             {t('games.delete_dialog.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>

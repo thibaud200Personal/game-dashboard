@@ -283,7 +283,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handleNewGameClick}
-                className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="relative bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
               >
                 <Play className="w-8 h-8 mb-2" />
                 <span className="font-medium">{t('dashboard.actions.new_game')}</span>
@@ -297,7 +297,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handlePlayersClick}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
               >
                 <Plus className="w-8 h-8 mb-2" />
                 <span className="font-medium">{t('dashboard.actions.add_player')}</span>

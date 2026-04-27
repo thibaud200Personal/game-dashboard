@@ -1,10 +1,10 @@
 /**
- * match-wikidata-names.ts
+ * match-wikidata-to-catalog.ts
  * Compare wikidata_games.csv avec bgg_catalog_language.name_en.
  * Sortie : wikidata_matches.csv — uniquement les lignes qui matchent
  * ET apportent un nom FR ou ES absent de la BDD.
  *
- * Usage : npx ts-node scripts/match-wikidata-names.ts
+ * Usage : npx ts-node scripts/match-wikidata-to-catalog.ts
  */
 
 import * as fs from 'fs'

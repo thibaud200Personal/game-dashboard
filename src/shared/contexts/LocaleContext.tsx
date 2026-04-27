@@ -37,7 +37,6 @@ export function useLocaleContext(): LocaleContextValue {
   return useContext(LocaleContext);
 }
 
-/** Kept for backward-compat — read-only, no side-effects */
-export function getStoredLocale(): string {
+function getStoredLocale(): string {
   return localStorage.getItem(STORAGE_KEY) ?? DEFAULT_LOCALE;
 }

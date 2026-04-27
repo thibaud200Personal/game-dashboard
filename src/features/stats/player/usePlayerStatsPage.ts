@@ -46,6 +46,3 @@ export const usePlayerStatsPage = (
     displayPlayers,
   };
 };
-
-// Re-export Player type for consumers that import from this module
-export type { Player, PlayerStatistics };

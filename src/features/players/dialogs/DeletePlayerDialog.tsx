@@ -12,7 +12,7 @@ interface DeletePlayerDialogProps {
   trigger: React.ReactNode;
 }
 
-export function DeletePlayerDialog({ playerName: _playerName, onDelete, trigger }: DeletePlayerDialogProps) {
+export function DeletePlayerDialog({ playerName, onDelete, trigger }: DeletePlayerDialogProps) {
   const { t } = useLabels();
   return (
     <AlertDialog>
@@ -21,6 +21,7 @@ export function DeletePlayerDialog({ playerName: _playerName, onDelete, trigger 
         <AlertDialogHeader>
           <AlertDialogTitle>{t('players.delete_dialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
+            {playerName && <><strong>"{playerName}"</strong> — </>}
             {t('players.delete_dialog.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
