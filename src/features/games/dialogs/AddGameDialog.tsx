@@ -7,7 +7,7 @@ import GameForm, { useCharacterFormHandlers } from './GameForm';
 import { useLabels } from '@/shared/hooks/useLabels';
 import type { GameValidationErrors, BGGGame } from '../../../../shared/types/index.d.ts';
 
-export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDataChange, onAddGame, onResetForm, isBGGSearchOpen, onBGGSearchToggle }: any) {
+export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDataChange, onAddGame, onResetForm, isBGGSearchOpen, onBGGSearchToggle, onBGGGameSelect }: any) {
   const [errors, setErrors] = useState<GameValidationErrors>({});
   const { t } = useLabels();
   const { handleUpdateCharacter, handleAddCharacter, handleRemoveCharacter } = useCharacterFormHandlers(formData, onFormDataChange);
@@ -22,7 +22,7 @@ export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDa
           <Link className="mr-2 h-4 w-4" /> {t('games.form.bgg_search')}
         </Button>
 
-        {isBGGSearchOpen && <BGGSearch onGameSelect={(game: BGGGame) => { /* Logique mapping */ onBGGSearchToggle(false); }} onClose={() => onBGGSearchToggle(false)}/>}
+        {isBGGSearchOpen && <BGGSearch onGameSelect={(game: BGGGame) => { onBGGGameSelect(game); onBGGSearchToggle(false); }} onClose={() => onBGGSearchToggle(false)}/>}
 
         <GameForm
           formData={formData} errors={errors}

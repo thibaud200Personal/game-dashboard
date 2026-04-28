@@ -100,6 +100,25 @@ export default function GameForm({
         </div>
       </div>
 
+      <div className="flex items-center gap-6">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="has_expansion"
+            checked={!!formData.has_expansion}
+            onCheckedChange={(v) => { onChange('has_expansion', !!v); if (v) onChange('is_expansion', false); }}
+          />
+          <Label htmlFor="has_expansion">{t('games.form.has_expansion_checkbox.label')}</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is_expansion"
+            checked={!!formData.is_expansion}
+            onCheckedChange={(v) => { onChange('is_expansion', !!v); if (v) onChange('has_expansion', false); }}
+          />
+          <Label htmlFor="is_expansion">{t('games.form.is_expansion_checkbox.label')}</Label>
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
