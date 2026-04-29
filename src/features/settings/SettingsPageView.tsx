@@ -12,6 +12,11 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Switch } from '@/shared/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/shared/components/ui/alert-dialog';
 import { useLabels } from '@/shared/hooks/useLabels';
 
 interface SettingsPageViewProps {
@@ -43,31 +48,14 @@ interface SettingsPageViewProps {
 
 export function SettingsPageView(props: SettingsPageViewProps) {
   const { t } = useLabels();
-  const mainClass = props.darkMode
-    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
-    : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900";
-
-  // Classes dynamiques pour les cards et textes
-  const cardClass = props.darkMode
-    ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl"
-    : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl";
-  const titleClass = props.darkMode
-    ? "text-lg font-semibold mb-4 text-white"
-    : "text-lg font-semibold mb-4 text-slate-900";
-  const labelClass = props.darkMode
-    ? "font-medium text-white"
-    : "font-medium text-slate-900";
-  const descClass = props.darkMode
-    ? "text-white/60 text-sm"
-    : "text-slate-500 text-sm";
-  const aboutTextClass = props.darkMode
-    ? "space-y-2 text-white/80"
-    : "space-y-2 text-slate-800";
-  const aboutDescClass = props.darkMode
-    ? "text-sm text-white/60"
-    : "text-sm text-slate-500";
+  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
+  const titleClass = "text-lg font-semibold mb-4 text-slate-900 dark:text-white";
+  const labelClass = "font-medium text-slate-900 dark:text-white";
+  const descClass = "text-slate-500 dark:text-white/60 text-sm";
+  const aboutTextClass = "space-y-2 text-slate-800 dark:text-white/80";
+  const aboutDescClass = "text-sm text-slate-500 dark:text-white/60";
   return (
-  <div className={mainClass}>
+  <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
       {/* Header */}
       <div className="px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-6">
@@ -89,7 +77,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
         <div className={cardClass}>
           <h2 className={titleClass}>{t('settings.section.preferences')}</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-40 cursor-not-allowed">
               <div className="flex items-center space-x-3">
                 <Moon className="w-5 h-5 text-purple-400" />
                 <div>
@@ -97,9 +85,9 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                   <div className={descClass}>{t('settings.dark_mode.desc')}</div>
                 </div>
               </div>
-              <Switch 
-                checked={props.darkMode} 
-                onCheckedChange={props.handleDarkModeChange}
+              <Switch
+                checked={props.darkMode}
+                disabled
               />
             </div>
 
@@ -166,7 +154,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
           <h2 className={titleClass}>{t('settings.section.data')}</h2>
           <div className="space-y-3">
             {/* Last operation dates */}
-            <div className="space-y-1 pb-2 border-b border-white/10 text-xs text-white/40">
+            <div className="space-y-1 pb-2 border-b border-slate-200 dark:border-white/10 text-xs text-slate-400 dark:text-white/40">
               <div className="flex justify-between">
                 <span>{t('settings.data.bgg_imported')}</span>
                 <span>{props.bggCatalogImportedAt ? new Date(props.bggCatalogImportedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
@@ -191,20 +179,32 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               {t('settings.data.import')}
             </Button>
 
-            <Button
-              onClick={props.handleResetData}
-              className="w-full justify-start"
-              variant="destructive"
-            >
-              <Trash className="w-4 h-4 mr-2" />
-              {t('settings.data.reset')}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="w-full justify-start" variant="destructive">
+                  <Trash className="w-4 h-4 mr-2" />
+                  {t('settings.data.reset')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('settings.data.reset.confirm.title')}</AlertDialogTitle>
+                  <AlertDialogDescription>{t('settings.data.reset.confirm.desc')}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('settings.data.reset.confirm.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={props.handleResetData} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    {t('settings.data.reset.confirm.confirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {/* BGG Catalog */}
-            <div className="pt-3 border-t border-white/10">
+            <div className="pt-3 border-t border-slate-200 dark:border-white/10">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-white/70">{t('settings.data.bgg_catalog')}</span>
-                <span className="text-xs text-white/40">
+                <span className="text-sm text-slate-600 dark:text-white/70">{t('settings.data.bgg_catalog')}</span>
+                <span className="text-xs text-slate-500 dark:text-white/40">
                   {props.bggCatalogCount === null
                     ? '…'
                     : props.bggCatalogCount === 0

@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import * as path from 'path'
 import pino from 'pino'
 import { DatabaseConnection } from '../database/DatabaseConnection'
@@ -25,6 +26,7 @@ async function main(): Promise<void> {
   let total = 0
   let withFr = 0
   let withEs = 0
+  const frIds: number[] = []
 
   logger.info('Wikidata enrichment starting')
 
@@ -72,10 +74,12 @@ async function main(): Promise<void> {
       name_es: cleanWikidataValue(b.nameEs?.value),
     })).filter(r => !isNaN(r.bgg_id))
 
-    const pageFr = rows.filter(r => r.name_fr).length
+    const frRows = rows.filter(r => r.name_fr)
+    const pageFr = frRows.length
     const pageEs = rows.filter(r => r.name_es).length
     withFr += pageFr
     withEs += pageEs
+    frIds.push(...frRows.map(r => r.bgg_id))
 
     repo.upsertLanguageNames(rows)
     total += rows.length
@@ -90,7 +94,9 @@ async function main(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
-  logger.info({ total, withFr, withEs }, 'Wikidata enrichment complete')
+  const frIdsPath = path.join(__dirname, '../database/fr_ids.txt')
+  fs.writeFileSync(frIdsPath, frIds.join('\n'), 'utf-8')
+  logger.info({ total, withFr, withEs, frIdsPath }, 'Wikidata enrichment complete')
   conn.close()
 }
 

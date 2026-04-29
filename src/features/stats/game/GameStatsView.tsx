@@ -13,6 +13,7 @@ import { Game, Player } from '@/types';
 import { useGameStatsPage } from './useGameStatsPage';
 import { getMedalClass } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
 
 interface GameStatsViewProps {
   selectedPeriod: 'week' | 'month' | 'year' | 'all'
@@ -24,40 +25,22 @@ interface GameStatsViewProps {
   onNavigation: (view: string) => void
   selectedGameId?: number
   players: Player[]
-  darkMode: boolean
 }
 
-const SESSION_TYPE_COLORS: Record<string, string> = {
-  competitive: 'from-red-400 to-red-600',
-  cooperative: 'from-blue-400 to-blue-600',
-  campaign: 'from-purple-400 to-purple-600',
-  hybrid: 'from-green-400 to-green-600',
-};
-
-const SESSION_TYPE_DOT_COLORS: Record<string, string> = {
-  competitive: 'bg-red-400',
-  cooperative: 'bg-blue-400',
-  campaign: 'bg-purple-400',
-  hybrid: 'bg-green-400',
-};
 
 
 interface StatCardProps {
   icon: React.ReactNode;
   value: string;
   label: string;
-  isDark: boolean;
 }
 
-function StatCard({ icon, value, label, isDark }: StatCardProps) {
-  const bg = isDark ? 'bg-white/5' : 'bg-slate-50';
-  const titleClass = isDark ? 'text-2xl font-bold text-white' : 'text-2xl font-bold text-slate-900';
-  const labelClass = isDark ? 'text-white/60 text-sm' : 'text-slate-500 text-sm';
+function StatCard({ icon, value, label }: StatCardProps) {
   return (
-    <div className={`${bg} rounded-xl p-4 text-center`}>
+    <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 text-center">
       {icon}
-      <div className={titleClass}>{value}</div>
-      <div className={labelClass}>{label}</div>
+      <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
+      <div className="text-slate-500 dark:text-white/60 text-sm">{label}</div>
     </div>
   );
 }
@@ -72,26 +55,24 @@ export default function GameStatsView({
   onNavigation: _onNavigation,
   selectedGameId: _selectedGameId,
   players,
-  darkMode
 }: GameStatsViewProps) {
   const { t } = useLabels();
 
   if (!gameStats) {
     return (
       <div className="space-y-6">
-        <div className="text-center text-white/60">{t('stats.game.no_data')}</div>
+        <div className="text-center text-slate-500 dark:text-white/60">{t('stats.game.no_data')}</div>
       </div>
     );
   }
 
-  const isDark = darkMode;
-  const labelClass = isDark ? "text-white/60 text-sm" : "text-slate-500 text-sm";
-  const titleClass = isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900";
-  const cardClass = isDark ? "bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-xl" : "bg-white rounded-2xl p-6 border border-slate-300 shadow-xl";
-  const valueClass = isDark ? "text-white" : "text-slate-900";
-  const subLabelClass = isDark ? "text-white/60 text-xs" : "text-slate-400 text-xs";
-  const sectionTitleClass = isDark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900";
-  const progressBgClass = isDark ? "w-full bg-white/10 rounded-full h-2" : "w-full bg-slate-200 rounded-full h-2";
+  const labelClass = "text-slate-500 dark:text-white/60 text-sm";
+  const titleClass = "text-2xl font-bold text-slate-900 dark:text-white";
+  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-6 border border-slate-300 dark:border-white/20 shadow-xl";
+  const valueClass = "text-slate-900 dark:text-white";
+  const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
+  const sectionTitleClass = "text-lg font-semibold text-slate-900 dark:text-white";
+  const progressBgClass = "w-full bg-slate-200 dark:bg-white/10 rounded-full h-2";
 
   const isGlobalStats = gameStats.isGlobalStats;
 
@@ -130,16 +111,16 @@ export default function GameStatsView({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400 mx-auto mb-2" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} isDark={isDark} />
-          <StatCard icon={<Users className="w-8 h-8 text-green-400 mx-auto mb-2" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} isDark={isDark} />
-          <StatCard icon={<Clock className="w-8 h-8 text-purple-400 mx-auto mb-2" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} isDark={isDark} />
-          <StatCard icon={<Target className="w-8 h-8 text-orange-400 mx-auto mb-2" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} isDark={isDark} />
+          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400 mx-auto mb-2" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} />
+          <StatCard icon={<Users className="w-8 h-8 text-green-400 mx-auto mb-2" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} />
+          <StatCard icon={<Clock className="w-8 h-8 text-purple-400 mx-auto mb-2" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} />
+          <StatCard icon={<Target className="w-8 h-8 text-orange-400 mx-auto mb-2" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} />
         </div>
         {!isGlobalStats && (
           <div className="mt-4 pt-4 border-t border-white/10">
             <button
               onClick={() => setSelectedGame(null)}
-              className={isDark ? "w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-center text-white" : "w-full px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-center text-slate-900"}
+              className="w-full px-4 py-2 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-lg transition-colors text-center text-slate-900 dark:text-white"
             >
               {t('stats.game.back_to_all')}
             </button>
@@ -158,7 +139,7 @@ export default function GameStatsView({
                 <button
                   key={game.game_id}
                   onClick={() => setSelectedGame(game)}
-                  className={isDark ? "flex items-center space-x-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-left" : "flex items-center space-x-3 p-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-left"}
+                  className="flex items-center space-x-3 p-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                 >
                   <img
                     src={game.image || 'https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=96&h=96&fit=crop&fm=webp&q=70'}
@@ -247,7 +228,7 @@ export default function GameStatsView({
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div
-                    className={`bg-gradient-to-r ${SESSION_TYPE_COLORS[type] ?? 'from-gray-400 to-gray-600'} h-2 rounded-full transition-all duration-300`}
+                    className={`bg-gradient-to-r ${(gameModeColors[type as GameMode] ?? gameModeFallback).gradient} h-2 rounded-full transition-all duration-300`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -320,8 +301,8 @@ export default function GameStatsView({
           {gameStats.recentSessions.map((session, index: number) => {
             const winner = players.find(p => p.player_id === session.winner_player_id);
             return (
-              <div key={index} className={isDark ? "flex items-center space-x-3 p-3 bg-white/5 rounded-xl" : "flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"}>
-                <div className={`w-3 h-3 rounded-full ${SESSION_TYPE_DOT_COLORS[session.play_type] ?? 'bg-gray-400'}`} />
+              <div key={index} className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl">
+                <div className={`w-3 h-3 rounded-full ${(gameModeColors[session.play_type as GameMode] ?? gameModeFallback).dot}`} />
                 <div className="flex-1">
                   <div className={`${valueClass} font-medium capitalize`}>{session.play_type}</div>
                   <div className={labelClass}>

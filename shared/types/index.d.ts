@@ -57,6 +57,42 @@ export interface Game {
   characters?: GameCharacter[]
 }
 
+export interface GameFormData {
+  name: string;
+  image: string;
+  min_players: number;
+  max_players: number;
+  description: string;
+  duration: string;
+  difficulty: string;
+  category: string;
+  year_published: number;
+  publisher: string;
+  designer: string;
+  bgg_rating: number;
+  weight: number;
+  age_min: number;
+  expansions: GameExpansion[];
+  characters: GameCharacter[];
+  has_expansion: boolean;
+  has_characters: boolean;
+  supports_cooperative: boolean;
+  supports_competitive: boolean;
+  supports_campaign: boolean;
+  supports_hybrid: boolean;
+  bgg_id?: number;
+  thumbnail?: string;
+  playing_time?: number;
+}
+
+export interface GameValidationErrors {
+  name?: string;
+  image?: string;
+  min_players?: string;
+  max_players?: string;
+  year_published?: string;
+}
+
 export interface GameExpansion {
   expansion_id?: number
   game_id?: number
@@ -167,6 +203,17 @@ export interface CreatePlayRequest {
 }
 
 // Stats aggregates
+export interface PlayerRecentPlay {
+  play_id: number
+  game_id: number
+  game_name: string
+  player_id: number
+  player_name: string
+  score: number
+  is_winner: boolean
+  play_date: string
+}
+
 export interface DashboardStats {
   total_players: number
   total_games: number

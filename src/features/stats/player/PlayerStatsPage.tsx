@@ -1,7 +1,10 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { usePlayerStatsPage } from './usePlayerStatsPage';
 import PlayerStatsView from './PlayerStatsView';
 import { Game, Player } from '@/types';
+import { statsApi } from '@/shared/services/api/statsApi';
+import { queryKeys } from '@/shared/services/api/queryKeys';
 
 interface PlayerStatsPageProps {
   players: Player[]
@@ -9,7 +12,6 @@ interface PlayerStatsPageProps {
   onNavigation: (view: string) => void
   currentView: string
   selectedPlayerId?: number
-  darkMode: boolean
 }
 
 export default function PlayerStatsPage({
@@ -18,14 +20,14 @@ export default function PlayerStatsPage({
   onNavigation,
   currentView,
   selectedPlayerId,
-  darkMode
 }: PlayerStatsPageProps) {
-  const {
-    stats,
-    topPlayers,
-    recentActivity,
-    selectedPlayer
-  } = usePlayerStatsPage(players, games, selectedPlayerId);
+  const { data: recentActivity = [] } = useQuery({
+    queryKey: queryKeys.stats.playerRecentPlays(selectedPlayerId ?? 0),
+    queryFn: () => statsApi.getPlayerRecentPlays(selectedPlayerId!),
+    enabled: selectedPlayerId != null,
+  });
+
+  const { stats, topPlayers, selectedPlayer } = usePlayerStatsPage(players, games, selectedPlayerId);
 
   return (
     <PlayerStatsView
@@ -35,7 +37,6 @@ export default function PlayerStatsPage({
       selectedPlayer={selectedPlayer || null}
       onNavigation={onNavigation}
       currentView={currentView}
-      darkMode={darkMode}
     />
   );
 }

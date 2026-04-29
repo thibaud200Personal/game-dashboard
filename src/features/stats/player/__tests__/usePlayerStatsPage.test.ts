@@ -31,4 +31,9 @@ describe('usePlayerStatsPage', () => {
     const { result } = renderHook(() => usePlayerStatsPage(mockPlayers as any, mockGames as any));
     expect(result.current.selectedPlayer).toBeNull();
   });
+
+  it('recentActivity absent du hook (géré par PlayerStatsPage)', () => {
+    const { result } = renderHook(() => usePlayerStatsPage(mockPlayers as any, mockGames as any));
+    expect(result.current).not.toHaveProperty('recentActivity');
+  });
 });

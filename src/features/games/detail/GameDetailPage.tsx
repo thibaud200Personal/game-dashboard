@@ -6,7 +6,7 @@ interface GameDetailPageProps extends UseGameDetailProps {
   currentView: string;
 }
 
-export default function GameDetailPage(props: GameDetailPageProps & { darkMode: boolean }) {
+export default function GameDetailPage(props: GameDetailPageProps) {
   const hookData = useGameDetail(props);
-  return <GameDetailView {...hookData} darkMode={!!props.darkMode} />;
+  return <GameDetailView {...hookData} />;
 }

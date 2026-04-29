@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3'
-import type { PlayerStatistics, GameStatistics, DashboardStats } from '@shared/types'
+import type { PlayerStatistics, GameStatistics, DashboardStats, PlayerRecentPlay } from '@shared/types'
 
 export class StatsRepository {
   constructor(private db: Database.Database) {}
@@ -42,5 +42,26 @@ export class StatsRepository {
     return this.db
       .prepare('SELECT * FROM game_statistics WHERE game_id = ?')
       .get(gameId) as GameStatistics | undefined
+  }
+
+  getPlayerRecentPlays(playerId: number, limit = 10): PlayerRecentPlay[] {
+    return this.db.prepare(`
+      SELECT
+        gp.play_id,
+        g.game_id,
+        g.name        AS game_name,
+        pp.player_id,
+        p.player_name,
+        COALESCE(pp.score, 0) AS score,
+        pp.is_winner,
+        gp.play_date
+      FROM players_play pp
+      JOIN game_plays gp ON pp.play_id = gp.play_id
+      JOIN games g       ON gp.game_id  = g.game_id
+      JOIN players p     ON pp.player_id = p.player_id
+      WHERE pp.player_id = ?
+      ORDER BY gp.play_date DESC
+      LIMIT ?
+    `).all(playerId, limit) as PlayerRecentPlay[]
   }
 }

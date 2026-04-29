@@ -1,5 +1,5 @@
 import type { StatsRepository } from '../repositories/StatsRepository'
-import type { DashboardStats, PlayerStatistics, GameStatistics } from '@shared/types'
+import type { DashboardStats, PlayerStatistics, GameStatistics, PlayerRecentPlay } from '@shared/types'
 
 export class StatsService {
   constructor(private statsRepo: StatsRepository) {}
@@ -22,5 +22,9 @@ export class StatsService {
 
   getGameStatsById(id: number): GameStatistics | undefined {
     return this.statsRepo.getGameStats(id)
+  }
+
+  getPlayerRecentPlays(playerId: number, limit?: number): PlayerRecentPlay[] {
+    return this.statsRepo.getPlayerRecentPlays(playerId, limit)
   }
 }

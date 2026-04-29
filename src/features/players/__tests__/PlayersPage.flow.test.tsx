@@ -51,7 +51,7 @@ describe('PlayersPage — flux CRUD', () => {
 
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
 
-    await user.type(screen.getByLabelText(/nom/i), 'Charlie');
+    await user.type(screen.getByLabelText(/name/i), 'Charlie');
     // Le champ pseudo est pré-rempli avec la valeur du nom, on le clear puis on tape
     const pseudoInput = screen.getByLabelText(/pseudo/i);
     await user.clear(pseudoInput);
@@ -71,7 +71,7 @@ describe('PlayersPage — flux CRUD', () => {
     await user.click(addBtn);
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
 
-    await user.type(screen.getByLabelText(/nom/i), 'Alice2');
+    await user.type(screen.getByLabelText(/name/i), 'Alice2');
     const pseudoInput = screen.getByLabelText(/pseudo/i);
     await user.clear(pseudoInput);
     await user.type(pseudoInput, 'alice42');

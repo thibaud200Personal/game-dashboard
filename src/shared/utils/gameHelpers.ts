@@ -30,22 +30,21 @@ export function getCredit(game: Game): string {
   return parts.join(' • ');
 }
 
-export function getGameCardStyles(darkMode: boolean) {
+export function getGameCardStyles() {
   return {
-    ghostBtn: darkMode ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-    meta: darkMode ? 'flex items-center space-x-4 text-white/60' : 'flex items-center space-x-4 text-slate-500',
-    credit: darkMode ? 'mt-1 text-xs text-white/50' : 'mt-1 text-xs text-slate-400',
-    dropdownItem: darkMode ? 'hover:bg-slate-700 text-white' : 'hover:bg-slate-100 text-slate-700',
+    ghostBtn: 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10',
+    meta: 'flex items-center space-x-4 text-slate-500 dark:text-white/60',
+    credit: 'mt-1 text-xs text-slate-400 dark:text-white/50',
+    dropdownItem: 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-white',
   };
 }
 
 // ---------------------------------------------------------------------------
 // Expansion view layout
 // ---------------------------------------------------------------------------
-export function getContentClass(embedded: boolean, darkMode: boolean): string {
+export function getContentClass(embedded: boolean): string {
   if (embedded) return '';
-  const base = 'max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8';
-  return darkMode ? base : base + ' bg-slate-100';
+  return 'max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-32 md:pb-8';
 }
 
 // ---------------------------------------------------------------------------

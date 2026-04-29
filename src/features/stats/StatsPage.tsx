@@ -7,7 +7,6 @@ import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useLabels } from '@/shared/hooks/useLabels';
-import { useDarkMode } from '@/shared/contexts/DarkModeContext';
 import PlayerStatsPage from './player/PlayerStatsPage';
 import GameStatsPage from './game/GameStatsPage';
 
@@ -15,7 +14,6 @@ export default function StatsPage() {
   const [searchParams] = useSearchParams();
   const onNavigation = useNavigationAdapter();
   const { t } = useLabels();
-  const { darkMode } = useDarkMode();
 
   const idParam  = searchParams.get('id');
   const srcParam = searchParams.get('src') as 'players' | 'games' | null;
@@ -55,7 +53,7 @@ export default function StatsPage() {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-slate-900 to-slate-800 text-white' : 'bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900'}`}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
       <div className="px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -100,7 +98,6 @@ export default function StatsPage() {
               onNavigation={onNavigation}
               currentView="player-stats"
               selectedPlayerId={selectedPlayerId}
-              darkMode={darkMode}
             />
           </div>
         ) : (
@@ -111,7 +108,6 @@ export default function StatsPage() {
               onNavigation={onNavigation}
               currentView="game-stats"
               selectedCircleId={selectedGameId}
-              darkMode={darkMode}
             />
           </div>
         )}
