@@ -1,6 +1,6 @@
 # 🗺️ Roadmap — Board Game Dashboard
 
-**📈 Status**: 344 tests (209 backend + 135 frontend) · Phase 3 in progress
+**📈 Status**: 343 tests (209 backend + 134 frontend) · Phase 3 in progress
 
 ---
 

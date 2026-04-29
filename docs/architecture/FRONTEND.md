@@ -24,7 +24,8 @@ src/
 │       └── player/              → PlayerStatsView, usePlayerStatsPage
 ├── shared/                      → cross-cutting modules (used by 2+ features)
 │   ├── components/ui/           → shadcn/ui components (do not edit manually)
-│   ├── components/              → Layout.tsx, BottomNavigation.tsx
+│   ├── components/              → Layout.tsx, BottomNavigation.tsx, MobileDetailNav.tsx
+│   │   └── dialogs/             → BaseFormDialog, BaseDeleteDialog, FormActions, useFormHandler
 │   ├── contexts/                → AuthContext.tsx, DarkModeContext.tsx, LocaleContext.tsx
 │   ├── services/api/            → request.ts, queryKeys.ts, authApi.ts, labelsApi.ts, statsApi.ts
 │   ├── hooks/                   → useLabels, useLocales, useApiReachable, useNavigationAdapter, use-mobile
@@ -203,19 +204,61 @@ interface AddGameDialogProps {
 }
 ```
 
-### Trigger Prop Pattern (deletion)
+### Shared Dialog Primitives — `shared/components/dialogs/`
 
-Delete dialogs use a `trigger` prop to avoid Radix conflicts:
+For Add/Edit dialogs of the same entity (e.g. Characters, Expansions), use `BaseFormDialog` to avoid duplicating the Dialog/DialogContent wrapper:
+
+```tsx
+// BaseFormDialog wraps Dialog + DialogContent + DialogHeader
+<BaseFormDialog
+  isOpen={isOpen}
+  onOpenChange={onOpenChange}
+  titleKey={`character.dialog.${mode}.title`}
+  descriptionKey={`character.dialog.${mode}.description`}
+>
+  <form onSubmit={onSubmit} className="space-y-4">
+    {/* form fields */}
+    <FormActions mode={mode} onCancel={() => onOpenChange(false)} />
+  </form>
+</BaseFormDialog>
+```
+
+- **`FormActions`** (`form-utils.tsx`) — renders Cancel + Submit buttons from `mode: 'add' | 'edit'`
+- **`useFormHandler<T>`** (`use-form-handler.ts`) — single `onChange` for all text/textarea inputs; import from `use-form-handler.ts`, not `form-utils.tsx`:
+
+```ts
+const onFieldChange = useFormHandler(setFormData)  // T inferred from Dispatch<SetStateAction<T>>
+```
+
+- **`BaseDeleteDialog`** (`generic-dialogs.tsx`) — wraps AlertDialog for the controlled delete pattern (see below)
+
+### Delete Dialog — Two Patterns
+
+**Pattern 1 — Trigger prop (Games, Players)**: the dialog embeds its own trigger; use when a single button opens a single dialog:
 
 ```tsx
 <DeleteGameDialog
   gameName={game.name}
-  onDelete={() => handleDelete(game.game_id)}
+  onDeleteGame={() => handleDelete(game.game_id)}
   trigger={<button>Delete</button>}
 />
 ```
 
 Never pass a composite Radix component (e.g. `<Tooltip>`) as trigger — `AlertDialogTrigger asChild` clones the direct child.
+
+**Pattern 2 — Controlled (Characters, Expansions)**: the parent owns the open state; use when a list tracks which item is being deleted via an ID:
+
+```tsx
+// parent keeps: const [deleteId, setDeleteId] = useState<number | null>(null)
+<DeleteCharacterDialog
+  isOpen={!!deleteCharacterId}
+  onOpenChange={(open) => !open && setDeleteCharacterId(null)}
+  characterName={characters.find(c => c.character_id === deleteCharacterId)?.name ?? ''}
+  onConfirm={() => handleDeleteCharacter(deleteCharacterId!)}
+/>
+```
+
+`DeleteCharacterDialog` and `DeleteExpansionDialog` use `BaseDeleteDialog` internally.
 
 ## Types
 

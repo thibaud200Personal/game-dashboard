@@ -91,7 +91,39 @@ interface AddPlayerDialogProps {
 }
 ```
 
-### Delete Dialogs — Trigger Prop Pattern
+### Shared Primitives for Add/Edit Dialogs
+
+When an entity has both Add and Edit dialogs (e.g. Characters, Expansions), share the form wrapper via `BaseFormDialog` and form utils from `src/shared/components/dialogs/`:
+
+```tsx
+// CharacterDialogs.tsx — single component for both modes
+export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormData, onSubmit }: CharacterDialogProps) {
+  const { t } = useLabels()
+  const onFieldChange = useFormHandler(setFormData)  // from use-form-handler.ts
+
+  return (
+    <BaseFormDialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      titleKey={`character.dialog.${mode}.title`}
+      descriptionKey={`character.dialog.${mode}.description`}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Input name="name" value={formData.name} onChange={onFieldChange} />
+        <FormActions mode={mode} onCancel={() => onOpenChange(false)} />
+      </form>
+    </BaseFormDialog>
+  )
+}
+```
+
+- **`useFormHandler<T>`** — import from `use-form-handler.ts` (not `form-utils.tsx`). Creates a single onChange that patches any field by `name`. `T` is inferred from the `setFormData` setter type.
+- **`FormActions`** — renders Cancel + Submit buttons keyed on `mode: 'add' | 'edit'`.
+- **`BaseFormDialog`** / **`BaseDeleteDialog`** — Dialog/AlertDialog wrappers with i18n-keyed title + description.
+
+### Delete Dialogs — Two Patterns
+
+**Pattern 1 — Trigger prop (Games, Players)**: dialog embeds its own trigger button. Use when a single button always opens the same dialog:
 
 ```tsx
 <DeletePlayerDialog
@@ -106,6 +138,20 @@ interface AddPlayerDialogProps {
 ```
 
 `AlertDialogTrigger asChild` clones the direct child. Pass a `<button>` or a `DropdownMenuItem` with `onSelect={e => e.preventDefault()}`. Never a composite Radix component.
+
+**Pattern 2 — Controlled (Characters, Expansions)**: parent owns the open state. Use when a list tracks which item is selected for deletion via an ID:
+
+```tsx
+// parent state: const [deleteId, setDeleteId] = useState<number | null>(null)
+<DeleteCharacterDialog
+  isOpen={!!deleteCharacterId}
+  onOpenChange={(open) => !open && setDeleteCharacterId(null)}
+  characterName={characters.find(c => c.character_id === deleteCharacterId)?.name ?? ''}
+  onConfirm={() => handleDeleteCharacter(deleteCharacterId!)}
+/>
+```
+
+Both `DeleteCharacterDialog` and `DeleteExpansionDialog` use `BaseDeleteDialog` from `shared/components/dialogs/generic-dialogs.tsx`.
 
 ## 5. Naming Conventions
 
