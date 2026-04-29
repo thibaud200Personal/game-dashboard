@@ -13,6 +13,7 @@
 
 ## 🐛 Bugs — Remaining
 
+- **📱 Dialogs — responsive mobile/tablette** : les popups (AddGameDialog, EditGameDialog, BGGSearch) débordent en scroll horizontal sur petits écrans — contenu partiellement hors-champ. À investiguer globalement : contraintes `max-w`, `overflow`, `mx-4`, scroll interne vs externe. Concerne probablement tous les dialogs.
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
 - **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
