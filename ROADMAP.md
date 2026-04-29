@@ -13,10 +13,10 @@
 
 ## 🐛 Bugs — Remaining
 
-- **📱 Dialogs — responsive mobile/tablette** : les popups (AddGameDialog, EditGameDialog, BGGSearch) débordent en scroll horizontal sur petits écrans — contenu partiellement hors-champ. À investiguer globalement : contraintes `max-w`, `overflow`, `mx-4`, scroll interne vs externe. Concerne probablement tous les dialogs.
+- **📱 Dialogs — responsive mobile/tablette** : les popups (AddGameDialog, EditGameDialog, BGGSearch) débordent en scroll horizontal sur petits écrans — contenu partiellement hors-champ. À investiguer globalement : contraintes `max-w`, `overflow`, `mx-4`, scroll interne vs externe. Concerne probablement tous les dialogs. **Inclut le placement du filtre année BGG** (voir item ci-dessous) — où le mettre dépend du layout final des dialogs.
+- **📅 BGG year filter** : filtrage côté client sur les résultats de recherche locale (pas de paramètre `year_published` serveur). À placer dans BGGSearch — **dépendant de la refonte responsive des dialogs** (item ci-dessus). Low priority.
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
-- **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
 - **🔽 BGG search — live autocomplete**: recherche en/fr/es et transmission du `bgg_id` déjà en place ✅. Reste : passer au pattern autocomplete (suggestions live au keystroke, sans bouton Search).
 
