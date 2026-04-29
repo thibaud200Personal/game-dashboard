@@ -142,8 +142,9 @@ export function createBggRouter(bggRepo: BGGRepository): Router {
     try {
       const bggId = Number(req.params.bggId)
       const data = await bggService.getGameDetails(bggId)
-      const thumbnail = data?.thumbnail || data?.image
-      if (thumbnail) bggRepo.upsertThumbnail(bggId, thumbnail)
+      if (data?.thumbnail) {
+        try { bggRepo.upsertThumbnail(bggId, data.thumbnail) } catch { /* best-effort */ }
+      }
       res.json(data)
     } catch {
       res.status(502).json({ error: 'BGG API unavailable' })
