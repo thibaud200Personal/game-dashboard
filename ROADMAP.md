@@ -7,7 +7,6 @@
 ## 🧹 Technical Debt — Remaining
 
 - **`vitest.config.ts` backend — test env variables**: `server.ts` calls `createAuthService()` and `getDb()` at module level (side effects on import). Worked around via `backend/logger.ts`. Real fix: add `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` in `backend/vitest.config.ts`.
-- **Player stats — performance charts**: placeholder "coming soon" removed. Charts not yet implemented.
 - **`players` — 4 dead columns**: `games_played`, `wins`, `total_score`, `average_score` exist in the `players` table AND are dynamically recalculated via the `player_statistics` view. The backend always reads via the view — stored columns stay at `0`. Recommended option: drop the 4 columns + clean up `CreatePlayerSchema` Zod. Unresolved — kept for backward compatibility.
 
 ---
@@ -17,8 +16,6 @@
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
 - **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
-- **🗄️ Local BGG index — search wired** ✅ (PR #79): `search()` queries `bgg_catalog` + `bgg_catalog_language` (name_en/fr/es), ordered by rank. Remaining: add year field + "include expansions" toggle in `BGGSearch`.
-- **🖼️ BGG thumbnails — lazy cache** ✅ (PR #93): thumbnail persisted in `bgg_catalog_language` on first `getGameDetails` call. Subsequent searches return thumbnail from local DB — no repeated geekdo calls.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
 - **🔽 BGG search — autocomplete**: replace the text field with an autocomplete component (free input + filter on en/fr/es names). Selection must transmit the `bgg_id`, not the name — avoids homonym issues.
 
@@ -98,7 +95,7 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 
 ---
 
-### 🎯 Phase 2 — BGG & DB Polish (nearly complete)
+### ✅ Phase 2 — BGG & DB Polish (complete)
 
 <details>
 <summary>See detail</summary>
@@ -153,9 +150,9 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 - ~~Recharts~~ → CSS pur (bar charts via height %) — score evolution + game trends livrés
 - Temporal performance : non implémenté (jugé pas utile)
 
-#### **Backend BGG Cache** — not started
-- Persistent cache of BGG results + periodic metadata sync
-- Deferred to front/back split — inspiration: board-game-scorekeep
+#### **Backend BGG Cache** — partial
+- ✅ Lazy thumbnail cache (PR #93): thumbnail persisted in `bgg_catalog_language` on first `getGameDetails` call
+- ⏳ Periodic metadata sync (descriptions, min/max players, etc.) — not started, deferred
 
 </details>
 
@@ -308,6 +305,8 @@ See Phase 1 above for full details.
 <details>
 <summary>See detail</summary>
 
+- ✅ **Local BGG index — search wired** (PR #79): `search()` queries `bgg_catalog` + `bgg_catalog_language` (name_en/fr/es), ordered by rank
+- ✅ **BGG thumbnails — lazy cache** (PR #93): thumbnail persisted in `bgg_catalog_language` on first detail fetch — no repeated geekdo calls on subsequent searches
 - ✅ **`BGGGameDetails.characters` uninitialized** — `parseGeekdoItem` returns `characters: []`
 - ✅ **`has_expansion` not calculated on BGG import** — `handleBGGSearch` computes `(bggGame.expansions?.length || 0) > 0`
 - ✅ **`BGGGame`/`BGGGameDetails` duplicated** — unified in `shared/types/index.d.ts`
