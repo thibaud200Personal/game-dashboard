@@ -4,6 +4,7 @@ import { Label } from '@/shared/components/ui/label';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { PlayerFormData } from '@/types';
+import { useLabels } from '@/shared/hooks/useLabels';
 
 interface EditPlayerDialogProps {
   isOpen: boolean;
@@ -12,7 +13,6 @@ interface EditPlayerDialogProps {
   setFormData: (data: PlayerFormData) => void;
   onUpdate: () => void;
   onCancel: () => void;
-  darkMode: boolean;
   serverError?: string | null;
 }
 
@@ -24,130 +24,108 @@ interface ValidationErrors {
 
 const AVATAR_URL_PATTERN = /^https?:\/\/.+/i;
 
-function validatePlayerForm(formData: PlayerFormData): ValidationErrors {
-  const errors: ValidationErrors = {};
-
-  if (!formData.player_name.trim()) {
-    errors.player_name = 'Le nom du joueur est requis';
-  } else if (formData.player_name.trim().length < 2) {
-    errors.player_name = 'Le nom doit contenir au moins 2 caractères';
-  } else if (formData.player_name.trim().length > 50) {
-    errors.player_name = 'Le nom ne peut pas dépasser 50 caractères';
-  }
-
-  if (!formData.pseudo.trim()) {
-    errors.pseudo = 'Le pseudo est requis';
-  } else if (formData.pseudo.trim().length < 2) {
-    errors.pseudo = 'Le pseudo doit contenir au moins 2 caractères';
-  } else if (formData.pseudo.trim().length > 50) {
-    errors.pseudo = 'Le pseudo ne peut pas dépasser 50 caractères';
-  }
-
-  if (formData.avatar?.trim() && !AVATAR_URL_PATTERN.test(formData.avatar.trim())) {
-    errors.avatar = 'Please enter a valid image URL (jpg, jpeg, png, gif, webp)';
-  }
-
-  return errors;
-}
-
-function getInputClass(field: keyof ValidationErrors, errors: ValidationErrors, darkMode: boolean): string {
-  const hasError = !!errors[field];
-  if (darkMode) {
-    return `bg-white/10 border-white/20 text-white${hasError ? ' border-red-500' : ''}`;
-  }
-  return `bg-slate-100 border-slate-300 text-slate-900${hasError ? ' border-red-500' : ''}`;
-}
-
 export function EditPlayerDialog({
-  isOpen,
-  onOpenChange,
-  formData,
-  setFormData,
-  onUpdate,
-  onCancel,
-  darkMode = true,
-  serverError
+  isOpen, onOpenChange, formData, setFormData,
+  onUpdate, onCancel, serverError,
 }: EditPlayerDialogProps) {
+  const { t } = useLabels();
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  function validate(data: PlayerFormData): ValidationErrors {
+    const errs: ValidationErrors = {};
+    if (!data.player_name.trim())
+      errs.player_name = t('players.form.validation.name_required');
+    else if (data.player_name.trim().length < 2)
+      errs.player_name = t('players.form.validation.name_min');
+    else if (data.player_name.trim().length > 50)
+      errs.player_name = t('players.form.validation.name_max');
+
+    if (!data.pseudo.trim())
+      errs.pseudo = t('players.form.validation.pseudo_required');
+    else if (data.pseudo.trim().length < 2)
+      errs.pseudo = t('players.form.validation.pseudo_min');
+    else if (data.pseudo.trim().length > 50)
+      errs.pseudo = t('players.form.validation.pseudo_max');
+
+    if (data.avatar?.trim() && !AVATAR_URL_PATTERN.test(data.avatar.trim()))
+      errs.avatar = t('players.form.validation.avatar_url');
+
+    return errs;
+  }
+
   const handleUpdate = () => {
-    const newErrors = validatePlayerForm(formData);
+    const newErrors = validate(formData);
     setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      onUpdate();
-    }
+    if (Object.keys(newErrors).length === 0) onUpdate();
   };
 
-  const handleInputChange = (field: keyof PlayerFormData, value: string | number) => {
+  const handleChange = (field: keyof PlayerFormData, value: string) => {
     setFormData({ ...formData, [field]: value });
-    if (errors[field as keyof ValidationErrors]) {
+    if (errors[field as keyof ValidationErrors])
       setErrors({ ...errors, [field]: undefined });
-    }
   };
+
+  const inputClass = (field: keyof ValidationErrors) =>
+    errors[field] ? 'border-destructive' : '';
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={darkMode ? "bg-slate-800 border-white/20" : "bg-white border-slate-200 text-slate-900"} onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className={darkMode ? "text-white" : "text-blue-700"}>Edit Player</DialogTitle>
-          <DialogDescription className={darkMode ? "text-white/70" : "text-slate-500"}>
-            Update player information and statistics.
-          </DialogDescription>
+          <DialogTitle>{t('players.edit_dialog.title')}</DialogTitle>
+          <DialogDescription>{t('players.edit_dialog.description')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="edit_player_name" className={darkMode ? "text-white" : "text-blue-700"}>Nom *</Label>
+            <Label htmlFor="edit_player_name">{t('players.form.name.label')} *</Label>
             <Input
               id="edit_player_name"
-              name="edit_player_name"
               value={formData.player_name}
-              onChange={(e) => handleInputChange('player_name', e.target.value)}
-              className={getInputClass('player_name', errors, darkMode)}
-              placeholder="Prénom ou nom complet"
+              onChange={(e) => handleChange('player_name', e.target.value)}
+              className={inputClass('player_name')}
+              placeholder={t('players.form.name.placeholder')}
             />
-            {errors.player_name && <p className="text-red-400 text-sm mt-1">{errors.player_name}</p>}
+            {errors.player_name && <p className="text-destructive text-sm mt-1">{errors.player_name}</p>}
           </div>
           <div>
-            <Label htmlFor="edit_pseudo" className={darkMode ? "text-white" : "text-blue-700"}>Pseudo *</Label>
+            <Label htmlFor="edit_pseudo">{t('players.form.pseudo.label')} *</Label>
             <Input
               id="edit_pseudo"
-              name="edit_pseudo"
               value={formData.pseudo}
-              onChange={(e) => handleInputChange('pseudo', e.target.value)}
-              className={getInputClass('pseudo', errors, darkMode)}
-              placeholder="Identifiant unique"
+              onChange={(e) => handleChange('pseudo', e.target.value)}
+              className={inputClass('pseudo')}
+              placeholder={t('players.form.pseudo.placeholder')}
             />
-            {errors.pseudo && <p className="text-red-400 text-sm mt-1">{errors.pseudo}</p>}
+            {errors.pseudo && <p className="text-destructive text-sm mt-1">{errors.pseudo}</p>}
           </div>
           <div>
-            <Label htmlFor="edit_avatar" className={darkMode ? "text-white" : "text-blue-700"}>Avatar URL</Label>
+            <Label htmlFor="edit_avatar">{t('players.form.avatar.label')}</Label>
             <Input
               id="edit_avatar"
-              name="edit_avatar"
               value={formData.avatar}
-              onChange={(e) => handleInputChange('avatar', e.target.value)}
-              className={getInputClass('avatar', errors, darkMode)}
-              placeholder="https://example.com/avatar.jpg"
+              onChange={(e) => handleChange('avatar', e.target.value)}
+              className={inputClass('avatar')}
+              placeholder={t('players.form.avatar.placeholder')}
             />
-            {errors.avatar && <p className="text-red-400 text-sm mt-1">{errors.avatar}</p>}
+            {errors.avatar && <p className="text-destructive text-sm mt-1">{errors.avatar}</p>}
           </div>
           <div>
-            <Label htmlFor="edit_favorite_game" className={darkMode ? "text-white" : "text-blue-700"}>Favorite Game</Label>
+            <Label htmlFor="edit_favorite_game">{t('players.form.favorite_game.label')}</Label>
             <Input
               id="edit_favorite_game"
-              name="edit_favorite_game"
               value={formData.favorite_game}
-              onChange={(e) => handleInputChange('favorite_game', e.target.value)}
-              className={darkMode ? "bg-white/10 border-white/20 text-white" : "bg-slate-100 border-slate-300 text-slate-900"}
-              placeholder="Enter favorite game"
+              onChange={(e) => handleChange('favorite_game', e.target.value)}
+              placeholder={t('players.form.favorite_game.placeholder')}
             />
           </div>
           {serverError && (
-            <p className="text-red-400 text-sm p-2 bg-red-500/10 rounded border border-red-500/20">{serverError}</p>
+            <p className="text-destructive text-sm p-2 bg-destructive/10 rounded border border-destructive/20">
+              {serverError}
+            </p>
           )}
           <div className="flex gap-4">
-            <Button onClick={handleUpdate} className="flex-1">Mettre à jour</Button>
-            <Button variant="outline" onClick={onCancel} className="flex-1">Annuler</Button>
+            <Button onClick={handleUpdate} className="flex-1">{t('players.form.buttons.update')}</Button>
+            <Button variant="outline" onClick={onCancel} className="flex-1">{t('common.buttons.cancel')}</Button>
           </div>
         </div>
       </DialogContent>

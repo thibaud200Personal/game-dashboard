@@ -109,16 +109,16 @@ describe('getCredit', () => {
 // getGameCardStyles
 // ---------------------------------------------------------------------------
 describe('getGameCardStyles', () => {
-  it('returns dark styles when darkMode is true', () => {
-    const styles = getGameCardStyles(true);
-    expect(styles.ghostBtn).toContain('text-white');
-    expect(styles.meta).toContain('text-white/60');
-    expect(styles.credit).toContain('text-white/50');
-    expect(styles.dropdownItem).toContain('text-white');
+  it('contains dark Tailwind classes', () => {
+    const styles = getGameCardStyles();
+    expect(styles.ghostBtn).toContain('dark:text-white');
+    expect(styles.meta).toContain('dark:text-white/60');
+    expect(styles.credit).toContain('dark:text-white/50');
+    expect(styles.dropdownItem).toContain('dark:text-white');
   });
 
-  it('returns light styles when darkMode is false', () => {
-    const styles = getGameCardStyles(false);
+  it('contains light Tailwind classes', () => {
+    const styles = getGameCardStyles();
     expect(styles.ghostBtn).toContain('text-slate-600');
     expect(styles.meta).toContain('text-slate-500');
     expect(styles.credit).toContain('text-slate-400');
@@ -126,7 +126,7 @@ describe('getGameCardStyles', () => {
   });
 
   it('returns all four keys', () => {
-    const keys = Object.keys(getGameCardStyles(true));
+    const keys = Object.keys(getGameCardStyles());
     expect(keys).toEqual(expect.arrayContaining(['ghostBtn', 'meta', 'credit', 'dropdownItem']));
   });
 });
@@ -192,19 +192,12 @@ describe('withRemovedAbility', () => {
 // ---------------------------------------------------------------------------
 describe('getContentClass', () => {
   it('returns empty string when embedded', () => {
-    expect(getContentClass(true, true)).toBe('');
-    expect(getContentClass(true, false)).toBe('');
+    expect(getContentClass(true)).toBe('');
   });
 
-  it('returns base class without bg in dark mode', () => {
-    const result = getContentClass(false, true);
+  it('returns base layout class when not embedded', () => {
+    const result = getContentClass(false);
     expect(result).toContain('max-w-7xl');
-    expect(result).not.toContain('bg-slate-100');
-  });
-
-  it('appends bg-slate-100 in light mode', () => {
-    const result = getContentClass(false, false);
-    expect(result).toContain('bg-slate-100');
   });
 });
 

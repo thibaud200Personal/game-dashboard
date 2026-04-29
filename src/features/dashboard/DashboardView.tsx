@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Users,
   GameController,
   TrendUp,
   Gear,
@@ -33,7 +32,6 @@ interface DashboardViewProps {
   handleNewGameClick: () => void,
   handleActivityClick: () => void,
   onNavigation: NavigationHandler,
-  darkMode: boolean
 }
 
 export function DashboardView({
@@ -51,29 +49,11 @@ export function DashboardView({
   handleNewGameClick,
   handleActivityClick,
   onNavigation: _onNavigation,
-  darkMode
 }: DashboardViewProps) {
   const { t } = useLabels();
-  // Classes dynamiques
-  const mainClass = darkMode
-    ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white"
-    : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900";
-  // Classes dynamiques pour cards, titres, textes
-  const cardClass = darkMode
-    ? "bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl"
-    : "bg-white rounded-2xl p-4 border border-slate-300 shadow-xl";
-  const titleClass = darkMode
-    ? "text-lg font-semibold text-white"
-    : "text-lg font-semibold text-slate-900";
-  const labelClass = darkMode
-    ? "font-medium text-white"
-    : "font-medium text-slate-900";
-  const descClass = darkMode
-    ? "text-white/60 text-sm"
-    : "text-slate-500 text-sm";
 
   return (
-    <div className={mainClass}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
       {/* Header */}
       <div className="px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-6">
@@ -163,9 +143,9 @@ export function DashboardView({
       {/* Contenu principal */}
       <div className="px-4 space-y-6 pb-32">
         {/* Section Joueurs */}
-        <div className={cardClass}>
+        <div className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className={titleClass}>{t('dashboard.section.players')}</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.section.players')}</h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -199,17 +179,17 @@ export function DashboardView({
                       height={32}
                     />
                     <div className="text-center">
-                      <div className={labelClass + " truncate"}>
+                      <div className="font-medium text-slate-900 dark:text-white truncate">
                         {player.player_name}
                       </div>
-                      <div className={descClass}>{player.stats}</div>
+                      <div className="text-slate-500 dark:text-white/60 text-sm">{player.stats}</div>
                     </div>
                   </div>
                 </button>
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className={descClass}>{t('dashboard.players.empty')}</div>
+                <div className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.players.empty')}</div>
                 <button
                   onClick={handlePlayersClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
@@ -222,9 +202,9 @@ export function DashboardView({
         </div>
 
         {/* Section Jeux récents */}
-        <div className={cardClass}>
+        <div className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className={titleClass}>{t('dashboard.section.games')}</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{t('dashboard.section.games')}</h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -257,10 +237,10 @@ export function DashboardView({
                       fetchPriority={index === 0 ? 'high' : undefined}
                     />
                     <div className="p-2">
-                      <div className={labelClass + " truncate"}>
+                      <div className="font-medium text-slate-900 dark:text-white truncate">
                         {game.name}
                       </div>
-                      <div className={descClass}>
+                      <div className="text-slate-500 dark:text-white/60 text-sm">
                         {game.players} {t('games.card.players')}
                       </div>
                     </div>
@@ -269,7 +249,7 @@ export function DashboardView({
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className={descClass}>{t('dashboard.games.empty')}</div>
+                <div className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.games.empty')}</div>
                 <button
                   onClick={handleGamesClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
@@ -282,32 +262,16 @@ export function DashboardView({
         </div>
 
         {/* Recent Activity */}
-        <div className={cardClass}>
-          <h2 className={titleClass + " mb-4"}>{t('dashboard.section.activity')}</h2>
-          <div className="space-y-3">
+        <div className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{t('dashboard.section.activity')}</h2>
+          <div className="text-center py-6">
+            <Play className="w-10 h-10 mx-auto mb-3 opacity-20" />
+            <p className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.activity.empty')}</p>
             <button
               onClick={handleActivityClick}
-              className="w-full flex items-center space-x-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+              className="mt-3 text-teal-400 text-sm hover:text-teal-300 transition-colors"
             >
-              <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center">
-                <Play className="w-4 h-4" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className={labelClass}>{t('dashboard.activity.game_started')}</div>
-                <div className={descClass}>5 minutes ago</div>
-              </div>
-            </button>
-            <button
-              onClick={handleActivityClick}
-              className="w-full flex items-center space-x-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
-            >
-              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className={labelClass}>{t('dashboard.activity.player_joined')}</div>
-                <div className={descClass}>12 minutes ago</div>
-              </div>
+              {t('dashboard.actions.new_game')} →
             </button>
           </div>
         </div>
@@ -318,7 +282,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handleNewGameClick}
-                className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="relative bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
               >
                 <Play className="w-8 h-8 mb-2" />
                 <span className="font-medium">{t('dashboard.actions.new_game')}</span>
@@ -332,7 +296,7 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handlePlayersClick}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
               >
                 <Plus className="w-8 h-8 mb-2" />
                 <span className="font-medium">{t('dashboard.actions.add_player')}</span>

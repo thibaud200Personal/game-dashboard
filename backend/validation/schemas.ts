@@ -148,6 +148,10 @@ export const CharacterIdParamSchema = z.object({
   characterId: z.string().regex(/^\d+$/, 'ID de personnage invalide').transform(val => parseInt(val, 10))
 });
 
+export const LimitQuerySchema = z.object({
+  limit: z.string().regex(/^\d+$/, 'Limite invalide').default('10').transform(Number).pipe(z.number().int().min(1).max(100))
+});
+
 // Type exports for use in controllers
 export type CreatePlayerInput = z.infer<typeof CreatePlayerSchema>;
 export type UpdatePlayerInput = z.infer<typeof UpdatePlayerSchema>;

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Player, PlayerStatistics } from '@/types';
+import { PlayerStatistics } from '@/types';
 import { Game } from '@/types';
 
 export const usePlayerStatsPage = (
@@ -39,24 +39,10 @@ export const usePlayerStatsPage = (
       .slice(0, 5);
   }, [displayPlayers]);
 
-  // No per-play API yet — recentActivity is empty until a plays/history endpoint is added
-  const recentActivity: Array<{
-    game_id: number;
-    game_name: string;
-    player_id: number;
-    score: number;
-    is_winner: boolean;
-    player_name: string;
-  }> = [];
-
   return {
     stats,
     topPlayers,
-    recentActivity,
     selectedPlayer,
     displayPlayers,
   };
 };
-
-// Re-export Player type for consumers that import from this module
-export type { Player, PlayerStatistics };

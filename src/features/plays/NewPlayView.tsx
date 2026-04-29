@@ -9,8 +9,9 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { ArrowLeft, Play, Users, Trophy, Timer, Target, Plus, Trash } from '@phosphor-icons/react';
 import { Game, Player } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { gameModeColors, type GameMode } from '@/shared/theme/gameModeColors';
 
-type SessionType = 'competitive' | 'cooperative' | 'campaign' | 'hybrid';
+type SessionType = GameMode;
 
 interface NewGameViewProps {
   // State
@@ -65,10 +66,85 @@ interface NewGameViewProps {
   // Navigation
   onNavigation: (view: string) => void
   currentView: string
-  darkMode: boolean
 }
 
-export default function NewGameView({ 
+interface PlayerScoreRowProps {
+  playerId: number;
+  player: Player;
+  score: number | string;
+  onScoreChange: (value: string) => void;
+  winnerId?: string;
+  onWinnerChange?: (checked: boolean) => void;
+  winnerLabel?: string;
+}
+
+interface TeamScoringBlockProps {
+  successLabel: string;
+  scoreLabel: string;
+  teamSuccess: boolean;
+  setTeamSuccess: (v: boolean) => void;
+  teamScore: number;
+  setTeamScore: (v: number) => void;
+}
+
+function TeamScoringBlock({ successLabel, scoreLabel, teamSuccess, setTeamSuccess, teamScore, setTeamScore }: TeamScoringBlockProps) {
+  return (
+    <>
+      <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+        <Checkbox
+          checked={teamSuccess}
+          onCheckedChange={(checked) => setTeamSuccess(!!checked)}
+          className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+        />
+        <Label className="text-white font-medium">{successLabel}</Label>
+      </div>
+      <div>
+        <Label className="text-white/80">{scoreLabel}</Label>
+        <Input
+          type="number"
+          placeholder="0"
+          value={teamScore}
+          onChange={(e) => setTeamScore(parseInt(e.target.value) || 0)}
+          className="bg-white/5 border-white/20 text-white"
+        />
+      </div>
+    </>
+  );
+}
+
+function PlayerScoreRow({ playerId, player, score, onScoreChange, winnerId, onWinnerChange, winnerLabel }: PlayerScoreRowProps) {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 flex-1">
+        {player.avatar && <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />}
+        <span className="text-white font-medium">{player.player_name}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          placeholder="Score"
+          min={0}
+          max={999}
+          value={score ?? ''}
+          onChange={(e) => onScoreChange(e.target.value)}
+          className="w-20 bg-white/5 border-white/20 text-white"
+        />
+        {winnerId !== undefined && onWinnerChange && (
+          <>
+            <Checkbox
+              checked={winnerId === playerId.toString()}
+              onCheckedChange={(checked) => onWinnerChange(!!checked)}
+              className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+            />
+            <span className="text-white/60 text-sm">{winnerLabel}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function NewGameView({
   selectedGameId,
   setSelectedGameId,
   sessionType,
@@ -108,7 +184,6 @@ export default function NewGameView({
   players,
   onNavigation,
   currentView: _currentView,
-  darkMode
 }: NewGameViewProps) {
   const { t } = useLabels();
   // Safety checks for arrays
@@ -122,24 +197,24 @@ export default function NewGameView({
   };
 
   return (
-    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white" : "min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 text-slate-900"}>
-      <div className={darkMode ? "container mx-auto px-4 py-6 pb-32 space-y-6" : "container mx-auto px-4 py-6 pb-32 space-y-6 bg-slate-50"}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
+      <div className="container mx-auto px-4 py-6 pb-32 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
             onClick={() => onNavigation('dashboard')}
             variant="ghost"
-            className={darkMode ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}
+            className="text-slate-600 dark:text-white hover:text-slate-900 dark:hover:bg-white/10 hover:bg-slate-100"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className={darkMode ? "text-2xl font-bold text-white" : "text-2xl font-bold text-slate-900"}>{t('sessions.new.title')}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('sessions.new.title')}</h1>
         </div>
 
         {/* Game Setup */}
-        <Card className={darkMode ? "bg-white/10 backdrop-blur-md border-white/20" : "bg-slate-50 backdrop-blur-md border-slate-200"}>
+        <Card className="bg-slate-50 dark:bg-white/10 dark:backdrop-blur-md border-slate-200 dark:border-white/20">
           <CardHeader>
-            <CardTitle className={darkMode ? "flex items-center gap-2 text-white" : "flex items-center gap-2 text-slate-900"}>
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
               <Play className="w-5 h-5" />
               {t('sessions.setup.title')}
             </CardTitle>
@@ -199,16 +274,16 @@ export default function NewGameView({
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedGame.supports_competitive && (
-                    <span className="px-2 py-1 bg-orange-500/20 text-orange-300 text-xs rounded">Competitive</span>
+                    <span className={`px-2 py-1 text-xs rounded ${gameModeColors.competitive.bg}`}>{t('games.card.modes.competitive')}</span>
                   )}
                   {selectedGame.supports_cooperative && (
-                    <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded">Cooperative</span>
+                    <span className={`px-2 py-1 text-xs rounded ${gameModeColors.cooperative.bg}`}>{t('games.card.modes.cooperative')}</span>
                   )}
                   {selectedGame.supports_campaign && (
-                    <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded">Campaign</span>
+                    <span className={`px-2 py-1 text-xs rounded ${gameModeColors.campaign.bg}`}>{t('games.card.modes.campaign')}</span>
                   )}
                   {selectedGame.supports_hybrid && (
-                    <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded">Hybrid</span>
+                    <span className={`px-2 py-1 text-xs rounded ${gameModeColors.hybrid.bg}`}>{t('games.card.modes.hybrid')}</span>
                   )}
                 </div>
               </div>
@@ -283,35 +358,22 @@ export default function NewGameView({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-white/20">
-                    <SelectItem value="easy">Easy</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="hard">Hard</SelectItem>
-                    <SelectItem value="expert">Expert</SelectItem>
+                    <SelectItem value="easy">{t('plays.form.difficulty.easy')}</SelectItem>
+                    <SelectItem value="normal">{t('plays.form.difficulty.normal')}</SelectItem>
+                    <SelectItem value="hard">{t('plays.form.difficulty.hard')}</SelectItem>
+                    <SelectItem value="expert">{t('plays.form.difficulty.expert')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Team Success */}
-              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
-                <Checkbox
-                  checked={teamSuccess}
-                  onCheckedChange={(checked) => setTeamSuccess(!!checked)}
-                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                />
-                <Label className="text-white font-medium">{t('sessions.cooperative.team_success')}</Label>
-              </div>
-
-              {/* Team Score */}
-              <div>
-                <Label className="text-white/80">{t('sessions.cooperative.team_score.label')}</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={teamScore}
-                  onChange={(e) => setTeamScore(parseInt(e.target.value) || 0)}
-                  className="bg-white/5 border-white/20 text-white"
-                />
-              </div>
+              <TeamScoringBlock
+                successLabel={t('sessions.cooperative.team_success')}
+                scoreLabel={t('sessions.cooperative.team_score.label')}
+                teamSuccess={teamSuccess}
+                setTeamSuccess={setTeamSuccess}
+                teamScore={teamScore}
+                setTeamScore={setTeamScore}
+              />
 
               {/* Objectives */}
               <div>
@@ -430,33 +492,17 @@ export default function NewGameView({
               {safeSelectedPlayers.map(playerId => {
                 const player = safePlayers.find(p => p.player_id === playerId);
                 if (!player) return null;
-
                 return (
-                  <div key={playerId} className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      {player.avatar && (
-                        <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
-                      )}
-                      <span className="text-white font-medium">{player.player_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Score"
-                        min={0}
-                        max={999}
-                        value={playerScores[playerId] ?? ''}
-                        onChange={(e) => handleScoreChange(playerId, e.target.value)}
-                        className="w-20 bg-white/5 border-white/20 text-white"
-                      />
-                      <Checkbox
-                        checked={winnerId === playerId.toString()}
-                        onCheckedChange={(checked) => setWinnerId(checked ? playerId.toString() : '')}
-                        className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                      />
-                      <span className="text-white/60 text-sm">{t('sessions.competitive.winner')}</span>
-                    </div>
-                  </div>
+                  <PlayerScoreRow
+                    key={playerId}
+                    playerId={playerId}
+                    player={player}
+                    score={playerScores[playerId] ?? ''}
+                    onScoreChange={(v) => handleScoreChange(playerId, v)}
+                    winnerId={winnerId}
+                    onWinnerChange={(checked) => setWinnerId(checked ? playerId.toString() : '')}
+                    winnerLabel={t('sessions.competitive.winner')}
+                  />
                 );
               })}
             </CardContent>
@@ -475,25 +521,14 @@ export default function NewGameView({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
-                  <Checkbox
-                    checked={teamSuccess}
-                    onCheckedChange={(checked) => setTeamSuccess(!!checked)}
-                    className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                  />
-                  <Label className="text-white font-medium">{t('sessions.hybrid.team.completed')}</Label>
-                </div>
-
-                <div>
-                  <Label className="text-white/80">{t('sessions.hybrid.team.score')}</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={teamScore}
-                    onChange={(e) => setTeamScore(parseInt(e.target.value) || 0)}
-                    className="bg-white/5 border-white/20 text-white"
-                  />
-                </div>
+                <TeamScoringBlock
+                  successLabel={t('sessions.hybrid.team.completed')}
+                  scoreLabel={t('sessions.hybrid.team.score')}
+                  teamSuccess={teamSuccess}
+                  setTeamSuccess={setTeamSuccess}
+                  teamScore={teamScore}
+                  setTeamScore={setTeamScore}
+                />
               </CardContent>
             </Card>
 
@@ -509,23 +544,14 @@ export default function NewGameView({
                 {safeSelectedPlayers.map(playerId => {
                   const player = safePlayers.find(p => p.player_id === playerId);
                   if (!player) return null;
-
                   return (
-                    <div key={playerId} className="flex items-center gap-4">
-                      <div className="flex items-center gap-3 flex-1">
-                        {player.avatar && (
-                          <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
-                        )}
-                        <span className="text-white font-medium">{player.player_name}</span>
-                      </div>
-                      <Input
-                        type="number"
-                        placeholder="Score"
-                        value={playerScores[playerId] || ''}
-                        onChange={(e) => handleScoreChange(playerId, e.target.value)}
-                        className="w-20 bg-white/5 border-white/20 text-white"
-                      />
-                    </div>
+                    <PlayerScoreRow
+                      key={playerId}
+                      playerId={playerId}
+                      player={player}
+                      score={playerScores[playerId] ?? ''}
+                      onScoreChange={(v) => handleScoreChange(playerId, v)}
+                    />
                   );
                 })}
               </CardContent>

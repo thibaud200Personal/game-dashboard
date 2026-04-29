@@ -17,7 +17,6 @@ export function useGameCharacters(props: UseGameCharactersProps) {
   const { t } = useLabels();
   const {
     game,
-    onNavigation,
     navigationSource = 'games',
     onAddCharacter,
     onUpdateCharacter,
@@ -124,20 +123,6 @@ export function useGameCharacters(props: UseGameCharactersProps) {
     resetForm();
   };
 
-  const handleNavigation = {
-    back: () => {
-      if (navigationSource === 'game-detail') {
-        onNavigation('game-detail', game.game_id);
-      } else {
-        onNavigation('games');
-      }
-    },
-    dashboard: () => onNavigation('dashboard'),
-    players: () => onNavigation('players'),
-    games: () => onNavigation('games'),
-    settings: () => onNavigation('settings')
-  };
-
   return {
     // State
     isAddDialogOpen,
@@ -158,7 +143,6 @@ export function useGameCharacters(props: UseGameCharactersProps) {
     openEditDialog,
     closeDialogs,
     resetForm,
-    handleNavigation,
 
     // Props
     game,

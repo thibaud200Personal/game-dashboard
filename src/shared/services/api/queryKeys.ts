@@ -16,6 +16,7 @@ export const queryKeys = {
     player: (id: number) => ['stats', 'players', id] as const,
     games: ['stats', 'games'] as const,
     game: (id: number) => ['stats', 'games', id] as const,
+    playerRecentPlays: (id: number) => ['stats', 'players', id, 'recent-plays'] as const,
   },
   bgg: {
     search: (q: string) => ['bgg', 'search', q] as const,

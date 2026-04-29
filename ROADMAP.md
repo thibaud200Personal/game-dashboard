@@ -1,14 +1,13 @@
 # 🗺️ Roadmap — Board Game Dashboard
 
-**📈 Status**: 340 tests (206 backend + 134 frontend) · Phase 3 in progress
+**📈 Status**: 344 tests (209 backend + 135 frontend) · Phase 3 in progress
 
 ---
 
 ## 🧹 Technical Debt — Remaining
 
 - **`vitest.config.ts` backend — test env variables**: `server.ts` calls `createAuthService()` and `getDb()` at module level (side effects on import). Worked around via `backend/logger.ts`. Real fix: add `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` in `backend/vitest.config.ts`.
-- **Missing MSW handler**: `GET /api/v1/labels?locale=en` not intercepted in some tests (GamesPage, PlayersPage, StatsPages) — MSW warning at runtime, no failing tests.
-- **Player stats (#23/#31)**: recent activity and performance overview empty — no `GET /api/v1/stats/players/:id/recent-plays` backend endpoint.
+- **Player stats — performance charts**: placeholder "coming soon" removed. Charts not yet implemented.
 - **`players` — 4 dead columns**: `games_played`, `wins`, `total_score`, `average_score` exist in the `players` table AND are dynamically recalculated via the `player_statistics` view. The backend always reads via the view — stored columns stay at `0`. Recommended option: drop the 4 columns + clean up `CreatePlayerSchema` Zod. Unresolved — kept for backward compatibility.
 
 ---
@@ -120,18 +119,43 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 
 #### **Dark/Light Theme** — functional, refactor pending
 - ✅ `DarkModeContext` + localStorage + Settings toggle + `DarkModeProvider` in `App.tsx`
-- **Remaining**: migrate from prop-drilling (`darkMode` passed as prop everywhere) to the Tailwind `dark:` CSS variant — eliminates prop threading through all components and dialogs. Zero `dark:` usage currently.
+- ✅ Migration `dark:` Tailwind CSS variant complète — prop `darkMode` supprimé partout
+- ⚠️ Toggle dark mode grisé en Settings (Sprint 2 l'a retiré — à rétablir lors d'une vraie passe design mode clair)
 
-#### **Time-Series Charts** — not started
-- Recharts infrastructure ready, "coming soon" placeholders in place
-- Scope: score evolution, game trends, temporal performance
+#### **UX Quick Wins — Sprint 1** ✅ (April 2026)
+- ✅ Double `<h1>` supprimé dans `GameDetailView`
+- ✅ Données fictives Dashboard ("5 minutes ago") → empty state réel
+- ✅ Empty state `GamesPageView` avec icône `<GameController>`
+- ✅ `AlertDialog` de confirmation sur Reset data
+- ✅ Placeholder "Performance charts coming soon" retiré
+- ✅ Bottom-nav active-state déjà correct via `useLocation`
+
+#### **Player Stats — recent plays** ✅ (April 2026)
+- ✅ `GET /api/v1/stats/players/:id/recent-plays` — endpoint + repo + service
+- ✅ Frontend branché via React Query dans `PlayerStatsPage`
+- ✅ MSW handler + 3 tests backend + 1 test frontend
+
+#### **Global UI/UX Harmonization — Sprint 2** ✅ (April 2026)
+- ✅ `DeleteGameDialog` + `DeletePlayerDialog` : i18n + nom de l'entité affiché
+- ✅ `EditPlayerDialog` : suppression prop `darkMode`
+- ✅ `AddPlayerDialog` : migration i18n complète (EN + FR labels, migration 023)
+- ✅ `EditGameDialog` + `AddGameDialog` : i18n complète (~30 strings), token `gameModeColors`
+- ✅ `NewPlayView` : difficulty i18n + mode badges via `gameModeColors` (migration 024)
+- ✅ `gameModeColors` token centralisé (`src/shared/theme/gameModeColors.ts`) — `GameStatsView` + `NewPlayView` harmonisés (hybrid était vert → orange)
+- ✅ Bug dashboard : boutons "New Game" / "Add Player" se chevauchaient au hover — fixé via `hover:z-10`
+
+#### **Player Stats Charts** ✅ (April 2026)
+- ✅ Score evolution CSS bar chart (`PlayerStatsView`) — 10 dernières parties, teal=victoire
+- ✅ Game trends horizontal bars (`PlayerStatsView`) — top 5 jeux les plus joués
+- ✅ Labels i18n EN/FR (migration 025)
+
+#### **Time-Series Charts** — scope réduit
+- ~~Recharts~~ → CSS pur (bar charts via height %) — score evolution + game trends livrés
+- Temporal performance : non implémenté (jugé pas utile)
 
 #### **Backend BGG Cache** — not started
 - Persistent cache of BGG results + periodic metadata sync
 - Deferred to front/back split — inspiration: board-game-scorekeep
-
-#### **Global UI/UX Harmonization** — deferred
-- Buttons, colors, sizes, visual consistency — to revisit after technical stabilization
 
 </details>
 
