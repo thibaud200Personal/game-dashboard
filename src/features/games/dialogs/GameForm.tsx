@@ -10,44 +10,22 @@ import { useLabels } from '@/shared/hooks/useLabels';
 
 import type { GameFormData, GameValidationErrors, GameCharacter } from '../../../../shared/types/index';
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function useCharacterFormHandlers(
-  formData: GameFormData,
-  onFormDataChange: (patch: Partial<GameFormData>) => void
-) {
-  const handleUpdateCharacter = (index: number, field: keyof GameCharacter, value: any) => {
-    const updated = [...(formData.characters || [])];
-    updated[index] = { ...updated[index], [field]: value };
-    onFormDataChange({ characters: updated });
-  };
-
-  const handleAddCharacter = () => onFormDataChange({
-    characters: [...(formData.characters || []), { character_key: Date.now().toString(), name: '', description: '', abilities: [] }],
-  });
-
-  const handleRemoveCharacter = (idx: number) => onFormDataChange({
-    characters: (formData.characters || []).filter((_: any, i: number) => i !== idx),
-  });
-
-  return { handleUpdateCharacter, handleAddCharacter, handleRemoveCharacter };
-}
-
 interface GameFormProps {
   formData: GameFormData;
   errors: GameValidationErrors;
-  onChange: (field: keyof GameFormData, value: any) => void;
-  onCharacterChange: (index: number, field: keyof GameCharacter, value: any) => void;
+  onChange: (field: keyof GameFormData, value: GameFormData[keyof GameFormData]) => void;
+  onCharacterChange: (index: number, field: keyof GameCharacter, value: GameCharacter[keyof GameCharacter]) => void;
   onAddCharacter: () => void;
   onRemoveCharacter: (index: number) => void;
 }
 
-export default function GameForm({ 
-  formData, 
-  errors, 
-  onChange, 
-  onCharacterChange, 
-  onAddCharacter, 
-  onRemoveCharacter 
+export default function GameForm({
+  formData,
+  errors,
+  onChange,
+  onCharacterChange,
+  onAddCharacter,
+  onRemoveCharacter
 }: GameFormProps) {
   const { t } = useLabels();
 
@@ -56,11 +34,11 @@ export default function GameForm({
       <div className="space-y-4">
         <div>
           <Label htmlFor="name">{t('games.form.name.label')} *</Label>
-          <Input 
-            id="name" 
-            value={formData.name} 
+          <Input
+            id="name"
+            value={formData.name}
             onChange={(e) => onChange('name', e.target.value)}
-            className={errors.name ? 'border-red-500' : ''} 
+            className={errors.name ? 'border-red-500' : ''}
           />
           {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
         </div>
@@ -78,7 +56,7 @@ export default function GameForm({
       </div>
 
       <div className="p-4 rounded-xl border bg-card/50 space-y-3">
-        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Modes de jeu</Label>
+        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('games.form.modes.label')}</Label>
         <div className="grid grid-cols-2 gap-3">
           {[
             { id: 'supports_competitive', label: 'competitive', icon: Sword, color: gameModeColors.competitive.icon },
@@ -87,10 +65,10 @@ export default function GameForm({
             { id: 'supports_hybrid', label: 'hybrid', icon: Target, color: gameModeColors.hybrid.icon },
           ].map((mode) => (
             <div key={mode.id} className="flex items-center space-x-2">
-              <Checkbox 
-                id={mode.id} 
-                checked={!!formData[mode.id as keyof GameFormData]} 
-                onCheckedChange={(v) => onChange(mode.id as keyof GameFormData, !!v)} 
+              <Checkbox
+                id={mode.id}
+                checked={!!formData[mode.id as keyof GameFormData]}
+                onCheckedChange={(v) => onChange(mode.id as keyof GameFormData, !!v)}
               />
               <Label htmlFor={mode.id} className="text-sm flex items-center cursor-pointer">
                 <mode.icon className={`w-4 h-4 mr-2 ${mode.color}`} />
@@ -124,18 +102,32 @@ export default function GameForm({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Checkbox id="has_char" checked={formData.has_characters} onCheckedChange={(v) => onChange('has_characters', !!v)} />
-            <Label htmlFor="has_char">Possède des personnages</Label>
+            <Label htmlFor="has_char">{t('games.form.has_characters.label')}</Label>
           </div>
           {formData.has_characters && (
-            <Button type="button" variant="outline" size="sm" onClick={onAddCharacter}><Plus className="mr-1 h-3 w-3" /> Ajouter</Button>
+            <Button type="button" variant="outline" size="sm" onClick={onAddCharacter}>
+              <Plus className="mr-1 h-3 w-3" /> {t('common.buttons.add')}
+            </Button>
           )}
         </div>
 
         {formData.has_characters && formData.characters?.map((char, idx) => (
           <div key={char.character_key || idx} className="relative p-3 border rounded-lg bg-muted/30">
-            <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => onRemoveCharacter(idx)}><Trash size={14} /></Button>
-            <Input className="mb-2 h-8" placeholder="Nom" value={char.name} onChange={(e) => onCharacterChange(idx, 'name', e.target.value)} />
-            <Textarea className="text-xs" placeholder="Description" value={char.description} onChange={(e) => onCharacterChange(idx, 'description', e.target.value)} />
+            <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => onRemoveCharacter(idx)}>
+              <Trash size={14} />
+            </Button>
+            <Input
+              className="mb-2 h-8"
+              placeholder={t('character.form.name.placeholder')}
+              value={char.name}
+              onChange={(e) => onCharacterChange(idx, 'name', e.target.value)}
+            />
+            <Textarea
+              className="text-xs"
+              placeholder={t('character.form.description.placeholder')}
+              value={char.description}
+              onChange={(e) => onCharacterChange(idx, 'description', e.target.value)}
+            />
           </div>
         ))}
       </div>

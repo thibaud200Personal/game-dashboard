@@ -4,7 +4,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useLabels } from '@/shared/hooks/useLabels';
 
 interface BaseDialogProps {
-  mode: 'add' | 'edit';
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   titleKey: string;
@@ -12,7 +11,7 @@ interface BaseDialogProps {
   children: React.ReactNode;
 }
 
-export const BaseFormDialog = ({ mode: _mode, isOpen, onOpenChange, titleKey, descriptionKey, children }: BaseDialogProps) => {
+export const BaseFormDialog = ({ isOpen, onOpenChange, titleKey, descriptionKey, children }: BaseDialogProps) => {
   const { t } = useLabels();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

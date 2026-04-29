@@ -1,11 +1,11 @@
-// Gestion des extensions de jeux
 import React from 'react';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { BaseFormDialog, BaseDeleteDialog } from '../../../../shared/components/dialogs/generic-dialogs';
-import { FormActions, useFormHandler } from '../../../../shared/components/dialogs/form-utils';
+import { FormActions } from '../../../../shared/components/dialogs/form-utils';
+import { useFormHandler } from '../../../../shared/components/dialogs/use-form-handler';
 
 /** @public */
 export interface CharacterFormData {
@@ -16,15 +16,23 @@ export interface CharacterFormData {
   abilities: string;
 }
 
+interface CharacterDialogProps {
+  mode: 'add' | 'edit';
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  formData: CharacterFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CharacterFormData>>;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
 /** @public */
-export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormData, onSubmit }: any) {
+export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormData, onSubmit }: CharacterDialogProps) {
   const { t } = useLabels();
   const onFieldChange = useFormHandler(setFormData);
 
   return (
-    <BaseFormDialog 
-      mode={mode} 
-      isOpen={isOpen} 
+    <BaseFormDialog
+      isOpen={isOpen}
       onOpenChange={onOpenChange}
       titleKey={`character.dialog.${mode}.title`}
       descriptionKey={`character.dialog.${mode}.description`}
@@ -61,13 +69,22 @@ export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormD
   );
 }
 
-export function DeleteCharacterDialog(props: any) {
+interface DeleteCharacterDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  characterName: string;
+  onConfirm: () => void;
+}
+
+export function DeleteCharacterDialog({ isOpen, onOpenChange, characterName, onConfirm }: DeleteCharacterDialogProps) {
   return (
-    <BaseDeleteDialog 
-      {...props}
+    <BaseDeleteDialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
       titleKey="character.dialog.delete.title"
       descriptionKey="character.dialog.delete.description"
-      itemName={props.characterName}
+      itemName={characterName}
+      onConfirm={onConfirm}
     />
   );
 }
