@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Plus, Link } from '@phosphor-icons/react';
@@ -8,7 +8,7 @@ import { useLabels } from '@/shared/hooks/useLabels';
 import type { GameValidationErrors, BGGGame } from '../../../../shared/types/index.d.ts';
 
 export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDataChange, onAddGame, onResetForm, isBGGSearchOpen, onBGGSearchToggle, onBGGGameSelect }: any) {
-  const [errors, setErrors] = useState<GameValidationErrors>({});
+  const errors: GameValidationErrors = {};
   const { t } = useLabels();
   const { handleUpdateCharacter, handleAddCharacter, handleRemoveCharacter } = useCharacterFormHandlers(formData, onFormDataChange);
 

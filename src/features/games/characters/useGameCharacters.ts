@@ -17,7 +17,6 @@ export function useGameCharacters(props: UseGameCharactersProps) {
   const { t } = useLabels();
   const {
     game,
-    onNavigation,
     navigationSource = 'games',
     onAddCharacter,
     onUpdateCharacter,

@@ -1,75 +1,11 @@
-import { render, RenderOptions } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { vi } from 'vitest';
 import { TooltipProvider } from '@/shared/components/ui/tooltip';
-
-// Mock de l'interface MobileHook pour les tests
-interface MockMobileHook {
-  isMobile: boolean;
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div>
-      {children}
-    </div>
-  );
-};
-
-// Fonction de render personnalisée avec providers
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options });
 
 // eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
-
-// Utilitaires pour les tests
-const createMockNavigation = () => {
-  const mockNavigation = vi.fn();
-  return {
-    onNavigation: mockNavigation,
-    mockNavigation
-  };
-};
-
-const createMockMobile = (isMobile = false): MockMobileHook => ({
-  isMobile
-});
-
-// Mock data communes
-const mockPlayers = [
-  {
-    player_id: 1,
-    player_name: 'Alice',
-    pseudo: 'alice42',
-    avatar: 'avatar1.jpg',
-    games_played: 10,
-    wins: 5,
-    total_score: 100,
-    average_score: 10,
-    win_percentage: 50,
-    created_at: new Date('2024-01-01'),
-    favorite_game: 'Wingspan'
-  },
-  {
-    player_id: 2,
-    player_name: 'Bob',
-    pseudo: 'bob_gamer',
-    avatar: 'avatar2.jpg',
-    games_played: 5,
-    wins: 2,
-    total_score: 50,
-    average_score: 10,
-    win_percentage: 40,
-    created_at: new Date('2024-01-02'),
-    favorite_game: 'Azul'
-  }
-];
 
 export const mockGames = [
   {
@@ -161,21 +97,3 @@ export function createHookWrapper(initialPath = '/') {
     );
   };
 }
-
-const mockBGGGameData = {
-  id: 266192,
-  name: 'Wingspan',
-  thumbnail: 'https://cf.geekdo-images.com/yLZJCVLlIx4c7eJEWUNJ7w__thumb/img/test.jpg',
-  description: 'Wingspan is a competitive, medium-weight, card-driven...',
-  year_published: 2019,
-  min_players: 1,
-  max_players: 5,
-  playing_time: 70,
-  min_playtime: 40,
-  max_playtime: 70,
-  min_age: 10,
-  categories: ['Animals'],
-  mechanics: ['Action Retrieval'],
-  average_rating: 8.1,
-  average_weight: 2.44
-};

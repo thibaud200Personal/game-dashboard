@@ -12,7 +12,7 @@ interface BaseDialogProps {
   children: React.ReactNode;
 }
 
-export const BaseFormDialog = ({ mode, isOpen, onOpenChange, titleKey, descriptionKey, children }: BaseDialogProps) => {
+export const BaseFormDialog = ({ mode: _mode, isOpen, onOpenChange, titleKey, descriptionKey, children }: BaseDialogProps) => {
   const { t } = useLabels();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

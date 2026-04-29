@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Player, PlayerStatistics } from '@/types';
+import { PlayerStatistics } from '@/types';
 import { Game } from '@/types';
 
 export const usePlayerStatsPage = (

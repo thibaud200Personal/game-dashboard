@@ -22,12 +22,6 @@ function DialogPortal({
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({
-  ...props
-}: ComponentProps<typeof DialogPrimitive.Close>) {
-  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
-}
-
 function DialogOverlay({
   className,
   ...props
@@ -75,19 +69,6 @@ function DialogHeader({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="dialog-header"
       className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
-      {...props}
-    />
-  );
-}
-
-function DialogFooter({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="dialog-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className
-      )}
       {...props}
     />
   );

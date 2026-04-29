@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import GameForm, { useCharacterFormHandlers } from './GameForm';
 import type { GameValidationErrors } from '../../../../shared/types/index';
 
 export default function EditGameDialog({ isOpen, onOpenChange, formData, onFormDataChange, onUpdateGame }: any) {
-  const [errors, setErrors] = useState<GameValidationErrors>({});
+  const errors: GameValidationErrors = {};
   const { handleUpdateCharacter, handleAddCharacter, handleRemoveCharacter } = useCharacterFormHandlers(formData, onFormDataChange);
 
   return (

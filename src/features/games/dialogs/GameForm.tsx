@@ -10,6 +10,7 @@ import { useLabels } from '@/shared/hooks/useLabels';
 
 import type { GameFormData, GameValidationErrors, GameCharacter } from '../../../../shared/types/index';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCharacterFormHandlers(
   formData: GameFormData,
   onFormDataChange: (patch: Partial<GameFormData>) => void

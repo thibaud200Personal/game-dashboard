@@ -33,10 +33,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLocaleContext(): LocaleContextValue {
   return useContext(LocaleContext);
 }
 
-function getStoredLocale(): string {
-  return localStorage.getItem(STORAGE_KEY) ?? DEFAULT_LOCALE;
-}

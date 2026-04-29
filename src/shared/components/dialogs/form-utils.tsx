@@ -2,7 +2,7 @@
 import { Button } from '@/shared/components/ui/button';
 import { useLabels } from '@/shared/hooks/useLabels';
 
-// Hook pour gérer les changements de champs
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFormHandler = (setFormData: any) => {
   return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

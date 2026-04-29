@@ -17,7 +17,6 @@ export function useGameExpansions(props: UseGameExpansionsProps) {
   const { t } = useLabels();
   const {
     game,
-    onNavigation,
     navigationSource = 'games',
     onAddExpansion,
     onUpdateExpansion,
