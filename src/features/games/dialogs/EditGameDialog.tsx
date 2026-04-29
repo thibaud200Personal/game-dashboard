@@ -1,7 +1,8 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
-import GameForm, { useCharacterFormHandlers } from './GameForm';
+import GameForm from './GameForm';
+import { useCharacterFormHandlers } from './use-character-form-handlers';
 import type { GameValidationErrors } from '../../../../shared/types/index';
 
 export default function EditGameDialog({ isOpen, onOpenChange, formData, onFormDataChange, onUpdateGame }: any) {

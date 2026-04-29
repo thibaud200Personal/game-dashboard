@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/shared/components/ui/button';
 import { Plus, Link } from '@phosphor-icons/react';
 import BGGSearch from '@/features/bgg/BGGSearch';
-import GameForm, { useCharacterFormHandlers } from './GameForm';
+import GameForm from './GameForm';
+import { useCharacterFormHandlers } from './use-character-form-handlers';
 import { useLabels } from '@/shared/hooks/useLabels';
 import type { GameValidationErrors, BGGGame } from '../../../../shared/types/index.d.ts';
 
