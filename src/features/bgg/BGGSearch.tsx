@@ -43,9 +43,10 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
       const results = await bggApiService.searchGames(trimmed);
       setSearchResults(results);
 
-      // Enrich thumbnails + years sequentially; abort if a new search starts
+      // Enrich thumbnails sequentially for results not yet cached locally; abort if a new search starts
       for (const result of results) {
         if (enrichmentIdRef.current !== searchId) break;
+        if (result.thumbnail) continue;
         try {
           const details = await bggApiService.getGameDetails(result.bgg_id);
           if (enrichmentIdRef.current !== searchId) break;

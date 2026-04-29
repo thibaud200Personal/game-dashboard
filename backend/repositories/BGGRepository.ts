@@ -7,6 +7,7 @@ type BggRow = {
   name: string
   year_published: number | null
   is_expansion: number
+  thumbnail: string | null
   rank: number | null
   bgg_rating: number | null
   abstracts_rank: number | null
@@ -40,6 +41,7 @@ export class BGGRepository {
     const starts   = `${query}%`
     const rows = this.db.prepare(`
       SELECT c.bgg_id, COALESCE(l.name_en, c.name) AS name, c.year_published, c.is_expansion,
+             l.thumbnail,
              c.rank, c.bgg_rating,
              c.abstracts_rank, c.cgs_rank, c.childrensgames_rank,
              c.familygames_rank, c.partygames_rank, c.strategygames_rank,
@@ -55,13 +57,14 @@ export class BGGRepository {
     `).all(contains, contains, contains, contains, starts, starts, starts, limit) as BggRow[]
 
     return rows.map(r => ({
-      bgg_id:        r.bgg_id,
-      name:          r.name,
+      bgg_id:         r.bgg_id,
+      name:           r.name,
       year_published: r.year_published ?? undefined,
-      is_expansion:  !!r.is_expansion,
-      rank:          r.rank ?? undefined,
-      bgg_rating:    r.bgg_rating ?? undefined,
-      game_types:    deriveGameTypes(r),
+      is_expansion:   !!r.is_expansion,
+      thumbnail:      r.thumbnail ?? undefined,
+      rank:           r.rank ?? undefined,
+      bgg_rating:     r.bgg_rating ?? undefined,
+      game_types:     deriveGameTypes(r),
     }))
   }
 
@@ -141,6 +144,12 @@ export class BGGRepository {
       }
     })
     upsert(rows)
+  }
+
+  upsertThumbnail(bgg_id: number, thumbnail: string): void {
+    this.db.prepare(
+      'UPDATE bgg_catalog_language SET thumbnail = ? WHERE bgg_id = ?'
+    ).run(thumbnail, bgg_id)
   }
 
   upsertCatalogLanguageBatch(rows: BggCatalogLanguageRow[]): void {

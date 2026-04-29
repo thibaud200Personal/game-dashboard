@@ -175,3 +175,33 @@ describe('BGGRepository.getLanguageStatus', () => {
     expect(s.pending_es).toBe(0)
   })
 })
+
+describe('BGGRepository.upsertThumbnail', () => {
+  beforeEach(() => {
+    repo.upsertCatalogBatch([
+      { bgg_id: 266192, name: 'Wingspan', year_published: 2019, is_expansion: 0,
+        rank: null, bgg_rating: null, users_rated: null,
+        abstracts_rank: null, cgs_rank: null, childrensgames_rank: null,
+        familygames_rank: null, partygames_rank: null, strategygames_rank: 5,
+        thematic_rank: null, wargames_rank: null },
+    ])
+    repo.syncCatalogToLanguage()
+  })
+
+  it('écrit le thumbnail dans bgg_catalog_language', () => {
+    repo.upsertThumbnail(266192, 'https://example.com/thumb.jpg')
+    const row = conn.db.prepare('SELECT thumbnail FROM bgg_catalog_language WHERE bgg_id = 266192').get() as { thumbnail: string }
+    expect(row.thumbnail).toBe('https://example.com/thumb.jpg')
+  })
+
+  it('écrase un thumbnail existant', () => {
+    repo.upsertThumbnail(266192, 'https://example.com/old.jpg')
+    repo.upsertThumbnail(266192, 'https://example.com/new.jpg')
+    const row = conn.db.prepare('SELECT thumbnail FROM bgg_catalog_language WHERE bgg_id = 266192').get() as { thumbnail: string }
+    expect(row.thumbnail).toBe('https://example.com/new.jpg')
+  })
+
+  it('ne plante pas sur un bgg_id absent de bgg_catalog_language', () => {
+    expect(() => repo.upsertThumbnail(99999, 'https://example.com/thumb.jpg')).not.toThrow()
+  })
+})

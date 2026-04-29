@@ -1,6 +1,6 @@
 # 🗺️ Roadmap — Board Game Dashboard
 
-**📈 Status**: 343 tests (209 backend + 134 frontend) · Phase 3 in progress
+**📈 Status**: 346 tests (212 backend + 134 frontend) · Phase 3 in progress
 
 ---
 
@@ -17,8 +17,8 @@
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
 - **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
-- **🗄️ Local BGG index — search to wire up**: infrastructure delivered (PR #59). Remaining: connect `searchGames()` to `bgg_catalog` (FTS5 to consider for 175k entries). Once wired: add year field + "include expansions" toggle in `BGGSearch`.
-- **🖼️ BGG thumbnails not persisted**: up to 15 geekdo calls repeated on every search. Solution: `bgg_thumbnails (bgg_id PK, thumbnail_url, fetched_at)` table independent of the CSV import cycle.
+- **🗄️ Local BGG index — search wired** ✅ (PR #79): `search()` queries `bgg_catalog` + `bgg_catalog_language` (name_en/fr/es), ordered by rank. Remaining: add year field + "include expansions" toggle in `BGGSearch`.
+- **🖼️ BGG thumbnails — lazy cache** ✅ (PR #93): thumbnail persisted in `bgg_catalog_language` on first `getGameDetails` call. Subsequent searches return thumbnail from local DB — no repeated geekdo calls.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
 - **🔽 BGG search — autocomplete**: replace the text field with an autocomplete component (free input + filter on en/fr/es names). Selection must transmit the `bgg_id`, not the name — avoids homonym issues.
 
@@ -76,7 +76,7 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 <summary><b>🧪 Tests & Quality</b></summary>
 
 - ✅ Infrastructure: Vitest + React Testing Library + MSW
-- ✅ **206/206 backend tests** (26 files — repos, services, HTTP routes)
+- ✅ **212/212 backend tests** (26 files — repos, services, HTTP routes)
 - ✅ **134/134 frontend tests** (23 files — hooks, flows, components, services)
 - ✅ Covered hooks: useGamesPage, usePlayersPage, useNewPlayPage, useDashboard, useGameStatsPage, usePlayerStatsPage
 - ✅ HTTP routes: 8 supertest suites (auth, games, players, plays, stats, bgg, labels, data)
