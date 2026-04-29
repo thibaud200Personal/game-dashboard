@@ -18,7 +18,7 @@
 - **Labels EditGameDialog**: DB enum values (`Beginner`, `Intermediate`, `competitive`…) display in English in edit forms. To fix via centralized maps `DIFFICULTY_LABELS`, `GAME_TYPE_LABELS` consumed by `t()`.
 - **📅 BGG year filter**: client-side filtering on geekdo results (no `yearpublished` server parameter). Low priority.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
-- **🔽 BGG search — autocomplete**: replace the text field with an autocomplete component (free input + filter on en/fr/es names). Selection must transmit the `bgg_id`, not the name — avoids homonym issues.
+- **🔽 BGG search — live autocomplete**: recherche en/fr/es et transmission du `bgg_id` déjà en place ✅. Reste : passer au pattern autocomplete (suggestions live au keystroke, sans bouton Search).
 
 ---
 
