@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   ArrowLeft,
   Moon,
@@ -48,6 +48,7 @@ interface SettingsPageViewProps {
 
 export function SettingsPageView(props: SettingsPageViewProps) {
   const { t } = useLabels();
+  const bggFileRef = useRef<HTMLInputElement>(null);
   const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
   const titleClass = "text-lg font-semibold mb-4 text-slate-900 dark:text-white";
   const labelClass = "font-medium text-slate-900 dark:text-white";
@@ -67,7 +68,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-2xl font-bold">{t('settings.page.title')}</h1>
-          <div className="w-10" /> {/* Spacer */}
+          <div className="w-10 h-10" aria-hidden="true" />
         </div>
       </div>
 
@@ -101,12 +102,14 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               </div>
               <div className="flex items-center gap-2">
                 {!props.isApiReachable && (
-                  <button
+                  <Button
+                    variant="link"
+                    size="sm"
                     onClick={props.handleRetryConnection}
-                    className="text-xs text-orange-400 hover:text-orange-300 transition-colors underline"
+                    className="text-xs text-orange-400 hover:text-orange-300 h-auto p-0"
                   >
                     {t('settings.language.retry')}
-                  </button>
+                  </Button>
                 )}
                 <Select
                   value={props.locale}
@@ -157,7 +160,7 @@ export function SettingsPageView(props: SettingsPageViewProps) {
             <div className="space-y-1 pb-2 border-b border-slate-200 dark:border-white/10 text-xs text-slate-400 dark:text-white/40">
               <div className="flex justify-between">
                 <span>{t('settings.data.bgg_imported')}</span>
-                <span>{props.bggCatalogImportedAt ? new Date(props.bggCatalogImportedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                <span>{props.bggCatalogImportedAt ? new Date(props.bggCatalogImportedAt).toLocaleString(navigator.language, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
               </div>
             </div>
 
@@ -215,30 +218,27 @@ export function SettingsPageView(props: SettingsPageViewProps) {
               {props.bggImportError && (
                 <p className="text-xs text-red-400 mb-2">{props.bggImportError}</p>
               )}
-              <label className="w-full cursor-pointer">
-                <input
-                  type="file"
-                  accept=".csv"
-                  className="hidden"
-                  disabled={props.isBggImporting}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) props.handleImportBggCatalog(file);
-                    e.target.value = '';
-                  }}
-                />
-                <Button
-                  variant="outline"
-                  className="w-full justify-start pointer-events-none"
-                  disabled={props.isBggImporting}
-                  asChild
-                >
-                  <span>
-                    <Upload className="w-4 h-4 mr-2" />
-                    {props.isBggImporting ? t('settings.data.bgg_importing') : t('settings.data.bgg_import_file')}
-                  </span>
-                </Button>
-              </label>
+              <input
+                ref={bggFileRef}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                disabled={props.isBggImporting}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) props.handleImportBggCatalog(file);
+                  e.target.value = '';
+                }}
+              />
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={props.isBggImporting}
+                onClick={() => bggFileRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {props.isBggImporting ? t('settings.data.bgg_importing') : t('settings.data.bgg_import_file')}
+              </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -266,8 +266,8 @@ export function SettingsPageView(props: SettingsPageViewProps) {
           <h2 className={titleClass}>{t('settings.section.session')}</h2>
           <Button
             onClick={props.onLogout}
-            variant="outline"
-            className="w-full justify-start border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500"
+            variant="destructive"
+            className="w-full justify-start"
           >
             <SignOut className="w-4 h-4 mr-2" />
             {t('settings.logout')}
