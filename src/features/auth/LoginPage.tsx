@@ -20,7 +20,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const timer = setTimeout(() => setCooldown(c => c - 1), 1000);
+    const timer = setTimeout(() => {
+      setCooldown(c => {
+        const next = c - 1;
+        if (next <= 0) setFailCount(0);
+        return next;
+      });
+    }, 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
 
@@ -73,12 +79,12 @@ export default function LoginPage() {
               />
             </div>
             {cooldown > 0 && (
-              <p role="alert" aria-live="polite" className="text-sm text-amber-400 bg-amber-500/10 rounded-md px-3 py-2">
+              <p role="alert" className="text-sm text-amber-400 bg-amber-500/10 rounded-md px-3 py-2">
                 {t('auth.error.too_many_attempts')} {cooldown}s
               </p>
             )}
             {error && cooldown === 0 && (
-              <p role="alert" aria-live="assertive" className="text-sm text-red-400 bg-red-500/10 rounded-md px-3 py-2">
+              <p role="alert" className="text-sm text-red-400 bg-red-500/10 rounded-md px-3 py-2">
                 {error}
               </p>
             )}

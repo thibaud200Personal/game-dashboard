@@ -223,7 +223,6 @@ export function SettingsPageView(props: SettingsPageViewProps) {
                 type="file"
                 accept=".csv"
                 className="hidden"
-                disabled={props.isBggImporting}
                 onChange={e => {
                   const file = e.target.files?.[0];
                   if (file) props.handleImportBggCatalog(file);
