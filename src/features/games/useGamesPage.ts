@@ -72,6 +72,7 @@ export const useGamesPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [addGameError, setAddGameError] = useState<string | null>(null);
   const [updateGameError, setUpdateGameError] = useState<string | null>(null);
+  const [isEditBGGSearchOpen, setIsEditBGGSearchOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -204,6 +205,41 @@ export const useGamesPage = () => {
     deleteMutation.mutate(gameId);
   }, [deleteMutation]);
 
+  const handleEditBGGSearch = (bggGame: BGGGame) => {
+    setFormData(prev => ({
+      ...prev,
+      name: bggGame.name,
+      description: bggGame.description || '',
+      image: bggGame.image || bggGame.thumbnail || '',
+      thumbnail: bggGame.thumbnail || '',
+      min_players: bggGame.min_players || 1,
+      max_players: bggGame.max_players || 4,
+      duration: bggGame.playing_time ? `${bggGame.playing_time} min` : '',
+      playing_time: bggGame.playing_time ?? undefined,
+      min_playtime: bggGame.min_playtime ?? undefined,
+      max_playtime: bggGame.max_playtime ?? undefined,
+      year_published: bggGame.year_published || new Date().getFullYear(),
+      publisher: bggGame.publishers?.[0] || '',
+      designer: bggGame.designers?.[0] || '',
+      bgg_rating: bggGame.rating || 0,
+      weight: bggGame.weight || 0,
+      difficulty: bggGame.difficulty || '',
+      age_min: bggGame.min_age || 8,
+      bgg_id: bggGame.id,
+      category: bggGame.categories?.[0] || '',
+      categories: bggGame.categories || [],
+      mechanics: bggGame.mechanics || [],
+      has_expansion: (bggGame.expansions?.length || 0) > 0,
+      is_expansion: bggGame.is_expansion ?? false,
+      expansions: bggGame.expansions || [],
+      supports_competitive: bggGame.supports_competitive ?? true,
+      supports_cooperative: bggGame.supports_cooperative ?? false,
+      supports_campaign: bggGame.supports_campaign ?? false,
+      supports_hybrid: bggGame.supports_hybrid ?? false,
+    }));
+    setIsEditBGGSearchOpen(false);
+  };
+
   const handleBGGSearch = (bggGame: BGGGame) => {
     if (bggGame.id && games.some(g => g.bgg_id === bggGame.id)) {
       setAddGameError('duplicate_game');
@@ -283,6 +319,9 @@ export const useGamesPage = () => {
     handleUpdateGame,
     handleDeleteGame,
     handleBGGSearch,
+    handleEditBGGSearch,
+    isEditBGGSearchOpen,
+    setIsEditBGGSearchOpen,
     resetForm,
     onNavigation,
   };

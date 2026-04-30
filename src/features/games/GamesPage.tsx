@@ -27,6 +27,9 @@ export default function GamesPage() {
     handleUpdateGame,
     handleDeleteGame,
     handleBGGSearch,
+    handleEditBGGSearch,
+    isEditBGGSearchOpen,
+    setIsEditBGGSearchOpen,
     resetForm,
     setFormData,
     onNavigation,
@@ -54,6 +57,9 @@ export default function GamesPage() {
       isAddDialogOpen={isAddDialogOpen}
       isEditDialogOpen={isEditDialogOpen}
       isBGGSearchOpen={isBGGSearchOpen}
+      isEditBGGSearchOpen={isEditBGGSearchOpen}
+      onEditBGGGameSelect={handleEditBGGSearch}
+      setEditBGGSearchOpen={setIsEditBGGSearchOpen}
       expandedGame={expandedGame}
       searchQuery={searchQuery}
       onNavigation={onNavigation}

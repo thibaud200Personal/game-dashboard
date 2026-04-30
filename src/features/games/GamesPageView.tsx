@@ -48,6 +48,9 @@ interface GamesPageViewProps {
   isAddDialogOpen: boolean;
   isEditDialogOpen: boolean;
   isBGGSearchOpen: boolean;
+  isEditBGGSearchOpen: boolean;
+  onEditBGGGameSelect: (bggGame: BGGGame) => void;
+  setEditBGGSearchOpen: (open: boolean) => void;
   expandedGame: number | null;
   searchQuery: string;
   onNavigation: (view: string, gameId?: number, source?: string) => void;
@@ -424,6 +427,9 @@ export function GamesPageView(props: GamesPageViewProps) {
               onResetForm={onResetForm}
               editingGame={props.editingGame}
               serverError={props.updateGameError}
+              isBGGSearchOpen={props.isEditBGGSearchOpen}
+              onBGGSearchToggle={props.setEditBGGSearchOpen}
+              onBGGGameSelect={props.onEditBGGGameSelect}
             />
           </div>
         </div>
