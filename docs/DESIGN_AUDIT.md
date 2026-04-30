@@ -2,6 +2,7 @@
 
 **Portée** : revue exhaustive page par page (`src/features/**/View.tsx`), dialogs (`src/features/**/dialogs/*.tsx`), primitives UI (`src/shared/components/ui/*.tsx`), et patterns transverses.
 **Date** : 2026-04-18
+**Mise à jour** : 2026-04-30 — nettoyage post-sprints. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
 **Méthode** : lecture ligne-à-ligne du code, cross-reference avec les spécifications WCAG 2.1 AA, audit de cohérence entre pages et entre modes clair/sombre.
 
 ---
@@ -16,7 +17,7 @@ La méthode est rigoureuse : lecture ligne-à-ligne du code, calculs de contrast
 
 - Le diagnostic sur `darkMode` prop-drilling (§ 14.1) est le point central de tout le backlog. Tout le reste des bugs de thème en découle. La priorité Sprint 3 #11 est correctement identifiée comme ROI maximal.
 - La distinction entre "les primitives shadcn sont propres, le problème c'est que les devs les overrident avec `bg-slate-700`" (§ 13.3.2) — c'est la vraie cause racine, pas les primitives elles-mêmes.
-- Les données fictives dans le Dashboard (§ 10) sont identifiées comme critique de confiance — c'est le bon niveau de sévérité.
+- Les données fictives dans le Dashboard (§ 10) étaient identifiées comme critique de confiance — ✅ corrigées depuis.
 
 **Ce que je nuancerais**
 
@@ -102,7 +103,6 @@ Hero visuel chargé : deux grands cercles teal/emerald avec halo `animate-pulse`
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 10 | 🔴 | **Données fictives** dans « Activité récente » : `"5 minutes ago"`, `"12 minutes ago"`, `"23 minutes ago"` sont des strings codées en dur dans le JSX (voir les 3 `<span className="text-white/40 text-xs">` sans binding). Ces timestamps ne bougent jamais. Premier signe qu'un utilisateur attentif détecte → perte de confiance dans le reste des chiffres. | Câbler sur une vraie requête `sessions?limit=5&orderBy=played_at&order=desc` + fonction `formatRelativeTime(date)` basée sur `Intl.RelativeTimeFormat`. Si zéro activité, afficher un empty state (« Aucune partie enregistrée — démarrez-en une ! ») au lieu de masquer la section. |
 | 11 | 🟡 | Deux CTA équivalents en bas : `"Nouveau jeu"` (teal) et `"Ajouter joueur"` (emerald), même taille, même poids. Pour un tracker de parties, l'action dominante est **démarrer une partie**, pas « ajouter un jeu ». | Un seul CTA primaire : `"Démarrer une partie"` (teal, large, icône `<Play>`). `"Nouveau jeu"` et `"Ajouter joueur"` deviennent secondaires (`variant="outline"`). |
 | 12 | 🟡 | Les cercles stats (`w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 animate-pulse`) battent visuellement le CTA. Un élément décoratif bat un élément fonctionnel. De plus `animate-pulse` en permanence fatigue l'œil sur les longues sessions. | Réduire à `w-16 h-16`, retirer `animate-pulse` (réserver l'animation aux éléments changeants), remplacer par `hover:scale-105 transition-transform` pour garder un peu de vie au survol. |
 | 13 | 🟡 | Toutes les cartes (Joueurs, Jeux, Activité) partagent exactement la même recette : `bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl`. Hiérarchie visuelle plate = pas de distinction primaire/secondaire. | Deux niveaux de cartes : `<PrimaryCard>` avec bordure accent (`border-l-4 border-l-teal-400`), `<SecondaryCard>` plus discrète (`border-white/10 shadow-none`). |
@@ -120,7 +120,7 @@ Hero visuel chargé : deux grands cercles teal/emerald avec halo `animate-pulse`
 
 ### Résumé
 
-Dashboard **joli mais menteur**. Priorité absolue : retirer les données fictives. Priorité 2 : restructurer la hiérarchie pour que l'action « démarrer une partie » soit en position dominante.
+Dashboard globalement fonctionnel. Priorité principale : restructurer la hiérarchie pour que l'action « démarrer une partie » soit en position dominante (CTA primaire visible sans scroll).
 
 ---
 
@@ -135,7 +135,6 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
 | 19 | 🔴 | Le **champ de recherche est hardcodé en mode sombre** : `<Input className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-teal-400">`. Aucun ternaire `darkMode ?`. En mode clair : input à fond translucide légèrement blanc sur fond clair = cadre invisible + texte blanc sur fond presque blanc = illisible. | Rendre theme-aware OU mieux : retirer toutes les classes de couleur et laisser le shadcn `<Input>` utiliser ses tokens (`bg-background`, `border-input`, `placeholder:text-muted-foreground`). |
-| 20 | 🔴 | Empty state : `<div className="w-16 h-16 text-white/20" />` **sans icône enfant**. C'est littéralement un `<div>` vide de 64×64 px. Au-dessus, un message. L'utilisateur voit un trou. | `<GameController className="w-16 h-16 mx-auto mb-4 opacity-40" />` + message + CTA « Ajouter votre premier jeu ». Reproduire le pattern de `PlayersPageView` qui est excellent. |
 | 21 | 🟡 | `DropdownMenuContent` du menu kebab mobile : `className="bg-slate-800 border-slate-700 text-white"` **hardcodé**. En mode clair : popup sombre collée à un header clair — jaring. | Retirer toutes les classes, laisser le shadcn utiliser `bg-popover text-popover-foreground` qui respecte le thème. |
 | 22 | 🟡 | Double point d'entrée pour ajouter un jeu : bouton **dans le header** (`AddGameDialog` trigger) + FAB flottant en bas à droite. Sur mobile portrait, les deux sont visibles simultanément → UX de Fisher-Price. | Règle : **FAB seul en mobile** (< md), **bouton header seul en desktop** (≥ md). Classes : `md:hidden` sur FAB, `hidden md:inline-flex` sur bouton header. |
 | 23 | 🟡 | Actions desktop sur carte : 4 boutons `<button className="p-2 hover:bg-teal-500/20 rounded-lg">` avec icône `w-4 h-4` = cible ≈ 32 px. Quatre cibles serrées dans un header de carte = **zone de mis-clics**. | Trois options : (a) passer à `p-2.5` + `w-5 h-5` (~40 px) ; (b) kebab `⋯` même sur desktop avec dropdown ; (c) afficher les actions **au hover/focus de la carte** uniquement. Option (c) est la plus élégante. |
@@ -152,7 +151,7 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 
 ### Résumé
 
-Page informativement riche mais cognitivement lourde. Les deux **critiques** (input hardcoded + empty state sans icône) sont des corrections de 5 min.
+Page informativement riche mais cognitivement lourde. La critique principale restante : l'input de recherche hardcodé dark (§ 19) — invisible en mode clair.
 
 ---
 
@@ -160,13 +159,12 @@ Page informativement riche mais cognitivement lourde. Les deux **critiques** (in
 
 ### Première impression
 
-Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview / Expansions / Characters. Bien structurée sur desktop. **Bug visible en 30 secondes** : le titre du jeu est affiché **deux fois à la suite** (double `<h1>` sur lignes 88-89).
+Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview / Expansions / Characters. Bien structurée sur desktop. Le double `<h1>` a été corrigé. Les problèmes restants concernent `GameOverview` (hardcodé dark, § 29) et la bottom-nav toujours active (§ 30).
 
 ### Constats détaillés
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 28 | 🔴 | **Double `<h1>`** : la structure est `<h1 className="text-3xl font-bold text-white">{game.name}</h1>` suivi immédiatement de `<h1 className={darkMode ? "text-3xl font-bold text-white" : "text-3xl font-bold text-slate-900"}>{game.name}</h1>`. Le premier est un résidu de refactor non supprimé. En mode sombre, deux `<h1>` blancs identiques côte à côte. En mode clair, un blanc invisible puis un sombre. Bug visible au load. | Supprimer la ligne 88 (la version non-theme-aware). Accessoirement : **deux `<h1>` sur une même page viole WCAG 2.4.6** (headings et labels) — un seul `<h1>` par page attendu. |
 | 29 | 🔴 | `GameOverview` (composant imbriqué) est **entièrement hardcodé sombre** : `bg-slate-800/50`, `border-slate-700/50`, `text-white`, `text-slate-300`, `text-slate-400`. Le wrapper externe applique `darkMode ? "" : "bg-white text-slate-900"` mais les cartes internes restent sombres. En mode clair, blocs sombres flottant au milieu d'une page claire — **break visuel majeur**. | Refactor complet de `GameOverview` : remplacer tous les `bg-slate-800/*`, `border-slate-700/*`, `text-white`, `text-slate-300` par les tokens shadcn (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`). Une passe globale — ~40 remplacements. |
 | 30 | 🔴 | Bottom nav mobile : `<button className="... text-primary">` pour l'onglet « Games » sans condition. Le bouton est **toujours en state actif** peu importe la page courante. Sur la Dashboard, l'onglet « Games » est bleu-actif → incohérence mentale. | Dériver `isActive` depuis `currentView`/route : `className={currentView === 'games' ? 'text-primary' : 'text-muted-foreground'}`. À faire pour les 4 onglets (Dashboard, Games, Players, Stats). |
 | 31 | 🟡 | Le kebab mobile mélange **5 items** dont 3 sont des onglets de navigation (« Overview », « Expansions », « Characters ») et 2 sont des actions (« Edit », « Delete »). Sur mobile, c'est le seul moyen d'accéder aux onglets Expansions/Characters → comportement non-standard. | Séparer : en mobile, afficher les **onglets visiblement** en haut de la page (comme en desktop, `<TabsList>` horizontal scrollable si nécessaire), et réserver le kebab aux actions de gestion (Edit/Delete). |
@@ -178,7 +176,7 @@ Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview 
 
 ### Résumé
 
-La page contient **3 problèmes critiques** (double `<h1>`, GameOverview hardcoded dark, bottom-nav toujours active). Tous sont des bugs factuels, pas des choix de design. Le refactor de `GameOverview` est le plus lourd (~40 remplacements).
+La page contient **2 problèmes critiques** restants : `GameOverview` hardcodé dark (§ 29) et bottom-nav toujours active (§ 30). Tous deux sont des bugs factuels. Le refactor de `GameOverview` est le plus lourd (~40 remplacements).
 
 ---
 
@@ -288,7 +286,6 @@ Modal intégrable de recherche sur BoardGameGeek (utilisé dans `AddGameDialog` 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 59 | 🔴 | En mode clair, bouton de recherche : `bg-blue-100 hover:bg-blue-200 text-blue-700`. **Bleu**, alors que tout le reste de l'app utilise teal/emerald. Identité de marque rompue sur une feature secondaire. Le spinner et l'icône sont également `text-blue-700`. | Tokens teal : `bg-teal-100 hover:bg-teal-200 text-teal-700` en clair, `bg-teal-600 hover:bg-teal-700 text-white` en sombre. Ou mieux : utiliser `variant="default"` du shadcn `<Button>` (qui s'appuie sur `--primary`). |
 | 60 | 🟡 | Feature astucieuse : si `query` est purement numérique (`/^\d+$/`), l'app charge directement le jeu par son BGG ID. Mais **aucun hint ne l'explique** à l'utilisateur. | `<p className="text-xs text-muted-foreground">Recherchez par nom, ou collez un ID BoardGameGeek (ex. 174430 pour Gloomhaven).</p>` sous l'input. |
 | 61 | 🟡 | Enrichment séquentiel des thumbnails : boucle `for (const result of results) { await bggApiService.getGameDetails(result.bgg_id) }`. Pour 20 résultats × ~400 ms/req = **~8 secondes** avant que toutes les vignettes soient chargées. L'utilisateur voit les vignettes apparaître une par une. | (a) `Promise.allSettled` avec concurrence limitée (3-5 en parallèle) via `p-limit` ou implémentation maison ; (b) `AbortController` propre au lieu du flag ref actuel (les fetches continuent en coulisses même si on invalide). |
 | 62 | 🟡 | L'icône `<Link>` à droite de chaque card de résultat **ressemble à un bouton d'ouverture externe** mais ne fait rien (la card entière est cliquable pour sélectionner). L'utilisateur tape sur l'icône en pensant « ouvrir la page BGG ». | Deux options : (a) retirer l'icône si la card entière est l'action ; (b) en faire un vrai bouton `<a href="https://boardgamegeek.com/boardgame/{id}" target="_blank" rel="noopener">` pour ouvrir BGG. Option (b) est un plus utile. |
@@ -308,7 +305,7 @@ Les 4 états sont couverts, ce qui est bien. L'infra existe — il manque juste 
 
 ### Résumé
 
-Composant **fonctionnellement correct** mais estampillé « marque bleue » en mode clair. Le fix est trivial (swap bleu → teal). Priorité 2 : rendre le hint visible (§ 60), rendre le lien BGG utile (§ 62).
+Composant **fonctionnellement correct**, identité teal restaurée. Priorité : rendre le hint visible (§ 60) et rendre le lien BGG utile (§ 62).
 
 ---
 
@@ -347,8 +344,6 @@ Vitrine ambitieuse, implémentation à moitié. **Un dashboard qui montre un fil
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 74 | 🔴 | Section « Performance Overview » : `<div>...<ChartBar className="w-16 h-16 mx-auto mb-4 opacity-50" /><p>{t('stats.player.performance.coming_soon')}</p></div>`. **Placeholder "Performance charts coming soon" présent en production.** Une promesse visuelle non tenue = perte de confiance. | Retirer la section tant que la feature n'est pas livrée. Alternative : si on veut garder un espace, afficher un graphique simple (évolution score sur N parties) — même basique c'est mieux qu'un tease. |
-| 75 | 🔴 | Strings hardcodés anglais identifiés : `"Winner"` (ligne 90), `"wins"` (ligne 184), `"games"` (ligne 185), `"pts"` (plusieurs), `` `${selectedPlayer.player_name}'s Recent Games` `` (ligne 194), `"played"` (ligne 228), `"Performance Overview"` (ligne 243), `"No recent activity"` (ligne 209 via key mais fallback potentiellement dur). Mêmes causes qu'au § 46. | i18n systématique. `t('stats.player.activity.winner')`, `t('stats.player.stat.wins_label')`, etc. |
 | 76 | 🟡 | Sur la vue globale (`!selectedPlayer`), deux sections sont affichées successivement : « Top Players » (liste triée par score) ET « Recent Activity » (liste des dernières actions). **Les deux utilisent le même composant `ActivityRow` avec des données qui se chevauchent** — un top player peut apparaître deux fois, une fois dans chaque liste. Scroll long, contenu redondant. | Fusionner en une section unique « Activité joueurs » avec filtres (`[Top de la semaine] [Top all-time] [Plus récents]`). Gain : -1 card (~200 px de scroll). |
 | 77 | 🟡 | 4 stat cards en `grid-cols-2` + `p-6` chacune = ~400 px de hauteur totale sur mobile. **Plus de la moitié de la hauteur d'écran pour 4 chiffres.** | Passer à `p-4` (gain ~40%), ou design ticker horizontal scrollable. |
 | 78 | 🟡 | Quand pas de joueur sélectionné, la section « Stats globales » n'affiche que **2 cartes** (`totalPlayers`, `avgScore`) dans une `grid-cols-2`. Les deux cartes prennent tout l'écran pour 2 nombres. | Compacter : ligne horizontale `<div className="flex gap-4">` avec stats inline, icône + valeur + label en 1 ligne. |
@@ -358,7 +353,7 @@ Vitrine ambitieuse, implémentation à moitié. **Un dashboard qui montre un fil
 
 ### Résumé
 
-Page qui **promet mais ne livre pas**. Retirer ou implémenter « Performance charts ». Fusionner Top + Recent. i18n les strings.
+Améliorations principales restantes : fusionner les sections Top + Recent (§ 76), compacter les stat cards (§ 77-78).
 
 ---
 
@@ -376,7 +371,6 @@ La page la plus « formulaire » de l'app. Organisation par sections (Préféren
 | 83 | 🟡 | Section « Data Management » : couleurs de bordure hardcodées `border-white/10`. Invisibles en mode clair. Le divider top (`border-b border-white/10`) idem. | Theme-aware : `darkMode ? 'border-white/10' : 'border-slate-200'`. Ou tokens : `border-border`. |
 | 84 | 🟡 | File-picker BGG : `<label><Button asChild className="pointer-events-none">...</Button><input type="file" className="hidden"></label>`. **Pattern fragile** : le `pointer-events-none` sur Button laisse passer le clic au label parent qui déclenche l'input file. Fonctionne par effet de bord. Si quelqu'un ajoute un `focus-visible` au Button, plus de ring. | Refacto : `<Input type="file" ref={fileRef} className="hidden" />` + `<Button onClick={() => fileRef.current?.click()}>Importer</Button>`. Clean, sans dépendance au label trick. |
 | 85 | 🟡 | « Retry connection » lien : `<a className="text-orange-400 hover:text-orange-300 underline">`. Pas de `<button>` pour une action réseau. Un `<a>` sans `href` est mal focusable et non-sémantique pour une action. | `<Button variant="link">` avec `onClick`. |
-| 86 | 🔴 | **Bouton Reset sans confirmation modale**. `<Button variant="destructive" onClick={handleReset}>Reset Data</Button>` → efface toutes les données sans filet. Action destructive irréversible. | `<AlertDialog>` obligatoire avec `<AlertDialogTitle>Effacer toutes les données ?</AlertDialogTitle>`, `<AlertDialogDescription>Cette action est irréversible. Tapez "EFFACER" pour confirmer.</AlertDialogDescription>` + `<Input>` de confirmation. Pattern GitHub destructive. |
 | 87 | 🟢 | Format date BGG `imported_at` : `new Date(...).toLocaleString('fr-FR', ...)` — hardcodé français. Si un jour l'app est anglophone, le format est figé. | `toLocaleString(navigator.language, ...)` ou récupérer la locale depuis `useLabels`. |
 | 88 | 🟢 | Logout : `className="border-red-500/40 text-red-400 hover:bg-red-500/10"` (style custom) au lieu de `variant="destructive"`. Deux façons de dire « destructif » dans l'app. | Créer une variante `variant="destructive-outline"` dans le `buttonVariants` shadcn + usage partout. Cohérence. |
 
@@ -388,7 +382,7 @@ La page la plus « formulaire » de l'app. Organisation par sections (Préféren
 
 ### Résumé
 
-Page « solide » — pas de bug majeur. Le seul vrai rouge : le Reset sans confirmation. Simple à corriger, gros impact.
+Page « solide » — les risques critiques ont été résolus. Reste : le file-picker BGG (§ 84) et la sémantique du lien retry (§ 85).
 
 ---
 
@@ -405,9 +399,9 @@ Trois patterns de qualité coexistent dans les dialogs :
 
 | Qualité | Exemples | Caractéristiques |
 |---|---|---|
-| 🟢 **Bonne** | `DeleteExpansionDialog`, `DeleteCharacterDialog` | Theme-aware, i18n via `t()`, tokens `bg-destructive` |
+| 🟢 **Bonne** | `DeleteExpansionDialog`, `DeleteCharacterDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog` | Theme-aware, i18n via `t()`, tokens `bg-destructive` |
 | 🟡 **Moyenne** | `AddPlayerDialog`, `ExpansionDialogs`, `CharacterDialogs` | Wrapper theme-aware mais form fields hardcodés dark |
-| 🔴 **Mauvaise** | `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog` | Zéro theme, i18n inexistante, strings trilingues |
+| 🔴 **Mauvaise** | `AddGameDialog`, `EditGameDialog` | Inputs hardcodés dark, title/boutons partiellement hardcodés |
 
 **La même app contient 3 niveaux de qualité selon la personne / la période de développement**. C'est le symptôme d'une absence de dialog template partagé. Créer un `<FormDialog>` + `<ConfirmDialog>` normalisés résoudrait la quasi-totalité des findings ci-dessous.
 
@@ -436,29 +430,9 @@ Trois patterns de qualité coexistent dans les dialogs :
 | 102 | 🟡 | `SelectItem` difficulté : hardcodé anglais `"Beginner"`, `"Intermediate"`, `"Expert"`. | i18n. |
 | 103 | 🟡 | Pas de confirmation avant fermeture si `isDirty` (form modifié mais non soumis). Un clic sur Cancel → modifications perdues silencieusement. | Même pattern qu'en § 49. |
 
-### 12.4 `DeleteGameDialog.tsx` — 🔴 fichier rouge
+### 12.4 `DeleteGameDialog.tsx` — ✅ Résolu
 
-Ce fichier est un **archétype de ce qu'il ne faut pas faire** dans un design system cohérent. 53 lignes qui ignorent totalement les conventions de l'app :
-
-```tsx
-<AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
-  <AlertDialogTitle>Delete Game</AlertDialogTitle>
-  <AlertDialogDescription className="text-white/70">
-    Are you sure you want to delete "{game.name}"? This action cannot be undone
-    and will also remove all associated expansions and characters.
-  </AlertDialogDescription>
-  <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-```
-
-| # | Sévérité | Finding | Recommandation |
-|---|---|---|---|
-| 104 | 🔴 | **Aucune prop `darkMode` acceptée**. Le composant est figé en dark mode. En mode clair de l'app, ce dialog apparaît sombre — rupture visuelle. | Ajouter prop `darkMode` OU retirer toutes les classes hardcodées et utiliser tokens. |
-| 105 | 🔴 | **Tous les strings en anglais hardcodés** : `"Delete Game"`, `"Cancel"`, `"Delete"`, `"Are you sure you want to delete..."`. Aucun appel à `t()`. | i18n complet. Reproduire `DeleteExpansionDialog` qui le fait bien. |
-| 106 | 🔴 | `bg-slate-800 border-slate-700 text-white` sur `AlertDialogContent`. Pas de tokens. | `AlertDialogContent` shadcn sans class custom → utilise `bg-background border-border` par défaut. Retirer la classe. |
-| 107 | 🟢 | Bonne pratique : le message liste explicitement les effets secondaires (« suppression des expansions et personnages associés »). Copy de qualité. | Garder cette précision dans la version i18n. |
-
-**Référence à reproduire** : `DeleteExpansionDialog` utilise `t('expansions.delete_dialog.title')`, `t('expansions.delete_dialog.description')`, `t('common.cancel')`, `t('common.delete')`, et ses styles viennent des tokens shadcn par défaut. **Le code de DeleteGameDialog doit être réécrit sur ce modèle.**
+Réécrit sur le modèle de `DeleteExpansionDialog` : `useLabels()` + `t()` pour toutes les strings, tokens shadcn par défaut, plus de classes hardcodées.
 
 ### 12.5 `AddPlayerDialog.tsx`
 
@@ -471,25 +445,13 @@ Ce fichier est un **archétype de ce qu'il ne faut pas faire** dans un design sy
 | 112 | 🟡 | Labels en mode clair : `text-blue-700`. Même problème que § 100. | Tokens. |
 | 113 | 🔴 | Trigger en mode clair : `"bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 text-blue-700"`. **Gradient bleu** — casse l'identité teal/emerald. En mode sombre, le trigger est teal (cohérent), mais le dev a choisi bleu pour le mode clair. Bizarre et **visible immédiatement**. | Tokens teal : `"bg-teal-100 hover:bg-teal-200 text-teal-700"` ou `variant="default"`. |
 
-### 12.6 `EditPlayerDialog.tsx` — 🔴 régression
+### 12.6 `EditPlayerDialog.tsx` — ✅ Résolu
 
-Ce fichier est une **régression** par rapport à `AddPlayerDialog`. Même feature (édit vs add), qualité moindre.
+Régression annulée : validations et labels passés via `t()`, title et boutons i18n, plus de strings trilingues. Reste § 120 (trigger color) qui est couvert par § 14.1.
 
-| # | Sévérité | Finding | Recommandation |
-|---|---|---|---|
-| 114 | 🔴 | **Messages de validation hardcodés français** : `"Le nom du joueur est requis"`, `"Le nom doit contenir au moins 2 caractères"`, `"Le pseudo est requis"`, `"Le pseudo doit contenir au moins 2 caractères"`. Aucun `t()`, alors que `AddPlayerDialog` fait exactement la même validation avec `t('players.form.validation.*')`. | Remplacer par `t()` — les clés existent déjà puisque `AddPlayerDialog` les utilise. |
-| 115 | 🔴 | Title : `"Edit Player"` hardcodé anglais. | `t('players.edit_dialog.title')`. |
-| 116 | 🔴 | Description : `"Update player information and statistics."` hardcodé anglais. | i18n. |
-| 117 | 🔴 | Boutons footer : `"Mettre à jour"` (fr) et `"Annuler"` (fr) hardcodés. | i18n. |
-| 118 | 🔴 | Placeholder `"Enter favorite game"` hardcodé anglais. | i18n. |
-| 119 | 🔴 | **Labels mélange français/anglais** : `"Nom *"` (fr), `"Pseudo *"` (fr), `"Favorite Game"` (en), `"Avatar URL"` (en). **Le dialog est trilingue en interne.** | Un seul langage, via i18n. |
-| 120 | 🟡 | Même problème de trigger color que § 113. | Tokens. |
+### 12.7 `DeletePlayerDialog.tsx` — ✅ Résolu
 
-### 12.7 `DeletePlayerDialog.tsx`
-
-| # | Sévérité | Finding | Recommandation |
-|---|---|---|---|
-| 121 | 🔴 | Copie carbone des problèmes de `DeleteGameDialog` : pas de prop `darkMode`, pas d'i18n, classes dark hardcodées, strings anglais (`"Delete Player"`, `"Cancel"`, `"Delete"`, `"Are you sure you want to delete..."`). | Réécrire sur le modèle de `DeleteExpansionDialog`. |
+Réécrit sur le modèle de `DeleteExpansionDialog`, identique à § 12.4.
 
 ### 12.8 `ExpansionDialogs.tsx` (Add / Edit / Delete)
 
@@ -514,12 +476,12 @@ Même structure qu'`ExpansionDialogs`, mêmes findings.
 
 ### 12.10 Synthèse dialogs
 
-**Ce qu'il faut créer** :
+**Ce qu'il reste à faire** :
 
-1. **`<FormDialog>`** — un wrapper template theme-aware, i18n, avec `title`, `description`, `children` (slots form), `onSubmit`, `onCancel`, et un paramètre `confirmDirtyOnClose`.
-2. **`<ConfirmDialog>`** — un wrapper `AlertDialog` avec `title`, `description`, `destructive` (bool pour varier les styles), `onConfirm`. Inclut la logique de "type X to confirm" optionnelle.
+1. **`<FormDialog>`** — un wrapper template theme-aware, i18n, avec `title`, `description`, `children` (slots form), `onSubmit`, `onCancel`, et un paramètre `confirmDirtyOnClose`. Permettrait de refactorer `AddGameDialog` et `EditGameDialog` (~800 lignes combinées).
+2. **Aligner `AddGameDialog` et `EditGameDialog`** sur les conventions établies par les Delete dialogs (tokens shadcn, `useLabels`, plus de hardcoded colors).
 
-Une fois ces deux composants en place, **réécrire les 8 dialogs existants** les collapse tous en ~30 lignes chacun max, élimine les régressions et fixe tous les findings 89-128 en bloc.
+Les Delete dialogs et `EditPlayerDialog` ont été refactorisés et servent désormais de référence. `AddGameDialog` et `EditGameDialog` restent les dettes principales.
 
 ---
 
@@ -746,7 +708,7 @@ Le pattern `darkMode ? "..." : "..."` est réparti dans **30+ fichiers** et pass
 
 - **Chaque développeur doit penser aux deux thèmes à chaque modif.** Oubli fréquent → bugs § 19, § 21, § 29, § 47, § 54, § 63.
 - **Incohérences inter-composants** : même concept coloré différemment selon la page (§ 27, § 69).
-- **Dialogues oubliés** : `DeleteGameDialog`, `DeletePlayerDialog` n'acceptent même pas la prop.
+- **Dialogues résiduels** : `AddGameDialog` et `EditGameDialog` overrident encore les tokens (`bg-slate-700`) sur les inputs.
 - **Overrides anti-tokens** : les devs remettent `bg-slate-700` partout sur des primitives pourtant theme-aware (§ 101, § 124).
 
 **Recommandation architecturale** :
@@ -815,17 +777,18 @@ Tailwind config : `borderRadius.DEFAULT = 'var(--radius)'`, etc. Lint `rounded-[
 
 **État** : l'infrastructure `useLabels` / `t('...')` existe et fonctionne. **Le problème n'est pas l'infra, c'est l'adoption inégale** :
 
-- ✅ Bien utilisé : `PlayersPageView`, `AddPlayerDialog` (validation).
-- 🟡 Partiel : `AddGameDialog` (titles + descriptions OK, labels hardcodés).
-- 🔴 Inexistant : `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog` (validation française hardcodée !).
-- 🔴 Mélange : `NewPlayView`, `PlayerStatsView` (trilingue fr/en/keys).
+- ✅ Bien utilisé : `PlayersPageView`, `AddPlayerDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog`.
+- 🟡 Partiel : `AddGameDialog`, `EditGameDialog` (titre/boutons encore hardcodés), `NewPlayView` (à vérifier § 46).
+- ✅ Résolu : `PlayerStatsView` (i18n complète via PR #85).
 
-**Statistiques** : ~50 strings en dur identifiés dans l'audit (§ 34 précédent, § 46, § 75, § 91, § 98, § 114-119).
+**Statut après PR #85** : ~40 strings migrées via `t()` sur 9 composants. Restent :
+- `EditGameDialog` : titre dialog et bouton submit hardcodés en français.
+- `AddGameDialog` : quelques labels (§ 91) potentiellement encore présents.
+- `NewPlayView` : à vérifier (§ 46).
 
-**Action** : 
-1. Activer `eslint-plugin-i18n-text` ou équivalent pour lever une erreur sur tout littéral string en JSX.
-2. Audit grep : `grep -rE '>[A-Z][a-z]+.*<' src/features` + revue manuelle.
-3. Définir la langue par défaut (fr ?) et migrer toute string non-traduite vers clés `t()`.
+**Action restante** :
+1. Vérifier `AddGameDialog` et `NewPlayView` par grep ciblé.
+2. Activer `eslint-plugin-i18n-text` pour bloquer les régressions futures.
 
 ### 14.6 Accessibilité — récapitulatif
 
@@ -837,7 +800,6 @@ Tailwind config : `borderRadius.DEFAULT = 'var(--radius)'`, etc. Lint `rounded-[
 | Images `alt=""` redondantes | ~5 | § 12.6 transverse |
 | Aucun `role="alert"` / `aria-live` sur erreurs | ~6 | §§ 7, 49 |
 | Boutons imbriqués (HTML invalide) | 1 | § 24 |
-| Double `<h1>` sur la page | 1 | § 28 |
 | Labels sans `htmlFor` | Nombreux | § 58 |
 
 **Focus-visible** : la primitive `Button` shadcn a `focus-visible:ring-[3px]` correct. **Mais** les custom buttons inline (`<button className="p-2">` dans les views) n'héritent pas et n'ajoutent pas leur propre ring. Ajouter une règle globale CSS :
@@ -913,42 +875,35 @@ Aucun formulaire n'utilise `react-hook-form` + `<Form>` shadcn alors que la prim
 
 ---
 
-## 15. Top 15 — priorités d'exécution
+## 15. Priorités restantes
 
-Ordre conseillé pour ROI maximal. Regroupé par effort.
+Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 résolus. Backlog actuel :
 
-### Sprint 1 — Quick wins (≤ 1 jour chacun)
+### Sprint A — Quick wins restants (≤ 1 jour chacun)
 
-1. **🔴 Supprimer la ligne 88 du double `<h1>` dans `GameDetailView`** (§ 28). Bug visible en 30 s, correction en 10 s.
-2. **🔴 Retirer les données fictives du Dashboard** (§ 10). Un dashboard qui ment détruit la confiance.
-3. **🔴 Ajouter une icône à l'empty state de `GamesPageView`** (§ 20). 5 min.
-4. **🔴 `AlertDialog` de confirmation sur Reset data** (§ 86). Sécurité destructive.
-5. **🔴 Bottom-nav active-state dérivé du `currentView`** (§ 30). Bug facile.
-6. **🔴 Retirer le placeholder `"Performance charts coming soon"`** (§ 74). Nettoyer les promesses mortes.
+1. **🔴 Bottom-nav active-state dérivé du `currentView`** (§ 30). Bouton « Games » toujours actif quelle que soit la page.
+2. **🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `NewPlayView` (§ 46), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé.
+3. **🟡 Créer le token `gameModeColors` sémantique** (§ 14.2). Élimine les incohérences § 27, § 55, § 69 en un seul fichier.
 
-### Sprint 2 — Refactors ciblés (1-3 jours chacun)
+### Sprint B — Refactors ciblés (1-3 jours chacun)
 
-7. **🔴 Réécrire `DeleteGameDialog` + `DeletePlayerDialog` sur le modèle de `DeleteExpansionDialog`** (§ 104-107, § 121). Theme-aware + i18n. Éliminer 2 fichiers rouges.
-8. **🔴 Réparer `EditPlayerDialog`** (§ 114-119). Validation i18n + labels cohérents. Régression à annuler.
-9. **🔴 i18n complet : audit grep + migration** (§§ 46, 75, 98, 99, 102, 111, 114-119, 14.5). Un sprint dédié, pas d'alternative.
-10. **🟡 Créer le token `gameModeColors` sémantique et l'importer partout** (§ 14.2). Élimine les incohérences colorées § 27, § 55, § 69.
+4. **🔴 Refactorer `AddGameDialog` + `EditGameDialog`** (§ 89-103). Inputs hardcodés dark, title/boutons partiellement hardcodés, taille dialog trop étroite. Créer `<FormDialog>` (§ 12.10) pour les couvrir en même temps.
+5. **🔴 Winner en `RadioGroup` dans `NewPlayView`** (§ 48). Sémantique HTML incorrecte (checkbox pour choix exclusif).
+6. **🟡 Auto-save + confirmation avant navigation dans `NewPlayView`** (§ 49). Risque de perte de données sur formulaire long.
 
-### Sprint 3 — Chantiers structurants (≥ 1 semaine)
+### Sprint C — Chantiers structurants (≥ 1 semaine)
 
-11. **🔴 Refactor `darkMode` prop → tokens CSS + `dark:` Tailwind** (§ 14.1). Débloque §§ 19, 21, 29, 47, 54, 63, 101, 123. Le ROI global le plus élevé du backlog.
-12. **🔴 `NewPlayView` : wizard multi-étapes + winner en `RadioGroup` + auto-save** (§§ 48, 49, 53). La page la plus critique, la plus travaillée.
-13. **🟡 Créer `<FormDialog>`, `<ConfirmDialog>`, `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 12.10, § 148-151). Collapse ~500 lignes dispersées en 5 composants réutilisables.
-14. **🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Décider : livrer ou élaguer.
-15. **🟡 Migrer les formulaires vers `<Form>` + Zod** (§ 14.11, § 132). Un form par semaine. Élimine §§ 49, 58, 103 en bloc.
+7. **🔴 Refactor `darkMode` prop → tokens CSS + `dark:` Tailwind** (§ 14.1). Débloque §§ 19, 21, 29, 47, 54, 63, 101, 123. ROI global le plus élevé du backlog restant.
+8. **🔴 `NewPlayView` : wizard multi-étapes** (§ 53). Réduction de charge cognitive sur le formulaire le plus long.
+9. **🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants, patterns codifiés en Annexe E.
+10. **🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Feature zombie à trancher.
+11. **🟡 Migrer les formulaires vers `<Form>` + Zod** (§ 14.11, § 132). Un form par semaine.
 
-### Gain estimé combiné
+### Gain estimé restant
 
-Passage d'une UI **« prototype polish »** (aspect soigné, détails bricolés) à **« production quality »** (aspect soigné + cohérence interne + accessibilité conforme + i18n complète + dettes techniques élaguées).
-
-Estimation ordre de grandeur :
-- Sprints 1-2 : **2 semaines d'un dev frontend** (quick wins + refactors ciblés).
-- Sprint 3 : **4-6 semaines** pour les chantiers structurants.
-- Total : **1.5 à 2 mois** pour atteindre production quality — en parallèle d'autres features.
+- Sprint A : **1-2 jours** — corrections rapides visibles immédiatement.
+- Sprint B : **1 semaine** — éliminer les dettes majeures restantes (dialogs + NewPlayView).
+- Sprint C : **3-4 semaines** — systémique, garantit la cohérence long terme.
 
 ---
 

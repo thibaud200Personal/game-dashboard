@@ -8,6 +8,8 @@
 
 - **`vitest.config.ts` backend — test env variables**: `server.ts` calls `createAuthService()` and `getDb()` at module level (side effects on import). Worked around via `backend/logger.ts`. Real fix: add `env: { AUTH_JWT_SECRET: '...', ADMIN_PASSWORD: '...' }` in `backend/vitest.config.ts`.
 - **`players` — 4 dead columns**: `games_played`, `wins`, `total_score`, `average_score` exist in the `players` table AND are dynamically recalculated via the `player_statistics` view. The backend always reads via the view — stored columns stay at `0`. Recommended option: drop the 4 columns + clean up `CreatePlayerSchema` Zod. Unresolved — kept for backward compatibility.
+- **`EditGameDialog` — weak typing**: `formData: any` and `editingGame?: any` in `EditGameDialogProps` — should be typed with the proper `Game` / `GameFormData` interfaces to catch field mismatches at compile time (noted in PR #94 security review).
+- **`handleEditBGGSearch` / `handleBGGSearch` duplication**: the two handlers in `useGamesPage.ts` share the same BGG field mapping. Extract a shared `mapBGGGameToFormData()` helper to avoid drift (noted in PR #94 security review).
 
 ---
 
