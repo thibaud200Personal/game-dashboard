@@ -20,6 +20,7 @@
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
 - **🔽 BGG search — live autocomplete**: recherche en/fr/es et transmission du `bgg_id` déjà en place ✅. Reste : passer au pattern autocomplete (suggestions live au keystroke, sans bouton Search).
+- **`isEditBGGSearchOpen` — non resetté à la fermeture du dialog** : `handleEditDialogOpen` (`useGamesPage.ts:125`) ne remet pas `isEditBGGSearchOpen` à `false`. Effet : rouvrir l'EditDialog après avoir cliqué BGGSearch sans sélectionner de jeu affiche BGGSearch ouvert d'emblée. Fix : ajouter `setIsEditBGGSearchOpen(false)` dans le `if (!open)` de `handleEditDialogOpen`.
 
 ---
 

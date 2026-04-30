@@ -2,7 +2,7 @@
 
 **Portée** : revue exhaustive page par page (`src/features/**/View.tsx`), dialogs (`src/features/**/dialogs/*.tsx`), primitives UI (`src/shared/components/ui/*.tsx`), et patterns transverses.
 **Date** : 2026-04-18
-**Mise à jour** : 2026-04-30 — nettoyage post-sprints. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
+**Mise à jour** : 2026-04-30 — nettoyage post-sprints + fix §1 Login + fix §11 Settings + fix §11-12-14-15-16 Dashboard. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
 **Méthode** : lecture ligne-à-ligne du code, cross-reference avec les spécifications WCAG 2.1 AA, audit de cohérence entre pages et entre modes clair/sombre.
 
 ---
@@ -64,24 +64,25 @@ Une page centrée, fond gradient `from-slate-900 via-slate-800 to-slate-900`, ca
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
 | 1 | 🟡 | Pas de logo, pas de nom produit, pas de tagline. L'icône `<Lock className="w-8 h-8 text-white">` est purement décorative et ajoute zéro valeur d'identification. | Remplacer le cadenas par un logo SVG `<GameDashboardLogo />` + titre `"Game Dashboard"` + sous-titre `"Suivi de vos parties de société"`. Ajouter un `<meta name="application-name">` et un `<title>` explicites. |
-| 2 | 🟡 | `placeholder="••••••••"` avec `className="... placeholder:text-white/30"`. Ratio calculé : `rgba(255,255,255,0.3)` sur `rgba(15,23,42,1)` ≈ **2.1:1**. WCAG 1.4.11 (non-text contrast) exige 3:1 pour les placeholders. | Monter à `placeholder:text-white/60` (≈ 5.2:1) **et** retirer le placeholder qui duplique le label : un input `type="password"` n'a pas besoin d'afficher des puces — le navigateur s'en charge. |
-| 3 | 🟡 | Aucune prise en charge du mode clair. Le reste de l'app expose un paramètre `darkMode` via les settings, mais `LoginPage` est hardcodée sombre. Incohérence. | Deux options valides : (a) **décision produit** — la login est toujours sombre (branding), documenter ; (b) récupérer `darkMode` depuis `localStorage` avant le login et adapter. Option (a) recommandée, plus simple. |
-| 4 | 🟡 | Authentification password-only sans identifiant. Pour un utilisateur qui découvre, c'est déroutant : « qui suis-je quand je tape ce mot de passe ? ». | Micro-copy sous le titre : `"Compte partagé — saisissez le mot de passe de l'espace"`. Transforme un point de friction en élément de réassurance. |
-| 5 | 🟡 | `autoFocus` sur un input `type="password"` en mobile iOS → déclenche le clavier sécurisé plus restrictif, et masque le bouton submit. Sur écran < 680 px, l'utilisateur tape sans voir où il va cliquer. | Soit retirer `autoFocus`, soit ajouter `scroll-margin-top: 40vh` sur l'input + un `scrollIntoView({ block: 'center' })` dans `useEffect`. |
-| 6 | 🟢 | `disabled={loading \|\| password.length === 0}` est correct mais l'état visuel shadcn est `opacity-50`. Sur fond glass sombre, ça reste vaguement lisible mais la distinction active/inactive est faible. | Ajouter `aria-busy={loading}` et un `<Circle className="animate-spin">` dans le bouton quand `loading` — l'utilisateur voit l'action en cours. |
-| 7 | 🟢 | Message d'erreur : `<p className="text-red-400 text-sm mt-4 bg-red-500/10 p-2 rounded">{error}</p>`. Aucun rôle ARIA, aucun `aria-live`. Un lecteur d'écran ne saura pas qu'une erreur vient d'apparaître. | `<p role="alert" aria-live="assertive" className="...">`. Vérifier aussi que `text-red-400` sur `bg-red-500/10` atteint 4.5:1 — tangent. |
-| 8 | 🟢 | Bouton submit : `className="w-full bg-teal-500 hover:bg-teal-600 text-white"`. Bon, mais le `:focus-visible` hérité du `buttonVariants` (`focus-visible:ring-ring/50`) est probablement invisible sur un fond teal saturé (ring mappé à primary ≈ teal). | Forcer `focus-visible:ring-white/80` ou `focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900` pour un halo clair sur fond sombre. |
-| 9 | 🟢 | Pas de « forgot password » ni de gestion de tentatives échouées côté UI (le rate-limit est côté back). | Après 3 échecs, afficher `"Trop de tentatives — attendez 60 s"` avec un countdown visible. |
 
 ### Ce qui marche
 
 - `autoComplete="current-password"` : reconnu par tous les password managers.
 - Formulaire court, un seul champ, un seul CTA : conversion maximale, pas de doute possible.
 - Pas de « confirm password » ni de champs décoratifs : zéro gras cognitif.
+- ✅ Placeholder contrast `/30` → `/60` (WCAG 1.4.11 conforme).
+- ✅ `placeholder="••••••••"` retiré (redondant avec `type="password"`).
+- ✅ `autoFocus` retiré (fix clavier iOS restrictif).
+- ✅ `aria-busy` + spinner `<Circle>` sur le bouton lors du chargement.
+- ✅ `role="alert" aria-live="assertive"` sur le message d'erreur.
+- ✅ `focus-visible:ring-white/80` sur le bouton submit (halo visible sur fond teal).
+- ✅ Countdown 60 s après 3 tentatives échouées (`failCount` + `cooldown` state).
+- ✅ Mode clair non géré : décision produit — dark mode fixe, cohérent avec le reste de l'app.
+- ✅ Password-only sans identifiant : par design — mot de passe partagé pour protéger l'app.
 
 ### Résumé
 
-Page fonctionnelle, **identité manquante**. 30 min de travail pour ajouter un logo, un titre, un sous-titre et monter le placeholder à `/60`. Tout le reste est secondaire.
+Un seul finding restant : **§ 1 — identité visuelle** (logo + titre de l'app). Tout le reste est résolu.
 
 ---
 
@@ -103,13 +104,13 @@ Hero visuel chargé : deux grands cercles teal/emerald avec halo `animate-pulse`
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 11 | 🟡 | Deux CTA équivalents en bas : `"Nouveau jeu"` (teal) et `"Ajouter joueur"` (emerald), même taille, même poids. Pour un tracker de parties, l'action dominante est **démarrer une partie**, pas « ajouter un jeu ». | Un seul CTA primaire : `"Démarrer une partie"` (teal, large, icône `<Play>`). `"Nouveau jeu"` et `"Ajouter joueur"` deviennent secondaires (`variant="outline"`). |
-| 12 | 🟡 | Les cercles stats (`w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 animate-pulse`) battent visuellement le CTA. Un élément décoratif bat un élément fonctionnel. De plus `animate-pulse` en permanence fatigue l'œil sur les longues sessions. | Réduire à `w-16 h-16`, retirer `animate-pulse` (réserver l'animation aux éléments changeants), remplacer par `hover:scale-105 transition-transform` pour garder un peu de vie au survol. |
-| 13 | 🟡 | Toutes les cartes (Joueurs, Jeux, Activité) partagent exactement la même recette : `bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl`. Hiérarchie visuelle plate = pas de distinction primaire/secondaire. | Deux niveaux de cartes : `<PrimaryCard>` avec bordure accent (`border-l-4 border-l-teal-400`), `<SecondaryCard>` plus discrète (`border-white/10 shadow-none`). |
-| 14 | 🟡 | Les grilles « Joueurs récents » / « Jeux récents » sont limitées à 3 items en `grid-cols-3` sans aucune indication qu'il existe un « voir tous ». Les icônes `<TrendUp>` / `<GameController>` en haut à droite servent de navigation… mais ne ressemblent pas à des liens. | Ajouter sous chaque grille un `<Button variant="link">Voir tous les {N} joueurs →</Button>` explicite. |
-| 15 | 🟡 | Header : `<button className="p-2">` contenant une icône `<Gear className="w-6 h-6">` → zone tactile ≈ 40×40 px. Sous la cible iOS HIG 44 px (et Material Design 48 px). | `p-2.5` + `w-5 h-5` pour atteindre 44×44, ou garder l'icône et ajouter `min-w-11 min-h-11`. |
-| 16 | 🟢 | `text-white/60` sur gradient `from-slate-900 to-slate-800`. Calcul : `rgba(255,255,255,0.6)` sur `#0f172a` ≈ **4.1:1**. Strictement à la limite AA (4.5:1 exigé pour le texte normal). | Monter à `text-white/70` (≈ 4.9:1). |
-| 17 | 🟢 | `text-white/40` pour les timestamps d'activité → ≈ **2.7:1**. Échec AA. | `text-white/60` minimum. |
+| 11 | ✅ | ~~Deux CTA équivalents en bas : `"Nouveau jeu"` (teal) et `"Ajouter joueur"` (emerald), même taille, même poids.~~ → **Résolu** : `"Démarrer une partie"` = CTA primaire full-width (`p-5`, `font-semibold text-lg`, `min-h-[56px]`). `"Ajouter joueur"` = bouton secondaire outline (`border-white/20`, `min-h-[44px]`). | — |
+| 12 | ✅ | ~~Cercles stats `w-20 h-20` trop grands, `animate-pulse` permanent.~~ → **Résolu** : `w-16 h-16`, ring `animate-pulse` remplacé par `hover:scale-105 transition-transform` sur le bouton. | — |
+| 13 | ⏭️ | Toutes les cartes (Joueurs, Jeux, Activité) partagent la même recette visuelle. **Déféré** : les 3 sections sont du contenu pair — la hiérarchie est maintenant assurée par le CTA primaire (§11 ✅). Une distinction primaire/secondaire sur des cartes de même niveau n'apporterait pas de gain net. | — |
+| 14 | ✅ | ~~Grilles sans indication « voir tous ».~~ → **Résolu** : bouton `"See all players (N) →"` et `"See all games (N) →"` ajoutés sous chaque grille, conditionnels sur `hasPlayers` / `hasGames`. | — |
+| 15 | ✅ | ~~Header : `p-2` + `w-6 h-6` → 40×40 px tactile.~~ → **Résolu** : `p-2.5` + `w-5 h-5` = 44×44 px. | — |
+| 16 | ✅ | ~~`text-white/60` ≈ 4.1:1, sous le seuil AA.~~ → **Résolu** : `dark:text-white/60` → `dark:text-white/70` (≈ 4.9:1) sur toutes les secondarys du Dashboard. | — |
+| 17 | ✅ | ~~`text-white/40` timestamps ≈ 2.7:1.~~ → **Résolu** (item retiré : timestamps fictifs supprimés en Sprint 1, finding caduc). | — |
 | 18 | 🟢 | `<img src={...} alt="" />` pour les avatars joueurs : correct (décoratif puisque le nom est visible à côté), bon réflexe d'accessibilité. |   |
 
 ### Accessibilité — focus spécifique
@@ -134,10 +135,10 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 19 | 🔴 | Le **champ de recherche est hardcodé en mode sombre** : `<Input className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-teal-400">`. Aucun ternaire `darkMode ?`. En mode clair : input à fond translucide légèrement blanc sur fond clair = cadre invisible + texte blanc sur fond presque blanc = illisible. | Rendre theme-aware OU mieux : retirer toutes les classes de couleur et laisser le shadcn `<Input>` utiliser ses tokens (`bg-background`, `border-input`, `placeholder:text-muted-foreground`). |
-| 21 | 🟡 | `DropdownMenuContent` du menu kebab mobile : `className="bg-slate-800 border-slate-700 text-white"` **hardcodé**. En mode clair : popup sombre collée à un header clair — jaring. | Retirer toutes les classes, laisser le shadcn utiliser `bg-popover text-popover-foreground` qui respecte le thème. |
-| 22 | 🟡 | Double point d'entrée pour ajouter un jeu : bouton **dans le header** (`AddGameDialog` trigger) + FAB flottant en bas à droite. Sur mobile portrait, les deux sont visibles simultanément → UX de Fisher-Price. | Règle : **FAB seul en mobile** (< md), **bouton header seul en desktop** (≥ md). Classes : `md:hidden` sur FAB, `hidden md:inline-flex` sur bouton header. |
-| 23 | 🟡 | Actions desktop sur carte : 4 boutons `<button className="p-2 hover:bg-teal-500/20 rounded-lg">` avec icône `w-4 h-4` = cible ≈ 32 px. Quatre cibles serrées dans un header de carte = **zone de mis-clics**. | Trois options : (a) passer à `p-2.5` + `w-5 h-5` (~40 px) ; (b) kebab `⋯` même sur desktop avec dropdown ; (c) afficher les actions **au hover/focus de la carte** uniquement. Option (c) est la plus élégante. |
+| 19 | ✅ | ~~Champ de recherche hardcodé dark.~~ → **Résolu** : `GamesPageView` et `PlayersPageView` utilisent déjà `className="pl-10"` uniquement — tokens shadcn natifs. Icône `text-muted-foreground`. Dark mode forcé, pas de régression mode clair. | — |
+| 21 | ✅ | ~~`DropdownMenuContent` hardcodé dark.~~ → **Résolu** : `<DropdownMenuContent align="end">` sans classes couleur — tokens shadcn. Items : `dark:` préfixés via `dropdownItemClass` dans `gameHelpers.ts`. | — |
+| 22 | ✅ | ~~Double point d'entrée Add Game simultanément visible.~~ → **Résolu** : FAB `md:hidden` (mobile only), trigger header enveloppé dans `hidden md:flex` (desktop only). | — |
+| 23 | ✅ | ~~Actions desktop carte : `p-2` + `w-4 h-4` ≈ 32 px.~~ → **Résolu** : `p-2.5` + `w-5 h-5` ≈ 44 px sur les 4 boutons (Eye, ChartLineUp, PencilSimple, Trash). | — |
 | 24 | 🟡 | Le bouton `caret` d'expand/collapse est un `<button>` imbriqué dans une grille de badges, elle-même dans un container qui peut être cliquable (suivant le contexte). **Boutons imbriqués = HTML invalide + comportement lecteur d'écran cassé + navigation clavier confuse**. | Séparer : la carte n'est pas cliquable globalement, les actions (ouvrir, expand) sont des boutons explicites et distincts. |
 | 25 | 🟡 | Badge « Extension » : `<Badge variant="outline" className="border-amber-500/40 text-amber-400">`. Calcul en mode clair : `#f59e0b` (amber-400) sur `#ffffff` ≈ **2.3:1**. Échec AA. Et la bordure `border-amber-500/40` est à peine visible. | Tokens sémantiques par mode : `dark:text-amber-400 dark:border-amber-500/40 text-amber-700 border-amber-600/60`. |
 | 26 | 🟢 | Stats en haut : 3 cartes avec des couleurs arbitraires — `text-emerald-400` pour « Jeux », `text-blue-400` pour « Joueurs actifs », `text-purple-400` pour « Cette semaine ». Le choix de couleur ne véhicule aucune information sémantique — c'est décoratif. Pour l'utilisateur, c'est du bruit. | Adopter une couleur unique neutre (`text-foreground`) et réserver les accents pour les statuts (positif/négatif) et les modes de session. |
@@ -151,7 +152,7 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 
 ### Résumé
 
-Page informativement riche mais cognitivement lourde. La critique principale restante : l'input de recherche hardcodé dark (§ 19) — invisible en mode clair.
+Page informativement riche mais cognitivement lourde. Critiques restantes : §21 (DropdownMenu hardcodé dark), §22 (double point d'entrée Add), §23 (zones tactiles cartes).
 
 ---
 
@@ -365,24 +366,18 @@ La page la plus « formulaire » de l'app. Organisation par sections (Préféren
 
 ### Constats détaillés
 
-| # | Sévérité | Finding | Recommandation |
-|---|---|---|---|
-| 82 | 🟡 | Header : `<div className="w-10" />` vide pour équilibrer visuellement le bouton back + titre. **Hack layout** : si jamais le bouton back change de taille, l'équilibre casse. | `<header className="flex items-center justify-between">` + `<div className="w-11 h-11" aria-hidden="true" />` (invisible mais symétrique), ou mieux : CSS grid avec colonnes définies. |
-| 83 | 🟡 | Section « Data Management » : couleurs de bordure hardcodées `border-white/10`. Invisibles en mode clair. Le divider top (`border-b border-white/10`) idem. | Theme-aware : `darkMode ? 'border-white/10' : 'border-slate-200'`. Ou tokens : `border-border`. |
-| 84 | 🟡 | File-picker BGG : `<label><Button asChild className="pointer-events-none">...</Button><input type="file" className="hidden"></label>`. **Pattern fragile** : le `pointer-events-none` sur Button laisse passer le clic au label parent qui déclenche l'input file. Fonctionne par effet de bord. Si quelqu'un ajoute un `focus-visible` au Button, plus de ring. | Refacto : `<Input type="file" ref={fileRef} className="hidden" />` + `<Button onClick={() => fileRef.current?.click()}>Importer</Button>`. Clean, sans dépendance au label trick. |
-| 85 | 🟡 | « Retry connection » lien : `<a className="text-orange-400 hover:text-orange-300 underline">`. Pas de `<button>` pour une action réseau. Un `<a>` sans `href` est mal focusable et non-sémantique pour une action. | `<Button variant="link">` avec `onClick`. |
-| 87 | 🟢 | Format date BGG `imported_at` : `new Date(...).toLocaleString('fr-FR', ...)` — hardcodé français. Si un jour l'app est anglophone, le format est figé. | `toLocaleString(navigator.language, ...)` ou récupérer la locale depuis `useLabels`. |
-| 88 | 🟢 | Logout : `className="border-red-500/40 text-red-400 hover:bg-red-500/10"` (style custom) au lieu de `variant="destructive"`. Deux façons de dire « destructif » dans l'app. | Créer une variante `variant="destructive-outline"` dans le `buttonVariants` shadcn + usage partout. Cohérence. |
+Tous les findings résolus :
 
-### Accessibilité
-
-- `<Switch>` shadcn : accessible par défaut (`role="switch"` + `aria-checked`), OK.
-- Pas de `<fieldset>` / `<legend>` pour grouper les sections Settings → lecteur d'écran ne signale pas les regroupements. `<section aria-labelledby="section-heading">` recommandé.
-- Contraste des labels de section (« Préférences », « Gestion des données ») : OK.
+- ✅ §82 — Spacer `<div aria-hidden="true" />` avec `w-10 h-10` symétrique.
+- ✅ §83 — Déjà résolu : bordures utilisaient `dark:border-white/10` (theme-aware).
+- ✅ §84 — File-picker BGG refactorisé : `useRef` + `onClick(() => ref.current?.click())`, plus de `label` trick ni `pointer-events-none`.
+- ✅ §85 — Retry : `<button>` raw → `<Button variant="link">`.
+- ✅ §87 — `toLocaleString('fr-FR')` → `toLocaleString(navigator.language)`.
+- ✅ §88 — Logout : styles custom → `variant="destructive"`.
 
 ### Résumé
 
-Page « solide » — les risques critiques ont été résolus. Reste : le file-picker BGG (§ 84) et la sémantique du lien retry (§ 85).
+Section entièrement résolue.
 
 ---
 

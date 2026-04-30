@@ -78,9 +78,9 @@ export function DashboardView({
                 <button
                   onClick={handleSettingsClick}
                   aria-label="Settings"
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-2.5 hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <Gear className="w-6 h-6" />
+                  <Gear className="w-5 h-5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -97,17 +97,14 @@ export function DashboardView({
               <button
                 onClick={handlePlayersClick}
                 aria-label="View all players"
-                className="group relative"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 flex items-center justify-center shadow-lg">
-                  <div className="text-center">
-                    <div className="text-xs text-white/80">{t('players.page.title')}</div>
-                    <div className="text-lg font-bold text-white">
-                      {stats.playersCount}
-                    </div>
+                <div className="text-center">
+                  <div className="text-xs text-white/80">{t('players.page.title')}</div>
+                  <div className="text-lg font-bold text-white">
+                    {stats.playersCount}
                   </div>
                 </div>
-                <div className="absolute inset-0 rounded-full border-4 border-teal-300 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
             </TooltipTrigger>
             <TooltipContent>
@@ -120,17 +117,14 @@ export function DashboardView({
               <button
                 onClick={handleGamesClick}
                 aria-label="View all games"
-                className="group relative"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
-                  <div className="text-center">
-                    <div className="text-xs text-white/80">{t('games.page.title')}</div>
-                    <div className="text-lg font-bold text-white">
-                      {stats.gamesCount}
-                    </div>
+                <div className="text-center">
+                  <div className="text-xs text-white/80">{t('games.page.title')}</div>
+                  <div className="text-lg font-bold text-white">
+                    {stats.gamesCount}
                   </div>
                 </div>
-                <div className="absolute inset-0 rounded-full border-4 border-emerald-300 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
             </TooltipTrigger>
             <TooltipContent>
@@ -182,14 +176,14 @@ export function DashboardView({
                       <div className="font-medium text-slate-900 dark:text-white truncate">
                         {player.player_name}
                       </div>
-                      <div className="text-slate-500 dark:text-white/60 text-sm">{player.stats}</div>
+                      <div className="text-slate-500 dark:text-white/70 text-sm">{player.stats}</div>
                     </div>
                   </div>
                 </button>
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.players.empty')}</div>
+                <div className="text-slate-500 dark:text-white/70 text-sm">{t('dashboard.players.empty')}</div>
                 <button
                   onClick={handlePlayersClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
@@ -199,6 +193,14 @@ export function DashboardView({
               </div>
             )}
           </div>
+          {hasPlayers && (
+            <button
+              onClick={handlePlayersClick}
+              className="mt-3 w-full text-center text-sm text-teal-400 hover:text-teal-300 transition-colors"
+            >
+              {t('dashboard.players.see_all')} ({stats.playersCount}) →
+            </button>
+          )}
         </div>
 
         {/* Section Jeux récents */}
@@ -240,7 +242,7 @@ export function DashboardView({
                       <div className="font-medium text-slate-900 dark:text-white truncate">
                         {game.name}
                       </div>
-                      <div className="text-slate-500 dark:text-white/60 text-sm">
+                      <div className="text-slate-500 dark:text-white/70 text-sm">
                         {game.players} {t('games.card.players')}
                       </div>
                     </div>
@@ -249,7 +251,7 @@ export function DashboardView({
               ))
             ) : (
               <div className="col-span-3 text-center py-4">
-                <div className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.games.empty')}</div>
+                <div className="text-slate-500 dark:text-white/70 text-sm">{t('dashboard.games.empty')}</div>
                 <button
                   onClick={handleGamesClick}
                   className="text-teal-400 hover:text-teal-300 text-sm mt-1 transition-colors"
@@ -259,6 +261,14 @@ export function DashboardView({
               </div>
             )}
           </div>
+          {hasGames && (
+            <button
+              onClick={handleGamesClick}
+              className="mt-3 w-full text-center text-sm text-teal-400 hover:text-teal-300 transition-colors"
+            >
+              {t('dashboard.games.see_all')} ({stats.gamesCount}) →
+            </button>
+          )}
         </div>
 
         {/* Recent Activity */}
@@ -266,7 +276,7 @@ export function DashboardView({
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{t('dashboard.section.activity')}</h2>
           <div className="text-center py-6">
             <Play className="w-10 h-10 mx-auto mb-3 opacity-20" />
-            <p className="text-slate-500 dark:text-white/60 text-sm">{t('dashboard.activity.empty')}</p>
+            <p className="text-slate-500 dark:text-white/70 text-sm">{t('dashboard.activity.empty')}</p>
             <button
               onClick={handleActivityClick}
               className="mt-3 text-teal-400 text-sm hover:text-teal-300 transition-colors"
@@ -277,15 +287,15 @@ export function DashboardView({
         </div>
 
         {/* Actions rapides */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-3">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={handleNewGameClick}
-                className="relative bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
+                className="w-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-5 flex items-center justify-center gap-3 hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] min-h-[56px]"
               >
-                <Play className="w-8 h-8 mb-2" />
-                <span className="font-medium">{t('dashboard.actions.new_game')}</span>
+                <Play className="w-6 h-6 shrink-0" />
+                <span className="font-semibold text-lg">{t('dashboard.actions.new_game')}</span>
               </button>
             </TooltipTrigger>
             <TooltipContent>
@@ -296,10 +306,10 @@ export function DashboardView({
             <TooltipTrigger asChild>
               <button
                 onClick={handlePlayersClick}
-                className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-4 flex flex-col items-center justify-center hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 hover:z-10"
+                className="w-full rounded-2xl p-3 flex items-center justify-center gap-2 border border-white/20 text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 min-h-[44px]"
               >
-                <Plus className="w-8 h-8 mb-2" />
-                <span className="font-medium">{t('dashboard.actions.add_player')}</span>
+                <Plus className="w-4 h-4 shrink-0" />
+                <span className="font-medium text-sm">{t('dashboard.actions.add_player')}</span>
               </button>
             </TooltipTrigger>
             <TooltipContent>

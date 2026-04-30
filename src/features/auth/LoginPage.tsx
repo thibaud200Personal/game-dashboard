@@ -1,6 +1,6 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock } from '@phosphor-icons/react';
+import { Lock, Circle } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
@@ -15,15 +15,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [failCount, setFailCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setCooldown(c => {
+        const next = c - 1;
+        if (next <= 0) setFailCount(0);
+        return next;
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (cooldown > 0) return;
     setError(null);
     setLoading(true);
     try {
       await login(password);
       navigate('/', { replace: true });
     } catch {
+      setFailCount(prev => {
+        const next = prev + 1;
+        if (next >= 3) setCooldown(60);
+        return next;
+      });
       setError(t('auth.error.wrong_password'));
     } finally {
       setLoading(false);
@@ -53,19 +73,23 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 autoComplete="current-password"
-                autoFocus
                 disabled={loading}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/30"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
               />
             </div>
-            {error && (
-              <p className="text-sm text-red-400 bg-red-500/10 rounded-md px-3 py-2">
+            {cooldown > 0 && (
+              <p role="alert" className="text-sm text-amber-400 bg-amber-500/10 rounded-md px-3 py-2">
+                {t('auth.error.too_many_attempts')} {cooldown}s
+              </p>
+            )}
+            {error && cooldown === 0 && (
+              <p role="alert" className="text-sm text-red-400 bg-red-500/10 rounded-md px-3 py-2">
                 {error}
               </p>
             )}
-            <Button type="submit" disabled={loading || password.length === 0} className="w-full">
+            <Button type="submit" disabled={loading || password.length === 0 || cooldown > 0} aria-busy={loading} className="w-full focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">
+              {loading && <Circle className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               {loading ? t('auth.submit.loading') : t('auth.submit')}
             </Button>
           </form>

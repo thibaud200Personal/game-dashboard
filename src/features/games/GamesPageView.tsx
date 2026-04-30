@@ -278,24 +278,24 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                 <div className="hidden sm:flex items-center space-x-1">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={() => onNavigation('game-detail', game.game_id, 'games')} className={`p-2 rounded-lg transition-colors ${ghostBtnClass}`} aria-label="View game details">
-                        <Eye className="w-4 h-4" />
+                      <button onClick={() => onNavigation('game-detail', game.game_id, 'games')} className={`p-2.5 rounded-lg transition-colors ${ghostBtnClass}`} aria-label="View game details">
+                        <Eye className="w-5 h-5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent><p>{t('games.tooltip.view_details')}</p></TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={() => onNavigation('stats', game.game_id, 'games')} className="p-2 hover:bg-teal-500/20 rounded-lg transition-colors text-teal-400 hover:text-teal-300" aria-label="View game stats">
-                        <ChartLineUp className="w-4 h-4" />
+                      <button onClick={() => onNavigation('stats', game.game_id, 'games')} className="p-2.5 hover:bg-teal-500/20 rounded-lg transition-colors text-teal-400 hover:text-teal-300" aria-label="View game stats">
+                        <ChartLineUp className="w-5 h-5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent><p>{t('games.tooltip.view_stats')}</p></TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={() => onEditGame(game)} className={`p-2 rounded-lg transition-colors ${ghostBtnClass}`} aria-label="Edit game">
-                        <PencilSimple className="w-4 h-4" />
+                      <button onClick={() => onEditGame(game)} className={`p-2.5 rounded-lg transition-colors ${ghostBtnClass}`} aria-label="Edit game">
+                        <PencilSimple className="w-5 h-5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent><p>{t('games.tooltip.edit')}</p></TooltipContent>
@@ -304,8 +304,8 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
                     game={game}
                     onDeleteGame={onDeleteGame}
                     trigger={
-                      <button className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400 hover:text-red-300" aria-label="Delete game">
-                        <Trash className="w-4 h-4" />
+                      <button className="p-2.5 hover:bg-red-500/20 rounded-lg transition-colors text-red-400 hover:text-red-300" aria-label="Delete game">
+                        <Trash className="w-5 h-5" />
                       </button>
                     }
                   />
@@ -405,19 +405,21 @@ export function GamesPageView(props: GamesPageViewProps) {
             <button onClick={() => onNavigation('stats', undefined, 'games')} aria-label="View games stats" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
               <ChartLineUp className="w-6 h-6" />
             </button>
-            <AddGameDialog
-              isOpen={isAddDialogOpen}
-              onOpenChange={onAddDialogToggle}
-              formData={formData}
-              onFormDataChange={onFormDataChange}
-              onBGGGameSelect={onBGGGameSelect}
-              onAddGame={onAddGame}
-              onResetForm={onResetForm}
-              isBGGSearchOpen={isBGGSearchOpen}
-              onBGGSearchToggle={setBGGSearchOpen}
-              serverError={props.addGameError}
-              disabled={props.isAddDuplicate}
-            />
+            <div className="hidden md:flex">
+              <AddGameDialog
+                isOpen={isAddDialogOpen}
+                onOpenChange={onAddDialogToggle}
+                formData={formData}
+                onFormDataChange={onFormDataChange}
+                onBGGGameSelect={onBGGGameSelect}
+                onAddGame={onAddGame}
+                onResetForm={onResetForm}
+                isBGGSearchOpen={isBGGSearchOpen}
+                onBGGSearchToggle={setBGGSearchOpen}
+                serverError={props.addGameError}
+                disabled={props.isAddDuplicate}
+              />
+            </div>
             <EditGameDialog
               isOpen={props.isEditDialogOpen}
               onOpenChange={props.setEditDialogOpen}
@@ -496,10 +498,10 @@ export function GamesPageView(props: GamesPageViewProps) {
         )}
       </div>
 
-      {/* Floating Add Game Button */}
+      {/* Floating Add Game Button — mobile only */}
       <button
         onClick={onAddDialogToggle}
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center z-50 bg-gradient-to-r from-emerald-200 to-emerald-400 hover:from-emerald-300 hover:to-emerald-500 border border-emerald-400 dark:from-emerald-500 dark:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-700 dark:border-0"
+        className="md:hidden fixed bottom-24 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center z-50 bg-gradient-to-r from-emerald-200 to-emerald-400 hover:from-emerald-300 hover:to-emerald-500 border border-emerald-400 dark:from-emerald-500 dark:to-emerald-600 dark:hover:from-emerald-600 dark:hover:to-emerald-700 dark:border-0"
         aria-label="Add new game"
       >
         <Plus className="w-6 h-6 text-emerald-700 dark:text-white" />
