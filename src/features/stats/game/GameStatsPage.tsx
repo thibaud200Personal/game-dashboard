@@ -19,8 +19,6 @@ export default function GameStatsPage({
   selectedCircleId,
 }: GameStatsPageProps) {
   const {
-    selectedPeriod,
-    setSelectedPeriod,
     selectedGame,
     setSelectedGame,
     gameStats
@@ -28,14 +26,10 @@ export default function GameStatsPage({
 
   return (
     <GameStatsView
-      selectedPeriod={selectedPeriod}
-      setSelectedPeriod={setSelectedPeriod}
       selectedGame={selectedGame}
       setSelectedGame={setSelectedGame}
       gameStats={gameStats}
       games={games}
-      onNavigation={onNavigation}
-      selectedGameId={selectedCircleId}
       players={players}
     />
   );
