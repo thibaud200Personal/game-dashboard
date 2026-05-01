@@ -36,7 +36,10 @@ export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDa
           onRemoveCharacter={handleRemoveCharacter}
         />
 
-        <Button className="w-full mt-4" onClick={onAddGame}>{t('games.add_dialog.submit')}</Button>
+        <div className="flex gap-3 mt-4">
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>{t('common.buttons.cancel')}</Button>
+          <Button className="flex-1" onClick={onAddGame}>{t('games.add_dialog.submit')}</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

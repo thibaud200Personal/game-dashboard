@@ -54,7 +54,10 @@ export default function EditGameDialog({ isOpen, onOpenChange, formData, onFormD
           onRemoveCharacter={handleRemoveCharacter}
         />
 
-        <Button className="w-full mt-4" onClick={onUpdateGame}>{t('games.edit_dialog.submit')}</Button>
+        <div className="flex gap-3 mt-4">
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>{t('common.buttons.cancel')}</Button>
+          <Button className="flex-1" onClick={onUpdateGame}>{t('games.edit_dialog.submit')}</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

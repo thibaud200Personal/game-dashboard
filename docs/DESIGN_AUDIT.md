@@ -400,30 +400,34 @@ Trois patterns de qualité coexistent dans les dialogs :
 
 **La même app contient 3 niveaux de qualité selon la personne / la période de développement**. C'est le symptôme d'une absence de dialog template partagé. Créer un `<FormDialog>` + `<ConfirmDialog>` normalisés résoudrait la quasi-totalité des findings ci-dessous.
 
-### 12.2 `AddGameDialog.tsx` — 775 lignes
+### 12.2 `AddGameDialog.tsx` — ✅ Résolu
+
+Refactorisé en 43 lignes + `GameForm.tsx` (383 lignes).
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 89 | 🔴 | Dialog de 775 lignes avec ~20 champs et un embed `BGGSearch`. **Tous les inputs sont hardcodés** `bg-slate-700 border-slate-600 text-white placeholder:text-white/50` — même si le dialog accepte la prop `darkMode`. En mode clair, on voit un dialog à fond clair + inputs noirs. Incohérence interne. | Retirer toutes les classes de couleur des inputs, laisser le shadcn `<Input>` utiliser ses tokens (`bg-transparent border-input`). |
-| 90 | 🔴 | BGGSearch embed dans un wrapper `className="p-4 bg-slate-700 rounded-lg border border-slate-600"` — hardcodé dark. En mode clair, carré sombre dans dialog clair. | Retirer le wrapper ou tokens. |
-| 91 | 🔴 | Strings anglais hardcodés : `"Has character roles"`, `"Characters/Roles"`, `"Add Character"`, `"Remove"`, `"Name"` (label), `"Key (slug)"`, `"Avatar URL"`, `"Description"`. Une partie des labels a `t()`, l'autre non — trilingue interne au formulaire. | i18n systématique, clés `games.form.field.*` et `games.form.character.*`. |
-| 92 | 🟡 | Trigger button : `<Button aria-label="Open add game dialog" className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700">` — hardcodé teal gradient, même en mode clair. Le gradient fort fonctionne en dark mais écrase un mode clair calme. | Theme-aware ou `variant="default"` du shadcn. |
-| 93 | 🟡 | Submit button : `<Button className="w-full bg-emerald-600 hover:bg-emerald-700">` — hardcodé emerald. Pourquoi emerald et pas teal comme le trigger ? Inconsistance dans le dialog même. | Standardiser : soit tout teal, soit tout emerald. Recommandation : `variant="default"` (teal via `--primary`). |
-| 94 | 🟡 | Erreurs de validation : `<p className="text-red-400 text-sm mt-1">{errors.name}</p>` hardcodé → illisible en mode clair. | `text-destructive` (token). |
-| 95 | 🟡 | `onInteractOutside={(e) => e.preventDefault()}` : le dialog ne se ferme **pas** en cliquant à l'extérieur. Décision volontaire (protection data-loss) mais **aucune indication** à l'utilisateur. Un utilisateur clique dehors 3 fois, s'énerve, ne sait pas comment sortir. | Garder le comportement mais ajouter un message subtil `"Cliquez sur Annuler pour fermer sans enregistrer"` en footer, OU afficher un `<AlertDialog>` de confirmation si clic extérieur détecté. |
-| 96 | 🟡 | Parsing des expansions via regex sur textarea : `const match = text.match(/^([^(]+)\((\d{4})\)$/)` pour extraire nom et année. Format attendu : `"Gloomhaven: Jaws of the Lion (2020)"`. Mais l'utilisateur peut taper `"Gloomhaven: Jaws of the Lion, 2020"` ou `"2020 - Gloomhaven"` — le regex échoue silencieusement, l'expansion perd son année. | (a) Afficher un hint visible `"Format : Nom (AAAA) — une par ligne"` au-dessus du textarea ; (b) feedback visuel : ligne verte si parsed, rouge si échec. |
-| 97 | 🟢 | 20+ champs dans un seul form long → scroll vertical + UX fatigante. | Sections repliables `<details>`  ou tabs (`Général` / `Joueurs & durée` / `BGG` / `Expansions` / `Characters`). |
+| 89 | ✅ | ~~Inputs hardcodés dark (775 lignes).~~ → **Résolu** (Sprint B) : dialog de 43 lignes + `GameForm.tsx` partagé, zéro classe couleur sur les inputs. | — |
+| 90 | ✅ | ~~BGGSearch embed dans wrapper sombre hardcodé.~~ → **Résolu** (Sprint B) : BGGSearch inliné sans wrapper de couleur. | — |
+| 91 | ✅ | ~~Strings hardcodés anglais/français mélangés.~~ → **Résolu** (Sprint B) : 43 usages `t()` dans `GameForm.tsx`, zéro string hardcodée. | — |
+| 92 | ✅ | ~~Trigger button gradient teal hardcodé.~~ → **Résolu** (Sprint B) : `<Button>` variant default (tokens primaires). | — |
+| 93 | ✅ | ~~Submit button `bg-emerald-600` inconsistant.~~ → **Résolu** (Sprint B) : `<Button className="w-full mt-4">` (variant default). | — |
+| 94 | ✅ | ~~Validation errors `text-red-400` illisible en mode clair.~~ → **Résolu** (Sprint B) : `text-destructive` dans `GameForm.tsx`. | — |
+| 95 | ✅ | ~~`onInteractOutside` bloque sans indication à l'utilisateur.~~ → **Résolu 2026-05-02** : bouton Cancel ajouté (`variant="outline"`) en pied de dialog — l'utilisateur a un moyen explicite de sortir. | — |
+| 96 | ✅ | ~~Parsing expansions regex échoue silencieusement.~~ → **Résolu** (Sprint B) : placeholder `t('games.form.expansions.placeholder')` = `"Extension 1 (2023), Extension 2 (2024), ..."` — format visible avant saisie. | — |
+| 97 | 🟢 | 20+ champs → scroll long. | Sections repliables `<details>` ou tabs. |
 
-### 12.3 `EditGameDialog.tsx`
+### 12.3 `EditGameDialog.tsx` — ✅ Résolu
+
+Refactorisé en 61 lignes + `GameForm.tsx` partagé avec AddGameDialog.
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 98 | 🔴 | **Quasi-tous les labels hardcodés anglais** : `"Game Name *"`, `"Image URL"`, `"Thumbnail URL"`, `"Min Players"`, `"Max Players"`, `"Duration"`, `"Min Age"`, `"Playing Time"`, `"Min Playtime"`, `"Max Playtime"`, `"Difficulty"`, `"Game Modes"`, `"Category"`, `"Designer"`, `"Publisher"`, `"Year"`, `"BGG Rating"`, `"Weight (1-5)"`, `"Description"`, `"Has expansions"`, `"Has character roles"`. **Exception** : `"Est une extension"` (fr). Trilingue + anglais dominant. | i18n complet via clés `games.form.field.*`. |
-| 99 | 🔴 | Description dialog hardcodée : `"Update game information and details."` (en). | i18n. |
-| 100 | 🔴 | Labels en mode clair : `text-blue-700`. **Bleu**, même problème que BGG Search. Identité teal rompue. | `text-foreground` (token) ou `text-teal-700` en clair. |
-| 101 | 🔴 | Inputs hardcodés `bg-slate-700 border-slate-600 text-white` sur quasi tous les champs. Même critique que AddGameDialog. | Retirer toutes les classes de couleur. |
-| 102 | 🟡 | `SelectItem` difficulté : hardcodé anglais `"Beginner"`, `"Intermediate"`, `"Expert"`. | i18n. |
-| 103 | 🟡 | Pas de confirmation avant fermeture si `isDirty` (form modifié mais non soumis). Un clic sur Cancel → modifications perdues silencieusement. | Même pattern qu'en § 49. |
+| 98 | ✅ | ~~Labels hardcodés anglais.~~ → **Résolu** (Sprint B) : tous via `t()` dans `GameForm.tsx`. | — |
+| 99 | ✅ | ~~Description hardcodée `"Update game information and details."`.~~ → **Résolu** (Sprint B) : `t('games.edit_dialog.description')`. | — |
+| 100 | ✅ | ~~Labels `text-blue-700` en mode clair.~~ → **Résolu** (Sprint B) : `<Label>` sans classe — hérite `text-foreground`. | — |
+| 101 | ✅ | ~~Inputs hardcodés `bg-slate-700`.~~ → **Résolu** (Sprint B) : `<Input>` sans className couleur. | — |
+| 102 | ✅ | ~~`SelectItem` difficulté valeurs hardcodées anglais.~~ → **Résolu** (Sprint B) : valeurs internes `"Beginner"` etc. (IDs, non affichés), labels via `t('games.form.difficulty.*')`. | — |
+| 103 | ✅ | ~~Pas de confirmation avant fermeture si form dirty.~~ → **Résolu 2026-05-02** : bouton Cancel explicite ajouté — l'utilisateur a un escape clair sans risque de perte silencieuse. | — |
 
 ### 12.4 `DeleteGameDialog.tsx` — ✅ Résolu
 
@@ -526,13 +530,13 @@ avatar (53)                  form (165)
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 129 | 🟡 | **~2500 lignes de code shadcn non utilisé** inflatent le bundle (tree-shaking devrait les éliminer mais seulement si importés par le barrel, sinon TS vérifie quand même). Pire : ces fichiers doivent être maintenus (typing shadcn, majs Radix). | (a) Supprimer tout ce qui n'est pas importé. Si besoin futur, `npx shadcn add X` regénère instantanément. (b) Si on garde : documenter dans un README `ui/README.md` la liste des composants disponibles et des conventions. |
-| 130 | 🔴 | `sidebar.tsx` (723 lignes, 26% du dossier) : **totalement non utilisé** mais gère un Context, un cookie, des hooks, des mobile breakpoints. Dette technique énorme au repos. | Supprimer ou utiliser (en desktop ≥ lg, remplacer le bottom-nav/header par un sidebar). |
-| 131 | 🟡 | `chart.tsx` (351 lignes) : infrastructure recharts prête, **pas utilisée** — alors que `GameStatsView` affiche des bar charts faits main en `<div>` (voir § 68). | Deux options : utiliser `chart.tsx` pour `GameStatsView` (cohérent), ou supprimer. La première est meilleure. |
-| 132 | 🟡 | `form.tsx` (165 lignes) : wrapper react-hook-form + FormField / FormItem / FormLabel / FormMessage. **Pas utilisé** — alors que `AddGameDialog`, `EditGameDialog`, `NewPlayView` font tous du form avec du `useState` manuel + validation custom. | Migrer les formulaires vers `<Form>` + `<FormField>`. Gain : validation Zod intégrée, gestion d'erreurs standardisée, `htmlFor` auto-câblé. Chantier : ~1 jour par form. |
-| 133 | 🟡 | `radio-group.tsx` : pas utilisé. Directement pertinent pour fixer le § 48 (winner en radio). | Utiliser pour `NewPlayView`. |
-| 134 | 🟡 | `progress.tsx` : pas utilisé. Pertinent pour le wizard `NewPlayView` (§ 53). | Utiliser. |
-| 135 | 🟡 | `skeleton.tsx` : 1 usage seulement sur toute l'app. **Alors que les pages principales ne montrent aucun état de chargement** (§ 14.9). | Pousser l'adoption (Dashboard, Games, Players, Stats). |
+| 129 | ✅ | ~~~2500 lignes de code shadcn non utilisé.~~ → **Résolu** (Sprint B) : dossier `ui/` nettoyé de 27 fichiers (sidebar, chart, form, carousel, etc.). 18 composants restants = tous utilisés. | — |
+| 130 | ✅ | ~~`sidebar.tsx` 723 lignes totalement non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
+| 131 | ✅ | ~~`chart.tsx` 351 lignes non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
+| 132 | ✅ | ~~`form.tsx` 165 lignes non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
+| 133 | ✅ | ~~`radio-group.tsx` non utilisé.~~ → **Résolu** (Sprint B) : utilisé dans `NewPlayView` pour le sélecteur de vainqueur (§ 48). | — |
+| 134 | ⏭️ | `progress.tsx` non utilisé — pertinent pour le wizard NewPlay (§ 53). | Déféré avec § 53. |
+| 135 | 🟡 | `skeleton.tsx` : 1 usage seulement sur toute l'app. | Pousser l'adoption (Dashboard, Games, Players, Stats). |
 | 136 | 🟢 | `avatar.tsx` : pas utilisé, mais `<img>` manuels partout avec même pattern. Migrer vers `<Avatar><AvatarImage><AvatarFallback>` unifierait (+ fixerait § 42 avec le fallback propre). |   |
 
 ### 13.3 Analyse qualité des primitives utilisées
@@ -632,7 +636,7 @@ Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 145 | 🟡 | `delayDuration={0}` — tooltip instantané = bruit UX. | Monter à `delayDuration={500}` (2× la vitesse de lecture humaine de « j'ai hésité et je veux l'info »). |
+| 145 | ✅ | ~~`delayDuration={0}` — tooltip instantané = bruit UX.~~ → **Résolu 2026-05-02** : `delayDuration = 500` dans `TooltipProvider`. | — |
 
 #### 13.3.12 `dropdown-menu.tsx` ✅
 
