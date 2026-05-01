@@ -138,8 +138,14 @@ export const useNewGamePage = () => {
   };
 
   const handleScoreChange = (playerId: number, value: string) => {
-    const parsed = parseInt(value) || 0;
-    setPlayerScores(prev => ({ ...prev, [playerId]: Math.min(999, Math.max(0, parsed)) }));
+    if (value === '') {
+      setPlayerScores(prev => ({ ...prev, [playerId]: 0 }));
+      return;
+    }
+    const parsed = parseInt(value);
+    if (!isNaN(parsed)) {
+      setPlayerScores(prev => ({ ...prev, [playerId]: Math.min(999, Math.max(0, parsed)) }));
+    }
   };
 
   const addObjective = () => {
