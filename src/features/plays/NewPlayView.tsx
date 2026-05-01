@@ -13,6 +13,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/shared/components/ui/alert-dialog";
 import { ArrowLeft, Play, Users, Trophy, Timer, Target, Plus, Trash } from '@phosphor-icons/react';
+import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 import { Game, Player } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, type GameMode } from '@/shared/theme/gameModeColors';
@@ -283,9 +284,7 @@ export default function NewGameView({
                         className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                       />
                       <div className="flex items-center gap-3 flex-1">
-                        {player.avatar && (
-                          <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
-                        )}
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
                         <div>
                           <p className="text-foreground font-medium">{player.player_name}</p>
                           <p className="text-muted-foreground text-sm">{player.stats}</p>
@@ -445,7 +444,7 @@ export default function NewGameView({
                     <div key={playerId} className="flex items-center gap-4">
                       <RadioGroupItem value={playerId.toString()} id={`winner-${playerId}`} />
                       <Label htmlFor={`winner-${playerId}`} className="flex-1 flex items-center gap-3 cursor-pointer">
-                        {player.avatar && <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />}
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
                         <span className="text-foreground font-medium">{player.player_name}</span>
                       </Label>
                       <Input
@@ -507,7 +506,7 @@ export default function NewGameView({
                   return (
                     <div key={playerId} className="flex items-center gap-4">
                       <div className="flex items-center gap-3 flex-1">
-                        {player.avatar && <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />}
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
                         <span className="text-foreground font-medium">{player.player_name}</span>
                       </div>
                       <Input

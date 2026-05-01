@@ -53,7 +53,7 @@ export const useNewGamePage = () => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavTarget, setPendingNavTarget] = useState<string | null>(null);
 
-  const isDirty = selectedGameId !== '' || selectedPlayers.length > 0 || duration !== '' || notes !== '';
+  const isDirty = selectedGameId !== '' || selectedPlayers.length > 0 || duration !== '' || notes !== '' || objectives.length > 0 || teamScore > 0 || teamSuccess;
 
   // Load draft on mount
   useEffect(() => {
@@ -72,6 +72,10 @@ export const useNewGamePage = () => {
       if (draft.winnerId) setWinnerId(draft.winnerId);
       if (draft.duration) setDuration(draft.duration);
       if (draft.notes) setNotes(draft.notes);
+      if (draft.objectives?.length) setObjectives(draft.objectives);
+      if (draft.teamScore) setTeamScore(draft.teamScore);
+      if (draft.difficultyLevel) setDifficultyLevel(draft.difficultyLevel);
+      if (draft.teamSuccess) setTeamSuccess(draft.teamSuccess);
       toast.info(t('sessions.draft.restored'));
     } catch {
       localStorage.removeItem(DRAFT_KEY);
@@ -82,9 +86,9 @@ export const useNewGamePage = () => {
   // Auto-save draft on state change
   useEffect(() => {
     if (!isDirty) return;
-    const draft = { selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, savedAt: Date.now() };
+    const draft = { selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, objectives, teamScore, difficultyLevel, teamSuccess, savedAt: Date.now() };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  }, [selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, isDirty]);
+  }, [selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, objectives, teamScore, difficultyLevel, teamSuccess, isDirty]);
 
   // Warn on browser/tab close
   useEffect(() => {
@@ -116,6 +120,13 @@ export const useNewGamePage = () => {
     setShowLeaveDialog(false);
     setPendingNavTarget(null);
   }, []);
+
+  const handleSetSelectedGameId = useCallback((id: string) => {
+    if (selectedGameId && id !== selectedGameId) {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+    setSelectedGameId(id);
+  }, [selectedGameId]);
 
   const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null;
   const maxPlayersReached = selectedGame !== null && selectedPlayers.length >= selectedGame.max_players;
@@ -236,7 +247,7 @@ export const useNewGamePage = () => {
     games,
     players,
     selectedGameId,
-    setSelectedGameId,
+    setSelectedGameId: handleSetSelectedGameId,
     sessionType,
     setSessionType,
     selectedPlayers,

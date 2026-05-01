@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 interface InitialAvatarProps {
@@ -17,6 +18,28 @@ function getHue(name: string): number {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   return Math.abs(hash) % 360;
+}
+
+interface PlayerAvatarProps {
+  name: string;
+  url?: string | null;
+  className?: string;
+}
+
+export function PlayerAvatar({ name, url, className }: PlayerAvatarProps) {
+  const [error, setError] = useState(false);
+  const safe = Boolean(url && /^https?:\/\//.test(url) && !error);
+  if (safe) {
+    return (
+      <img
+        src={url!}
+        alt=""
+        className={cn('rounded-full object-cover', className)}
+        onError={() => setError(true)}
+      />
+    );
+  }
+  return <InitialAvatar name={name} className={className} />;
 }
 
 export function InitialAvatar({ name, className }: InitialAvatarProps) {

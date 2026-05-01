@@ -10,7 +10,7 @@ import {
   Trash,
   DotsThreeVertical
 } from '@phosphor-icons/react';
-import { InitialAvatar } from '@/shared/components/InitialAvatar';
+import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -65,20 +65,12 @@ const PlayerCard = React.memo(function PlayerCard({ player, onViewStats, onEdit,
       role="button"
       tabIndex={0}
       onClick={() => onViewStats(player.player_id)}
-      onKeyDown={(e) => e.key === 'Enter' && onViewStats(player.player_id)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onViewStats(player.player_id)}
       className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-xl p-4 border border-slate-200 dark:border-white/20 shadow-xl cursor-pointer hover:border-primary/50 transition-colors"
       aria-label={`${player.player_name} — ${t('players.card.view_stats')}`}
     >
       <div className="flex items-center space-x-4">
-        {player.avatar ? (
-          <img
-            src={player.avatar}
-            alt=""
-            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-          />
-        ) : (
-          <InitialAvatar name={player.player_name} className="w-12 h-12 flex-shrink-0 text-sm" />
-        )}
+        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-12 h-12 flex-shrink-0 text-sm" />
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-slate-900 dark:text-white">{player.player_name}</div>
           {player.pseudo && player.pseudo !== player.player_name && (
