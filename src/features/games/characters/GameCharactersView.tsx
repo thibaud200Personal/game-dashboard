@@ -81,34 +81,31 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
       {characters.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {characters.map((character) => (
-            <Card key={character.character_id} className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+            <Card key={character.character_id} className="bg-card border-border">
               <CardHeader className="pb-3 md:pb-6">
                 <div className="flex items-center gap-3">
                   {character.avatar ? (
                     <img
                       src={character.avatar}
                       alt={character.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      className="w-12 h-12 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      <User className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <User className="w-6 h-6 text-muted-foreground" />
                     </div>
                   )}
-                  <div className="flex-1">
-                    <CardTitle className="text-slate-900 dark:text-white text-base md:text-lg">{character.name}</CardTitle>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">{character.character_key}</p>
-                  </div>
+                  <CardTitle className="text-foreground text-base md:text-lg">{character.name}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 md:space-y-4">
                 {character.description && (
-                  <p className="text-slate-600 dark:text-slate-300 text-sm">{character.description}</p>
+                  <p className="text-muted-foreground text-sm">{character.description}</p>
                 )}
 
                 {character.abilities && character.abilities.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Lightning className="w-4 h-4 text-primary" />
                       <span className="text-sm font-medium">{t('character.form.abilities.label')}</span>
                     </div>
@@ -116,7 +113,7 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
                       {character.abilities.map((ability, index) => (
                         <span
                           key={index}
-                          className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded"
+                          className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded"
                         >
                           {ability}
                         </span>
@@ -132,7 +129,7 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => openEditDialog(character)}
-                        className="flex-1"
+                        className="flex-1 justify-center"
                       >
                         <PencilSimple className="w-4 h-4 md:mr-2" />
                         <span className="hidden md:inline">{t('common.buttons.edit')}</span>
@@ -149,7 +146,7 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteCharacterId(character.character_id!)}
-                        className="border-red-300 dark:border-red-600/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-600/10 hover:border-red-600"
+                        className="flex-1 justify-center border-red-300 dark:border-red-600/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-600/10 hover:border-red-600"
                       >
                         <Trash className="w-4 h-4" />
                       </Button>
@@ -164,9 +161,9 @@ export default function GameCharactersView(props: UseGameCharactersProps) {
           ))}
         </div>
       ) : (
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="text-center py-12">
-            <p className="text-slate-500 dark:text-slate-400 mb-4">{t('character.view.empty')}</p>
+            <p className="text-muted-foreground mb-4">{t('character.view.empty')}</p>
             <Button onClick={() => setIsAddDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               {t('character.view.add_first')}

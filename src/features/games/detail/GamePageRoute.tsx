@@ -4,6 +4,7 @@ import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import GameDetailPage from './GameDetailPage';
+import GameDetailSkeleton from './GameDetailSkeleton';
 import GameExpansionsPage from '../expansions/GameExpansionsPage';
 import GameCharactersPage from '../characters/GameCharactersPage';
 import type { GameExpansion, GameCharacter } from '@/types';
@@ -16,7 +17,7 @@ export default function GamePageRoute({ subRoute }: { subRoute: SubRoute }) {
   const onNavigation = useNavigationAdapter();
   const queryClient = useQueryClient();
 
-  const { data: game } = useQuery({
+  const { data: game, isLoading } = useQuery({
     queryKey: queryKeys.games.detail(gameId),
     queryFn: () => gameApi.getById(gameId),
   });
@@ -40,6 +41,7 @@ export default function GamePageRoute({ subRoute }: { subRoute: SubRoute }) {
     onSuccess: invalidate,
   });
 
+  if (isLoading) return <GameDetailSkeleton />;
   if (!game) return null;
 
   const noop = async () => {};

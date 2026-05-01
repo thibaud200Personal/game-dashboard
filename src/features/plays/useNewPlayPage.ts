@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { gameApi } from '@/features/games/gameApi';
@@ -8,6 +8,9 @@ import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useLabels } from '@/shared/hooks/useLabels';
 import type { CreatePlayPayload } from '@/types';
+
+const DRAFT_KEY = 'newPlayDraft';
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const useNewGamePage = () => {
   const onNavigation = useNavigationAdapter();
@@ -47,6 +50,83 @@ export const useNewGamePage = () => {
   const [teamScore, setTeamScore] = useState<number>(0);
   const [difficultyLevel, setDifficultyLevel] = useState<string>('normal');
   const [teamSuccess, setTeamSuccess] = useState<boolean>(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [pendingNavTarget, setPendingNavTarget] = useState<string | null>(null);
+
+  const isDirty = selectedGameId !== '' || selectedPlayers.length > 0 || duration !== '' || notes !== '' || objectives.length > 0 || teamScore > 0 || teamSuccess;
+
+  // Load draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (Date.now() - (draft.savedAt ?? 0) > DRAFT_TTL_MS) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      if (draft.selectedGameId) setSelectedGameId(draft.selectedGameId);
+      if (draft.sessionType) setSessionType(draft.sessionType);
+      if (draft.selectedPlayers?.length) setSelectedPlayers(draft.selectedPlayers);
+      if (draft.playerScores) setPlayerScores(draft.playerScores);
+      if (draft.winnerId) setWinnerId(draft.winnerId);
+      if (draft.duration) setDuration(draft.duration);
+      if (draft.notes) setNotes(draft.notes);
+      if (draft.objectives?.length) setObjectives(draft.objectives);
+      if (draft.teamScore) setTeamScore(draft.teamScore);
+      if (draft.difficultyLevel) setDifficultyLevel(draft.difficultyLevel);
+      if (draft.teamSuccess) setTeamSuccess(draft.teamSuccess);
+      toast.info(t('sessions.draft.restored'));
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save draft on state change
+  useEffect(() => {
+    if (!isDirty) return;
+    const draft = { selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, objectives, teamScore, difficultyLevel, teamSuccess, savedAt: Date.now() };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }, [selectedGameId, sessionType, selectedPlayers, playerScores, winnerId, duration, notes, objectives, teamScore, difficultyLevel, teamSuccess, isDirty]);
+
+  // Warn on browser/tab close
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  const requestNavigation = useCallback((target: string) => {
+    if (isDirty) {
+      setPendingNavTarget(target);
+      setShowLeaveDialog(true);
+    } else {
+      onNavigation(target);
+    }
+  }, [isDirty, onNavigation]);
+
+  const confirmLeave = useCallback(() => {
+    localStorage.removeItem(DRAFT_KEY);
+    setShowLeaveDialog(false);
+    if (pendingNavTarget) onNavigation(pendingNavTarget);
+  }, [pendingNavTarget, onNavigation]);
+
+  const cancelLeave = useCallback(() => {
+    setShowLeaveDialog(false);
+    setPendingNavTarget(null);
+  }, []);
+
+  const handleSetSelectedGameId = useCallback((id: string) => {
+    if (selectedGameId && id !== selectedGameId) {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+    setSelectedGameId(id);
+  }, [selectedGameId]);
 
   const selectedGame = games.find(g => g.game_id.toString() === selectedGameId) || null;
   const maxPlayersReached = selectedGame !== null && selectedPlayers.length >= selectedGame.max_players;
@@ -152,6 +232,7 @@ export const useNewGamePage = () => {
         players: payload.players,
       });
       toast.success(t('play.toast.created'));
+      localStorage.removeItem(DRAFT_KEY);
       resetForm();
       return { success: true };
     } catch {
@@ -166,7 +247,7 @@ export const useNewGamePage = () => {
     games,
     players,
     selectedGameId,
-    setSelectedGameId,
+    setSelectedGameId: handleSetSelectedGameId,
     sessionType,
     setSessionType,
     selectedPlayers,
@@ -204,5 +285,10 @@ export const useNewGamePage = () => {
     removeObjective,
     calculateTeamScore,
     onNavigation,
+    isDirty,
+    showLeaveDialog,
+    requestNavigation,
+    confirmLeave,
+    cancelLeave,
   };
 };

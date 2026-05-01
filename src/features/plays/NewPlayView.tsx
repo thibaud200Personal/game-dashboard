@@ -6,7 +6,14 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from "@/shared/components/ui/alert-dialog";
 import { ArrowLeft, Play, Users, Trophy, Timer, Target, Plus, Trash } from '@phosphor-icons/react';
+import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 import { Game, Player } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, type GameMode } from '@/shared/theme/gameModeColors';
@@ -14,7 +21,6 @@ import { gameModeColors, type GameMode } from '@/shared/theme/gameModeColors';
 type SessionType = GameMode;
 
 interface NewGameViewProps {
-  // State
   selectedGameId: string
   setSelectedGameId: (id: string) => void
   sessionType: SessionType
@@ -28,8 +34,6 @@ interface NewGameViewProps {
   notes: string
   setNotes: (notes: string) => void
   isSubmitting: boolean
-  
-  // Cooperative scoring state
   objectives: Array<{id: string, text: string, completed: boolean, points: number}>
   setObjectives: (objectives: Array<{id: string, text: string, completed: boolean, points: number}>) => void
   teamScore: number
@@ -38,11 +42,7 @@ interface NewGameViewProps {
   setDifficultyLevel: (level: string) => void
   teamSuccess: boolean
   setTeamSuccess: (success: boolean) => void
-  
-  // Computed
   selectedGame: Game | null
-  
-  // Methods
   maxPlayersReached: boolean
   competitiveWinnerMissing: boolean
   winnerScoreInvalid: boolean
@@ -51,31 +51,19 @@ interface NewGameViewProps {
   handleScoreChange: (playerId: number, value: string) => void
   canSubmit: () => boolean
   handleSubmit: () => Promise<{ success: boolean }>
-  
-  // Cooperative scoring methods
   addObjective: () => void
   addPresetObjectives: () => void
   updateObjective: (id: string, field: string, value: string | number | boolean) => void
   removeObjective: (id: string) => void
   calculateTeamScore: () => number
-  
-  // Data
   games: Game[]
   players: Player[]
-  
-  // Navigation
   onNavigation: (view: string) => void
+  requestNavigation: (target: string) => void
+  showLeaveDialog: boolean
+  confirmLeave: () => void
+  cancelLeave: () => void
   currentView: string
-}
-
-interface PlayerScoreRowProps {
-  playerId: number;
-  player: Player;
-  score: number | string;
-  onScoreChange: (value: string) => void;
-  winnerId?: string;
-  onWinnerChange?: (checked: boolean) => void;
-  winnerLabel?: string;
 }
 
 interface TeamScoringBlockProps {
@@ -90,57 +78,24 @@ interface TeamScoringBlockProps {
 function TeamScoringBlock({ successLabel, scoreLabel, teamSuccess, setTeamSuccess, teamScore, setTeamScore }: TeamScoringBlockProps) {
   return (
     <>
-      <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+      <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
         <Checkbox
           checked={teamSuccess}
           onCheckedChange={(checked) => setTeamSuccess(!!checked)}
           className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
         />
-        <Label className="text-white font-medium">{successLabel}</Label>
+        <Label className="text-foreground font-medium">{successLabel}</Label>
       </div>
       <div>
-        <Label className="text-white/80">{scoreLabel}</Label>
+        <Label className="text-muted-foreground">{scoreLabel}</Label>
         <Input
           type="number"
           placeholder="0"
           value={teamScore}
           onChange={(e) => setTeamScore(parseInt(e.target.value) || 0)}
-          className="bg-white/5 border-white/20 text-white"
         />
       </div>
     </>
-  );
-}
-
-function PlayerScoreRow({ playerId, player, score, onScoreChange, winnerId, onWinnerChange, winnerLabel }: PlayerScoreRowProps) {
-  return (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-3 flex-1">
-        {player.avatar && <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />}
-        <span className="text-white font-medium">{player.player_name}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Input
-          type="number"
-          placeholder="Score"
-          min={0}
-          max={999}
-          value={score ?? ''}
-          onChange={(e) => onScoreChange(e.target.value)}
-          className="w-20 bg-white/5 border-white/20 text-white"
-        />
-        {winnerId !== undefined && onWinnerChange && (
-          <>
-            <Checkbox
-              checked={winnerId === playerId.toString()}
-              onCheckedChange={(checked) => onWinnerChange(!!checked)}
-              className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-            />
-            <span className="text-white/60 text-sm">{winnerLabel}</span>
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -182,39 +137,42 @@ export default function NewGameView({
   calculateTeamScore,
   games,
   players,
+  requestNavigation,
+  showLeaveDialog,
+  confirmLeave,
+  cancelLeave,
   onNavigation,
   currentView: _currentView,
 }: NewGameViewProps) {
   const { t } = useLabels();
-  // Safety checks for arrays
   const safeGames = games || [];
   const safePlayers = players || [];
   const safeSelectedPlayers = selectedPlayers || [];
-  
+
   const onSubmit = async () => {
     const result = await handleSubmit();
     if (result.success) onNavigation('dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-foreground">
       <div className="container mx-auto px-4 py-6 pb-32 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
-            onClick={() => onNavigation('dashboard')}
+            onClick={() => requestNavigation('dashboard')}
             variant="ghost"
-            className="text-slate-600 dark:text-white hover:text-slate-900 dark:hover:bg-white/10 hover:bg-slate-100"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('sessions.new.title')}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('sessions.new.title')}</h1>
         </div>
 
         {/* Game Setup */}
-        <Card className="bg-slate-50 dark:bg-white/10 dark:backdrop-blur-md border-slate-200 dark:border-white/20">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Play className="w-5 h-5" />
               {t('sessions.setup.title')}
             </CardTitle>
@@ -222,12 +180,12 @@ export default function NewGameView({
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-white/80">{t('sessions.setup.game.label')}</Label>
+                <Label className="text-muted-foreground">{t('sessions.setup.game.label')}</Label>
                 <Select value={selectedGameId} onValueChange={setSelectedGameId}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectTrigger>
                     <SelectValue placeholder={t('sessions.setup.game.placeholder')} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-white/20">
+                  <SelectContent>
                     {safeGames.map(game => (
                       <SelectItem key={game.game_id} value={game.game_id.toString()}>
                         {game.name}
@@ -239,12 +197,12 @@ export default function NewGameView({
 
               {selectedGame && (
                 <div>
-                  <Label className="text-white/80">{t('sessions.setup.type.label')}</Label>
+                  <Label className="text-muted-foreground">{t('sessions.setup.type.label')}</Label>
                   <Select value={sessionType} onValueChange={(value: 'competitive' | 'cooperative' | 'campaign' | 'hybrid') => setSessionType(value)}>
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-white/20">
+                    <SelectContent>
                       {selectedGame.supports_competitive && (
                         <SelectItem value="competitive">{t('sessions.setup.type.competitive')}</SelectItem>
                       )}
@@ -264,13 +222,13 @@ export default function NewGameView({
             </div>
 
             {selectedGame && (
-              <div className="mt-4 p-4 bg-white/5 rounded-lg">
-                <p className="text-white/80 text-sm">
-                  <strong>{selectedGame.name}</strong> • {selectedGame.min_players}-{selectedGame.max_players} players
+              <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                <p className="text-muted-foreground text-sm">
+                  <strong className="text-foreground">{selectedGame.name}</strong> • {selectedGame.min_players}-{selectedGame.max_players} {t('games.card.players')}
                   {selectedGame.duration && ` • ${selectedGame.duration}`}
                 </p>
                 {selectedGame.description && (
-                  <p className="text-white/60 text-sm mt-2">{selectedGame.description}</p>
+                  <p className="text-muted-foreground text-sm mt-2">{selectedGame.description}</p>
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedGame.supports_competitive && (
@@ -293,20 +251,22 @@ export default function NewGameView({
 
         {/* Player Selection */}
         {selectedGame && (
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Users className="w-5 h-5" />
                 {t('sessions.players.title')}
               </CardTitle>
               {safeSelectedPlayers.length < (selectedGame?.min_players ?? 1) && (
-                <p className="text-orange-400 text-sm mt-1">
-                  Minimum {selectedGame!.min_players} players required ({safeSelectedPlayers.length} selected)
+                <p className="text-orange-500 dark:text-orange-400 text-sm mt-1">
+                  {t('sessions.players.min_required')
+                    .replace('{min}', String(selectedGame.min_players))
+                    .replace('{count}', String(safeSelectedPlayers.length))}
                 </p>
               )}
               {maxPlayersReached && (
-                <p className="text-red-400 text-sm mt-1">
-                  Maximum of {selectedGame!.max_players} players reached
+                <p className="text-destructive text-sm mt-1">
+                  {t('sessions.players.max_reached').replace('{max}', String(selectedGame.max_players))}
                 </p>
               )}
             </CardHeader>
@@ -316,7 +276,7 @@ export default function NewGameView({
                   const isSelected = safeSelectedPlayers.includes(player.player_id);
                   const isDisabled = maxPlayersReached && !isSelected;
                   return (
-                    <div key={player.player_id} className={`flex items-center space-x-3 p-3 bg-white/5 rounded-lg transition-opacity${isDisabled ? ' opacity-40' : ''}`}>
+                    <div key={player.player_id} className={`flex items-center space-x-3 p-3 bg-muted/30 rounded-lg transition-opacity${isDisabled ? ' opacity-40' : ''}`}>
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => handlePlayerToggle(player.player_id)}
@@ -324,12 +284,10 @@ export default function NewGameView({
                         className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                       />
                       <div className="flex items-center gap-3 flex-1">
-                        {player.avatar && (
-                          <img src={player.avatar} alt="" className="w-8 h-8 rounded-full" />
-                        )}
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
                         <div>
-                          <p className="text-white font-medium">{player.player_name}</p>
-                          <p className="text-white/60 text-sm">{player.stats}</p>
+                          <p className="text-foreground font-medium">{player.player_name}</p>
+                          <p className="text-muted-foreground text-sm">{player.stats}</p>
                         </div>
                       </div>
                     </div>
@@ -342,22 +300,21 @@ export default function NewGameView({
 
         {/* Cooperative Scoring */}
         {selectedPlayers.length > 0 && sessionType === 'cooperative' && (
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Target className="w-5 h-5" />
                 {t('sessions.cooperative.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Difficulty Level */}
               <div>
-                <Label className="text-white/80">{t('sessions.cooperative.difficulty.label')}</Label>
+                <Label className="text-muted-foreground">{t('sessions.cooperative.difficulty.label')}</Label>
                 <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-white/20">
+                  <SelectContent>
                     <SelectItem value="easy">{t('plays.form.difficulty.easy')}</SelectItem>
                     <SelectItem value="normal">{t('plays.form.difficulty.normal')}</SelectItem>
                     <SelectItem value="hard">{t('plays.form.difficulty.hard')}</SelectItem>
@@ -378,92 +335,83 @@ export default function NewGameView({
               {/* Objectives */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="text-white/80">{t('sessions.cooperative.objectives.label')}</Label>
+                  <Label className="text-muted-foreground">{t('sessions.cooperative.objectives.label')}</Label>
                   <div className="flex gap-2">
                     {objectives.length === 0 && (
-                      <Button
-                        onClick={addPresetObjectives}
-                        size="sm"
-                        variant="outline"
-                        className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-                      >
+                      <Button onClick={addPresetObjectives} size="sm" variant="outline">
                         <Target className="w-4 h-4 mr-1" />
                         {t('sessions.cooperative.objectives.add_common')}
                       </Button>
                     )}
-                    <Button
-                      onClick={addObjective}
-                      size="sm"
-                      variant="outline"
-                      className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-                    >
+                    <Button onClick={addObjective} size="sm" variant="outline">
                       <Plus className="w-4 h-4 mr-1" />
                       {t('sessions.cooperative.objectives.add_custom')}
                     </Button>
                   </div>
                 </div>
-                
+
                 {objectives.length === 0 && (
-                  <div className="text-center py-8 text-white/60">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">{t('sessions.cooperative.objectives.empty')}</p>
-                    <p className="text-xs mt-1">Add objectives to track your team's progress</p>
+                    <p className="text-xs mt-1">{t('sessions.objectives.hint')}</p>
                   </div>
                 )}
-                
+
                 {objectives.map((objective, index) => (
-                  <div key={objective.id} className="space-y-2 p-3 bg-white/5 rounded-lg">
+                  <div key={objective.id} className="space-y-2 p-3 bg-muted/30 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <span className="text-white/60 text-sm">#{index + 1}</span>
+                      <span className="text-muted-foreground text-sm">#{index + 1}</span>
                       <Button
                         onClick={() => removeObjective(objective.id)}
                         size="sm"
                         variant="ghost"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-1 h-auto"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1 h-auto"
                       >
                         <Trash className="w-3 h-3" />
                       </Button>
                     </div>
-                    
+
                     <Input
-                      placeholder="Objective description..."
+                      placeholder={t('sessions.cooperative.objectives.description_placeholder')}
                       value={objective.text}
                       onChange={(e) => updateObjective(objective.id, 'text', e.target.value)}
-                      className="bg-white/5 border-white/20 text-white"
                     />
-                    
+
                     <div className="flex items-center gap-4">
                       <div className="flex items-center space-x-2">
                         <Input
                           type="number"
-                          placeholder="Points"
+                          placeholder="0"
                           value={objective.points}
                           onChange={(e) => updateObjective(objective.id, 'points', parseInt(e.target.value) || 0)}
-                          className="w-20 bg-white/5 border-white/20 text-white"
+                          className="w-20"
                         />
-                        <span className="text-white/60 text-sm">pts</span>
+                        <span className="text-muted-foreground text-sm">{t('sessions.cooperative.objectives.pts')}</span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           checked={objective.completed}
                           onCheckedChange={(checked) => updateObjective(objective.id, 'completed', !!checked)}
                           className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                         />
-                        <span className="text-white/60 text-sm">{t('sessions.cooperative.objectives.completed')}</span>
+                        <span className="text-muted-foreground text-sm">{t('sessions.cooperative.objectives.completed')}</span>
                       </div>
                     </div>
                   </div>
                 ))}
-                
+
                 {objectives.length > 0 && (
-                  <div className="mt-3 p-3 bg-white/5 rounded-lg">
+                  <div className="mt-3 p-3 bg-muted/30 rounded-lg">
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80">Total Objectives Score:</span>
-                      <span className="text-white font-semibold">{calculateTeamScore()} pts</span>
+                      <span className="text-muted-foreground">{t('sessions.objectives.total_score')}</span>
+                      <span className="text-foreground font-semibold">{calculateTeamScore()} {t('sessions.cooperative.objectives.pts')}</span>
                     </div>
-                    <div className="text-white/60 text-sm mt-1">
-                      {objectives.filter(obj => obj.completed).length} of {objectives.length} completed
+                    <div className="text-muted-foreground text-sm mt-1">
+                      {t('sessions.cooperative.objectives.progress')
+                        .replace('{count}', String(objectives.filter(obj => obj.completed).length))
+                        .replace('{total}', String(objectives.length))}
                     </div>
                   </div>
                 )}
@@ -473,38 +421,51 @@ export default function NewGameView({
         )}
 
         {/* Competitive Scoring */}
-        {/* Competitive Scoring */}
         {selectedPlayers.length > 0 && sessionType === 'competitive' && (
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Trophy className="w-5 h-5" />
                 {t('sessions.competitive.title')}
               </CardTitle>
               {competitiveWinnerMissing && (
-                <p className="text-orange-400 text-sm mt-1">Un vainqueur doit être désigné</p>
+                <p className="text-orange-500 dark:text-orange-400 text-sm mt-1">{t('sessions.competitive.winner_missing')}</p>
               )}
               {winnerScoreInvalid && (
-                <p className="text-orange-400 text-sm mt-1">Le score du vainqueur doit être supérieur à 0</p>
+                <p className="text-orange-500 dark:text-orange-400 text-sm mt-1">{t('sessions.competitive.score_invalid')}</p>
               )}
             </CardHeader>
-            <CardContent className="space-y-4">
-              {safeSelectedPlayers.map(playerId => {
-                const player = safePlayers.find(p => p.player_id === playerId);
-                if (!player) return null;
-                return (
-                  <PlayerScoreRow
-                    key={playerId}
-                    playerId={playerId}
-                    player={player}
-                    score={playerScores[playerId] ?? ''}
-                    onScoreChange={(v) => handleScoreChange(playerId, v)}
-                    winnerId={winnerId}
-                    onWinnerChange={(checked) => setWinnerId(checked ? playerId.toString() : '')}
-                    winnerLabel={t('sessions.competitive.winner')}
-                  />
-                );
-              })}
+            <CardContent>
+              <RadioGroup value={winnerId} onValueChange={setWinnerId} className="space-y-3">
+                {safeSelectedPlayers.map(playerId => {
+                  const player = safePlayers.find(p => p.player_id === playerId);
+                  if (!player) return null;
+                  return (
+                    <div key={playerId} className="flex items-center gap-4">
+                      <RadioGroupItem value={playerId.toString()} id={`winner-${playerId}`} />
+                      <Label htmlFor={`winner-${playerId}`} className="flex-1 flex items-center gap-3 cursor-pointer">
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
+                        <span className="text-foreground font-medium">{player.player_name}</span>
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="Score"
+                        min={0}
+                        max={999}
+                        value={playerScores[playerId] ?? ''}
+                        onChange={(e) => handleScoreChange(playerId, e.target.value)}
+                        className="w-20"
+                      />
+                    </div>
+                  );
+                })}
+                <div className="flex items-center gap-4 pt-1 border-t border-border">
+                  <RadioGroupItem value="" id="winner-none" />
+                  <Label htmlFor="winner-none" className="text-muted-foreground cursor-pointer">
+                    {t('sessions.competitive.no_winner')}
+                  </Label>
+                </div>
+              </RadioGroup>
             </CardContent>
           </Card>
         )}
@@ -512,10 +473,9 @@ export default function NewGameView({
         {/* Hybrid Scoring */}
         {selectedPlayers.length > 0 && sessionType === 'hybrid' && (
           <>
-            {/* Team Component */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Target className="w-5 h-5" />
                   {t('sessions.hybrid.team.title')}
                 </CardTitle>
@@ -532,10 +492,9 @@ export default function NewGameView({
               </CardContent>
             </Card>
 
-            {/* Individual Component */}
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Trophy className="w-5 h-5" />
                   {t('sessions.hybrid.individual.title')}
                 </CardTitle>
@@ -545,13 +504,21 @@ export default function NewGameView({
                   const player = safePlayers.find(p => p.player_id === playerId);
                   if (!player) return null;
                   return (
-                    <PlayerScoreRow
-                      key={playerId}
-                      playerId={playerId}
-                      player={player}
-                      score={playerScores[playerId] ?? ''}
-                      onScoreChange={(v) => handleScoreChange(playerId, v)}
-                    />
+                    <div key={playerId} className="flex items-center gap-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs flex-shrink-0" />
+                        <span className="text-foreground font-medium">{player.player_name}</span>
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder="Score"
+                        min={0}
+                        max={999}
+                        value={playerScores[playerId] ?? ''}
+                        onChange={(e) => handleScoreChange(playerId, e.target.value)}
+                        className="w-20"
+                      />
+                    </div>
                   );
                 })}
               </CardContent>
@@ -561,9 +528,9 @@ export default function NewGameView({
 
         {/* Session Details */}
         {selectedPlayers.length > 0 && (
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Timer className="w-5 h-5" />
                 {t('sessions.details.title')}
               </CardTitle>
@@ -571,9 +538,9 @@ export default function NewGameView({
             <CardContent className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Label className="text-white/80">{t('sessions.details.duration.label')}</Label>
+                  <Label className="text-muted-foreground">{t('sessions.details.duration.label')}</Label>
                   {durationMissing && (
-                    <span className="text-orange-400 text-xs">Obligatoire</span>
+                    <span className="text-destructive text-xs">{t('sessions.details.duration.required')}</span>
                   )}
                 </div>
                 <Input
@@ -582,29 +549,25 @@ export default function NewGameView({
                   min={1}
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className={`bg-white/5 border-white/20 text-white${durationMissing ? ' border-orange-400/60' : ''}`}
+                  className={durationMissing ? 'border-destructive' : ''}
                 />
               </div>
               <div>
-                <Label className="text-white/80">{t('sessions.details.notes.label')}</Label>
+                <Label className="text-muted-foreground">{t('sessions.details.notes.label')}</Label>
                 <Textarea
                   placeholder={t('sessions.details.notes.placeholder')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="bg-white/5 border-white/20 text-white min-h-20"
+                  className="min-h-20"
                 />
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Submit Button */}
+        {/* Submit */}
         <div className="flex gap-4">
-          <Button
-            onClick={() => onNavigation('dashboard')}
-            variant="outline"
-            className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
-          >
+          <Button onClick={() => requestNavigation('dashboard')} variant="outline" className="flex-1">
             {t('common.buttons.cancel')}
           </Button>
           <Button
@@ -616,6 +579,20 @@ export default function NewGameView({
           </Button>
         </div>
       </div>
+
+      {/* Leave confirmation dialog */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={(open) => !open && cancelLeave()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('sessions.leave.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('sessions.leave.description')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelLeave}>{t('sessions.leave.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLeave}>{t('sessions.leave.confirm')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

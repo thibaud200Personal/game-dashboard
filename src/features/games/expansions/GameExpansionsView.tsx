@@ -20,22 +20,22 @@ function ExpansionCard({ expansion, onEdit, onDelete }: ExpansionCardProps) {
   const { t } = useLabels();
 
   return (
-    <Card className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700">
+    <Card className="bg-card border-border">
       <CardHeader className="pb-3 md:pb-6">
-        <CardTitle className="text-slate-900 dark:text-white text-base md:text-lg">{expansion.name}</CardTitle>
+        <CardTitle className="text-foreground text-base md:text-lg">{expansion.name}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 md:space-y-4">
         {expansion.year_published && (
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4 text-primary" />
             <span className="text-sm">{expansion.year_published}</span>
           </div>
         )}
         {expansion.description && (
-          <p className="text-slate-600 dark:text-slate-300 text-sm">{expansion.description}</p>
+          <p className="text-muted-foreground text-sm">{expansion.description}</p>
         )}
         {expansion.bgg_expansion_id && (
-          <p className="text-slate-500 dark:text-slate-400 text-xs">BGG ID: {expansion.bgg_expansion_id}</p>
+          <p className="text-muted-foreground text-xs">BGG ID: {expansion.bgg_expansion_id}</p>
         )}
         <div className="flex gap-2 pt-2 md:pt-4">
           <Tooltip>
@@ -44,7 +44,7 @@ function ExpansionCard({ expansion, onEdit, onDelete }: ExpansionCardProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(expansion)}
-                className="flex-1"
+                className="flex-1 justify-center"
               >
                 <PencilSimple className="w-4 h-4 md:mr-2" />
                 <span className="hidden md:inline">{t('common.buttons.edit')}</span>
@@ -58,7 +58,7 @@ function ExpansionCard({ expansion, onEdit, onDelete }: ExpansionCardProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => onDelete(expansion.expansion_id!)}
-                className="border-red-300 dark:border-red-600/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-600/10 hover:border-red-600"
+                className="flex-1 justify-center border-red-300 dark:border-red-600/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-600/10 hover:border-red-600"
               >
                 <Trash className="w-4 h-4" />
               </Button>
@@ -165,9 +165,9 @@ export default function GameExpansionsView(props: UseGameExpansionsProps) {
             ))}
           </div>
         ) : (
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Card className="bg-card border-border">
             <CardContent className="text-center py-12">
-              <p className="text-slate-500 dark:text-slate-400 mb-4">{t('expansion.view.empty')}</p>
+              <p className="text-muted-foreground mb-4">{t('expansion.view.empty')}</p>
               <Button onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 {t('expansion.view.add_first')}
