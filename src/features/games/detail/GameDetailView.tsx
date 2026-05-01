@@ -9,9 +9,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
 } from '@/shared/components/ui/dropdown-menu';
-import { ArrowLeft, Users, Clock, Star, Barbell, Calendar, Buildings, User, DotsThree, Crown, TrendUp, Gear, GameController } from '@phosphor-icons/react';
+import { ArrowLeft, Users, Clock, Star, Barbell, Calendar, Buildings, User, DotsThree, Crown, GameController, CaretRight } from '@phosphor-icons/react';
 import GameExpansionsPage from '../expansions/GameExpansionsPage';
 import GameCharactersPage from '../characters/GameCharactersPage';
 import { UseGameDetailProps } from './useGameDetail';
@@ -45,7 +44,6 @@ export default function GameDetailView({
   activeTab,
   gameTypes,
   handleNavigation,
-  tabHandlers,
   setActiveTab,
   hasExpansionHandlers,
   hasCharacterHandlers,
@@ -77,9 +75,9 @@ export default function GameDetailView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 dark:bg-slate-800/50 dark:backdrop-blur-sm dark:border-b dark:border-slate-700/50 sticky top-0 z-10">
+      <div className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center gap-3 md:gap-4">
             <Tooltip>
@@ -88,7 +86,7 @@ export default function GameDetailView({
                   variant="ghost"
                   size="sm"
                   onClick={handleNavigation.back}
-                  className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10 p-2"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
                 >
                   <ArrowLeft className="w-4 h-4 md:mr-2" />
                   <span className="hidden md:inline">{t('game.detail.back')}</span>
@@ -98,8 +96,8 @@ export default function GameDetailView({
                 <p>{t('expansion.view.back_to_games')}</p>
               </TooltipContent>
             </Tooltip>
-            <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 hidden md:block"></div>
-            <h1 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white flex-1 truncate">{game.name}</h1>
+            <div className="h-6 w-px bg-border hidden md:block"></div>
+            <h1 className="text-lg md:text-xl font-semibold text-foreground flex-1 truncate">{game.name}</h1>
 
             {/* Mobile Context Menu */}
             <div className="md:hidden">
@@ -107,7 +105,7 @@ export default function GameDetailView({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/10 p-2">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted p-2">
                         <DotsThree className="w-5 h-5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -117,19 +115,6 @@ export default function GameDetailView({
                   </TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={tabHandlers.setOverview}>
-                    <GameController className="w-4 h-4 mr-2" />
-                    {t('game.detail.tab.overview')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={tabHandlers.setExpansions}>
-                    <Crown className="w-4 h-4 mr-2" />
-                    {t('expansion.view.title')} ({game.expansions?.length || 0})
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={tabHandlers.setCharacters}>
-                    <User className="w-4 h-4 mr-2" />
-                    {t('character.view.title')} ({game.characters?.length || 0})
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleNavigation.expansions}>
                     <Crown className="w-4 h-4 mr-2" />
                     {t('game.detail.manage_expansions')}
@@ -146,76 +131,33 @@ export default function GameDetailView({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
-        {/* Desktop Layout with Tabs */}
-        <div className="hidden md:block">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">
-                {t('game.detail.tab.overview')}
-              </TabsTrigger>
-              <TabsTrigger value="expansions">
-                {t('expansion.view.title')} ({game.expansions?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="characters">
-                {t('character.view.title')} ({game.characters?.length || 0})
-              </TabsTrigger>
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">
+              {t('game.detail.tab.overview')}
+            </TabsTrigger>
+            <TabsTrigger value="expansions">
+              {t('expansion.view.title')} ({game.expansions?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="characters">
+              {t('character.view.title')} ({game.characters?.length || 0})
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="overview" className="mt-6">
-              <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />
-            </TabsContent>
+          <TabsContent value="overview" className="mt-6 pb-32 md:pb-0">
+            <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />
+          </TabsContent>
 
-            <TabsContent value="expansions" className="mt-6">
-              {hasExpansionHandlers && <GameExpansionsPage {...expansionPageProps} />}
-            </TabsContent>
+          <TabsContent value="expansions" className="mt-6 pb-32 md:pb-0">
+            {hasExpansionHandlers && <GameExpansionsPage {...expansionPageProps} />}
+          </TabsContent>
 
-            <TabsContent value="characters" className="mt-6">
-              {hasCharacterHandlers && <GameCharactersPage {...characterPageProps} />}
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Mobile Layout - Show current tab content */}
-        <div className="md:hidden pb-32">
-          {activeTab === 'overview' && <GameOverview game={game} gameTypes={gameTypes} onNavigation={onNavigation} />}
-          {activeTab === 'expansions' && hasExpansionHandlers && <GameExpansionsPage {...expansionPageProps} />}
-          {activeTab === 'characters' && hasCharacterHandlers && <GameCharactersPage {...characterPageProps} />}
-        </div>
+          <TabsContent value="characters" className="mt-6 pb-32 md:pb-0">
+            {hasCharacterHandlers && <GameCharactersPage {...characterPageProps} />}
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Bottom Navigation - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-md border-t border-slate-200 dark:border-white/10 md:hidden">
-        <div className="flex justify-around items-center py-2">
-          <button
-            onClick={handleNavigation.dashboard}
-            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
-          >
-            <TrendUp className="w-6 h-6 mb-1" />
-            <span className="text-xs">{t('dashboard.title')}</span>
-          </button>
-          <button
-            onClick={handleNavigation.players}
-            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
-          >
-            <Users className="w-6 h-6 mb-1" />
-            <span className="text-xs">{t('players.page.title')}</span>
-          </button>
-          <button
-            onClick={handleNavigation.games}
-            className="flex flex-col items-center p-3 transition-colors text-primary"
-          >
-            <GameController className="w-6 h-6 mb-1" />
-            <span className="text-xs">{t('games.page.title')}</span>
-          </button>
-          <button
-            onClick={handleNavigation.settings}
-            className="flex flex-col items-center p-3 transition-colors text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white"
-          >
-            <Gear className="w-6 h-6 mb-1" />
-            <span className="text-xs">{t('settings.page.title')}</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -232,7 +174,7 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
   return (
     <div>
       {/* Game Overview Card */}
-      <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 mb-6 md:mb-8">
+      <Card className="bg-card border-border mb-6 md:mb-8">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             {/* Game Image */}
@@ -241,11 +183,11 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
                 <img
                   src={game.image}
                   alt={game.name}
-                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-slate-300 dark:border-slate-600"
+                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-border"
                 />
               ) : (
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-100 dark:bg-slate-700/50 rounded-lg border border-slate-300 dark:border-slate-600 flex items-center justify-center">
-                  <GameController className="w-8 h-8 md:w-12 md:h-12 text-slate-500 dark:text-slate-400" />
+                <div className="w-24 h-24 md:w-32 md:h-32 bg-muted rounded-lg border border-border flex items-center justify-center">
+                  <GameController className="w-8 h-8 md:w-12 md:h-12 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -254,13 +196,13 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
                 <div className="mb-4 md:mb-0">
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2">{game.name}</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">{game.name}</h2>
                   {game.description && (
-                    <p className="text-slate-600 dark:text-slate-300 mb-4 text-sm md:text-base max-w-2xl">{game.description}</p>
+                    <p className="text-muted-foreground mb-4 text-sm md:text-base max-w-2xl">{game.description}</p>
                   )}
                 </div>
                 {game.bgg_rating && (
-                  <div className="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full self-start">
+                  <div className="flex items-center gap-1 bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-3 py-1 rounded-full self-start">
                     <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
                     <span className="font-medium text-sm">{game.bgg_rating}/10</span>
                   </div>
@@ -269,24 +211,24 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
 
               {/* Game Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4">
-                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm">{game.min_players}-{game.max_players} {t('games.card.players')}</span>
                 </div>
                 {game.duration && (
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.duration}</span>
                   </div>
                 )}
                 {game.weight && (
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Barbell className="w-4 h-4 text-primary" />
                     <span className="text-sm">{t('game.detail.weight_complexity')} {game.weight}/5</span>
                   </div>
                 )}
                 {game.year_published && (
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.year_published}</span>
                   </div>
@@ -296,13 +238,13 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
               {/* Additional Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
                 {game.publisher && (
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Buildings className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.publisher}</span>
                   </div>
                 )}
                 {game.designer && (
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4 text-primary" />
                     <span className="text-sm">{game.designer}</span>
                   </div>
@@ -318,12 +260,12 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
                     </Badge>
                   ))}
                   {game.category && (
-                    <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs">
+                    <Badge variant="outline" className="border-border text-muted-foreground text-xs">
                       {game.category}
                     </Badge>
                   )}
                   {game.difficulty && (
-                    <Badge variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs">
+                    <Badge variant="outline" className="border-border text-muted-foreground text-xs">
                       {game.difficulty}
                     </Badge>
                   )}
@@ -337,98 +279,90 @@ function GameOverview({ game, gameTypes, onNavigation }: GameOverviewProps) {
       {/* Quick Overview of Extensions and Characters - Desktop Only */}
       <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Extensions Preview */}
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card
+          className="bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
+          onClick={() => onNavigation('game-expansions', game.game_id, 'game-detail')}
+        >
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Crown className="w-5 h-5 text-primary" />
                 {t('expansion.view.title')} ({game.expansions?.length || 0})
               </CardTitle>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onNavigation('game-expansions', game.game_id, 'game-detail')}
-                className="text-xs"
-              >
-                {t('game.detail.manage')}
-              </Button>
+              <CaretRight className="w-4 h-4 text-muted-foreground" />
             </div>
           </CardHeader>
           <CardContent>
             {game.expansions && game.expansions.length > 0 ? (
               <div className="space-y-3">
                 {game.expansions.slice(0, 3).map((expansion: GameExpansion) => (
-                  <div key={expansion.expansion_id} className="flex items-center justify-between p-3 bg-slate-100/50 dark:bg-slate-700/30 rounded-lg">
+                  <div key={expansion.expansion_id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
-                      <h4 className="text-slate-900 dark:text-white font-medium">{expansion.name}</h4>
+                      <h4 className="text-foreground font-medium">{expansion.name}</h4>
                       {expansion.year_published && (
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">{expansion.year_published}</p>
+                        <p className="text-muted-foreground text-sm">{expansion.year_published}</p>
                       )}
                     </div>
                   </div>
                 ))}
                 {game.expansions.length > 3 && (
-                  <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
+                  <p className="text-muted-foreground text-sm text-center">
                     {game.expansions.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('game.detail.no_expansions')}</p>
+              <p className="text-muted-foreground text-sm">{t('game.detail.no_expansions')}</p>
             )}
           </CardContent>
         </Card>
 
         {/* Characters Preview */}
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card
+          className="bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
+          onClick={() => onNavigation('game-characters', game.game_id, 'game-detail')}
+        >
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
                 {t('character.view.title')} ({game.characters?.length || 0})
               </CardTitle>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onNavigation('game-characters', game.game_id, 'game-detail')}
-                className="text-xs"
-              >
-                {t('game.detail.manage')}
-              </Button>
+              <CaretRight className="w-4 h-4 text-muted-foreground" />
             </div>
           </CardHeader>
           <CardContent>
             {game.characters && game.characters.length > 0 ? (
               <div className="space-y-3">
                 {game.characters.slice(0, 3).map((character: GameCharacter) => (
-                  <div key={character.character_id} className="flex items-center gap-3 p-3 bg-slate-100/50 dark:bg-slate-700/30 rounded-lg">
+                  <div key={character.character_id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                     {character.avatar ? (
                       <img
                         src={character.avatar}
                         alt={character.name}
-                        className="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600"
+                        className="w-10 h-10 rounded-full object-cover border border-border"
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-muted-foreground" />
                       </div>
                     )}
                     <div>
-                      <h4 className="text-slate-900 dark:text-white font-medium">{character.name}</h4>
+                      <h4 className="text-foreground font-medium">{character.name}</h4>
                       {character.description && (
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">{character.description}</p>
+                        <p className="text-muted-foreground text-sm">{character.description}</p>
                       )}
                     </div>
                   </div>
                 ))}
                 {game.characters.length > 3 && (
-                  <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
+                  <p className="text-muted-foreground text-sm text-center">
                     {game.characters.length - 3} {t('game.detail.more_items')}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('game.detail.no_characters')}</p>
+              <p className="text-muted-foreground text-sm">{t('game.detail.no_characters')}</p>
             )}
           </CardContent>
         </Card>

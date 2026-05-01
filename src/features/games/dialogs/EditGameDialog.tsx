@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Link } from '@phosphor-icons/react';
 import BGGSearch from '@/features/bgg/BGGSearch';
@@ -29,8 +29,11 @@ export default function EditGameDialog({ isOpen, onOpenChange, formData, onFormD
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Modifier : {formData.name}</DialogTitle></DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>{t('games.edit_dialog.title')} : {formData.name}</DialogTitle>
+          <DialogDescription>{t('games.edit_dialog.description')}</DialogDescription>
+        </DialogHeader>
 
         <Button variant="outline" className="w-full mb-4 border-teal-600" onClick={() => onBGGSearchToggle(true)}>
           <Link className="mr-2 h-4 w-4" /> {t('games.form.bgg_search')}
@@ -51,7 +54,7 @@ export default function EditGameDialog({ isOpen, onOpenChange, formData, onFormD
           onRemoveCharacter={handleRemoveCharacter}
         />
 
-        <Button className="w-full mt-4 bg-orange-600" onClick={onUpdateGame}>Mettre à jour</Button>
+        <Button className="w-full mt-4" onClick={onUpdateGame}>{t('games.edit_dialog.submit')}</Button>
       </DialogContent>
     </Dialog>
   );
