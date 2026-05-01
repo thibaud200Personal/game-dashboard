@@ -33,8 +33,8 @@ describe('GamesPage — flux CRUD', () => {
     renderPage(<GamesPage />, '/games');
     await waitFor(() => expect(screen.getByText('Wingspan')).toBeInTheDocument());
 
-    // Le bouton flottant "Add new game" (aria-label) ouvre le dialog
-    const addBtn = screen.getByRole('button', { name: /add new game/i });
+    // Deux boutons "Add new game" coexistent (desktop trigger + FAB mobile) — on prend le premier (DialogTrigger)
+    const addBtn = screen.getAllByRole('button', { name: /add new game/i })[0];
     await user.click(addBtn);
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
   });
@@ -45,7 +45,7 @@ describe('GamesPage — flux CRUD', () => {
     await waitFor(() => expect(screen.getByText('Wingspan')).toBeInTheDocument());
 
     // Ouvre le dialog d'ajout
-    const addBtn = screen.getByRole('button', { name: /add new game/i });
+    const addBtn = screen.getAllByRole('button', { name: /add new game/i })[0];
     await user.click(addBtn);
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
 
