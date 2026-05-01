@@ -172,12 +172,12 @@ Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview 
 | 32 | ✅ | ~~Header `bg-slate-800/50 backdrop-blur-sm` hardcodé sombre.~~ → **Résolu 2026-05-01** : `bg-background/95 backdrop-blur-sm border-border`. Boutons ghost : `text-muted-foreground hover:text-foreground hover:bg-muted`. Hide-on-scroll déféré (non-bloquant). | — |
 | 33 | ✅ | ~~Preview Expansions/Characters : lien « Gérer » affiché mais cartes non-cliquables — ambiguïté UX.~~ → **Résolu 2026-05-01** : `<Card>` entier cliquable (`cursor-pointer hover:border-primary/50 transition-colors`) → navigation vers management. Bouton « Gérer » retiré, remplacé par `<CaretRight>` indicator. | — |
 | 34 | ✅ | ~~Rating pill `text-amber-400` sur `bg-amber-500/20` ≈ 2.5:1, échec AA en mode clair.~~ → **Résolu 2026-05-01** dans §29 : `bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400`. WCAG AA conforme. | — |
-| 35 | 🟢 | `<TabsTrigger data-[state=active]:bg-primary data-[state=active]:text-primary-foreground>` : dépend du token `--primary`. À vérifier : la valeur exacte de `--primary` dans `theme.json` + que le contraste `primary-foreground/primary` est ≥ 4.5:1. |   |
-| 36 | 🟢 | Pas d'état de chargement visible pendant le fetch du game detail. React Query gère via `isLoading`, mais le composant affiche « … » ou rien → UX pauvre. | Ajouter un skeleton de page dedié (`<GameDetailSkeleton />`) avec `<Skeleton>` pour le hero, le titre, les stats. |
+| 35 | ✅ | ~~`<TabsTrigger data-[state=active]:bg-primary data-[state=active]:text-primary-foreground>` contraste à vérifier.~~ → **Résolu 2026-05-01** : `tabs.tsx` utilise `data-[state=active]:bg-background` + `text-foreground` (≈ 21:1), pas `bg-primary`. Contraste WCAG AA largement conforme. `theme.json` est vide — les tokens CSS sont dans `index.css`. | — |
+| 36 | ✅ | ~~Pas d'état de chargement visible pendant le fetch du game detail → UX pauvre.~~ → **Résolu 2026-05-01** : `<GameDetailSkeleton />` créé (`src/features/games/detail/GameDetailSkeleton.tsx`) avec `<Skeleton>` shadcn pour le header, les tabs, le hero card et les preview cards. `GamePageRoute` affiche le skeleton pendant `isLoading`. | — |
 
 ### Résumé
 
-§29–§33 résolus. Restant : §35-36 🟢 (TabsTrigger contraste à vérifier, skeleton chargement).
+§29–§36 résolus. GameDetail entièrement audité ✅.
 
 ---
 
@@ -189,15 +189,15 @@ Pages secondaires (gestion des extensions et personnages par jeu).
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 37 | 🟡 | `ExpansionCard` en mode sombre utilise `bg-slate-800` **plein** (pas de glass `bg-white/10 backdrop-blur-md`) alors que toutes les autres listes (Games, Players, Plays) utilisent le glass. Deux recettes de carte coexistent dans l'app. | Aligner sur la recette principale : `bg-white/10 backdrop-blur-md rounded-2xl border border-white/20`. |
-| 38 | 🟡 | Layout des boutons Edit/Delete : `flex-1 w-auto` sur Edit et `w-auto` sur Delete → Edit prend toute la largeur restante, Delete reste petit. Asymétrie qui donne l'impression que Delete est secondaire (OK philosophiquement mais visuellement étrange). | `flex-1` sur les deux OU `w-auto` sur les deux — cohérence. |
-| 39 | 🟡 | Character : champ `key` (slug unique interne) est **exposé à l'utilisateur** dans le formulaire et dans la carte affichée. Un concept technique (identifiant de DB/migration) fuite dans l'UX. L'utilisateur voit « elf_mage » alors qu'il a tapé « Elf Mage ». | Auto-générer la key en interne à partir du nom (slugify), **masquer** le champ key dans le formulaire. Si admin avancé souhaite éditer la key, l'exposer sous un `<details>` « Options avancées ». |
-| 40 | 🟢 | Avatar par défaut pour `GameCharacter` = icône `<User>` dans un cercle gris. Clean et non-trompeur, bien. |   |
-| 41 | 🟢 | Pas d'ordre explicite (drag & drop) des expansions. Si un jeu a 15 expansions, l'utilisateur les voit dans l'ordre de création (ou alphabétique ?). | Sortable par date d'ajout / année de parution (dropdown de tri). |
+| 37 | ✅ | ~~`ExpansionCard` utilise `bg-slate-800` hardcodé — deux recettes de carte coexistent.~~ → **Résolu 2026-05-01** : `ExpansionCard` + `CharacterCard` migrés vers `bg-card border-border text-foreground text-muted-foreground`. Zéro token slate hardcodé. Idem pour les empty-state cards. | — |
+| 38 | ✅ | ~~Boutons Edit `flex-1` / Delete `w-auto` → asymétrie.~~ → **Résolu 2026-05-01** : `flex-1 justify-center` sur Edit **et** Delete dans `ExpansionCard` et `CharacterCard`. | — |
+| 39 | ✅ | ~~Champ `character_key` (slug interne) exposé dans le formulaire et la carte.~~ → **Résolu 2026-05-01** : `character_key` retiré du formulaire `CharacterDialog` et de l'affichage carte. Auto-généré via `slugify(name)` dans `useGameCharacters` (ajout : depuis le nom ; édition : clé existante préservée pour éviter les régressions). | — |
+| 40 | ✅ | Avatar par défaut `<User>` dans cercle gris — clean, aucune action requise. → Token migré vers `bg-muted text-muted-foreground` lors du fix §37. | — |
+| 41 | 🟢 | Pas d'ordre explicite des expansions. | Tri par date/année — différé (non-bloquant). |
 
 ### Résumé
 
-Deux pages fonctionnelles mais qui sentent le « feature deuxième priorité » : moins soignées que Games/Players sur la cohérence carte, et un champ technique (`key`) exposé.
+§37–40 résolus. §41 (tri expansions) différé — non-bloquant.
 
 ---
 
@@ -211,10 +211,10 @@ Deux pages fonctionnelles mais qui sentent le « feature deuxième priorité » 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 42 | 🟡 | Fallback avatar = URL Unsplash hardcodée : `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&fm=webp&q=70`. **Tous les joueurs sans avatar uploadé auront le même visage d'une femme blonde**. Implique une identité visuelle fausse + crée une dépendance externe sur Unsplash (rate limits, prise d'otage en cas de panne). | Générer un avatar-initial localement : cercle de couleur dérivée du nom (hash → HSL) + 2 premières lettres en blanc. Composant `<InitialAvatar name={player.player_name} />`. Zéro dépendance externe, identité unique par joueur. |
-| 43 | 🟡 | `PlayerCard` : pour voir les stats d'un joueur, il faut taper **précisément** sur la petite icône `<ChartLineUp>` en haut à droite. Sur mobile, zone ~32 px. La carte entière n'est pas cliquable. | Carte cliquable globale → redirige vers stats du joueur. Le kebab reste pour edit/delete (actions de gestion). |
-| 44 | 🟢 | Stats en haut : 3 cartes avec des couleurs (Total joueurs=teal, Parties jouées=bleu, Victoires=violet). La victoire en **violet** est une convention étrange culturellement — l'or / le jaune est l'attendu. | `text-yellow-600` en clair, `text-yellow-400` en sombre, avec icône `<Trophy>` jaune. |
-| 45 | 🟢 | Mobile kebab `<DotsThreeVertical>` dans un `Button variant="ghost" size="sm"` : `size="sm"` → `h-8` = 32 px. Sous la cible 44 px. | `size="icon"` (= 36 px `size-9`) ou forcer `min-w-11 min-h-11` via `className`. |
+| 42 | ✅ | ~~Fallback avatar = URL Unsplash hardcodée — même visage pour tous + dépendance externe.~~ → **Résolu 2026-05-01** : `<InitialAvatar>` créé (`src/shared/components/InitialAvatar.tsx`) — cercle coloré (hash name → HSL) + 2 initiales blanches. Zéro dépendance externe, identité unique par joueur. | — |
+| 43 | ✅ | ~~Seul l'icône `<ChartLineUp>` (32 px) était cliquable pour les stats.~~ → **Résolu 2026-05-01** : `PlayerCard` entière cliquable (`role="button"`, keyboard support). Desktop : icône `ChartLineUp` retirée, Edit + Delete conservés avec `stopPropagation`. Mobile kebab : item "View Stats" retiré (inutile — la carte suffit). | — |
+| 44 | ✅ | ~~Victoires affichées en violet — convention culturellement incorrecte.~~ → **Résolu 2026-05-01** : `text-yellow-600 dark:text-yellow-400` + icône `<Trophy>` jaune. | — |
+| 45 | ✅ | ~~Mobile kebab `size="sm"` → h-8 = 32 px, sous la cible 44 px.~~ → **Résolu 2026-05-01** : `size="icon" className="size-11"` → 44 px. | — |
 
 ### Empty state — à étudier
 
@@ -253,10 +253,10 @@ Formulaire vertical. Sur desktop, le hero (sélecteur de jeu, mode) est en grand
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 46 | 🔴 | **Mélange français / anglais hardcodé**. Occurrences identifiées : `"Un vainqueur doit être désigné"` (fr), `"Minimum X players required"` (en), `"Maximum of X players reached"` (en), `"Easy"`, `"Hard"`, `"Medium"` (en), `"Competitive"`, `"Cooperative"`, `"Campaign"`, `"Hybrid"` (en), `"Total Objectives Score:"` (en), `"pts"` (en), `"Score"` (en), `"completed"` (en), `"Team Success"` (en), `"Obligatoire"` (fr), `"Aucun gagnant"` (fr). Tout ce contenu côtoie des `t('plays.form.field.duration')` correctement traduits. Résultat : interface **trilingue** (fr / en / keys brutes si label manque). | Audit systématique : `grep -E '"[A-Z][a-z]+ ?[a-z]+"' src/features/plays/` → lister toutes les strings, les externaliser en keys i18n. Estimation : ~40 strings. |
-| 47 | 🔴 | Après la première carte « Game Setup » qui est theme-aware (bien faite), **toutes les cartes suivantes sont hardcodées sombre** : sélection joueurs, scoring coop, scoring compétitif, scoring hybrid, session details. Chaque carte : `bg-white/10 backdrop-blur-md border-white/20 text-white`. En mode clair : 4-5 blocs sombres flottants. L'utilisateur qui a activé le mode clair voit une page 80% inversée. | Refactor : appliquer la même logique de ternaire que dans `Game Setup` ou (mieux) passer aux tokens shadcn. ~30 éléments à modifier. |
-| 48 | 🔴 | **Winner désigné par checkbox, pas par radio**. Code actuel : `<Checkbox checked={winnerId === playerId.toString()} onCheckedChange={(c) => setWinnerId(c ? playerId.toString() : '')} />`. Le comportement force un seul winner (en décochant l'autre) mais la **sémantique HTML est fausse** : un choix parmi N exclusifs = `<input type="radio">`. Avec checkbox, le lecteur d'écran annonce « case à cocher — décochée » pour 4 joueurs puis « cochée » pour un seul ; aucun indice qu'il s'agit d'un choix unique. | Remplacer par `<RadioGroup value={winnerId} onValueChange={setWinnerId}>` + option explicite `"Aucun gagnant / match nul"`. Gain : sémantique correcte, clavier naturel (flèches ↑↓), lecteur d'écran annonce « option 1 de 4 ». |
-| 49 | 🔴 | **Pas d'auto-sauvegarde, pas d'avertissement avant navigation**. Un utilisateur qui remplit 30 champs (mode compétitif avec 6 joueurs + scores + objectifs) et clique accidentellement `ArrowLeft` dans le header ou appuie sur « retour » du navigateur → **perd tout, silencieusement**. Ce type de perte érode la confiance en une seule occurrence. | (a) Draft auto-save en `localStorage` (clé `newPlayDraft_{gameId}`, expire après 24 h) ; (b) `window.addEventListener('beforeunload', handler)` si `formState.isDirty` ; (c) `<AlertDialog>` si l'utilisateur clique retour avec modifications non soumises. |
+| 46 | ✅ | ~~**Mélange français / anglais hardcodé**.~~ → **Résolu 2026-05-01** : toutes les strings hardcodées externalisées en keys i18n via `t()` + `.replace()` pour les paramétriques (`{min}`, `{max}`). Nouvelles keys ajoutées dans `en.json` : `sessions.players.min_required`, `sessions.players.max_reached`, `sessions.cooperative.objectives.*`, `sessions.competitive.no_winner`, `sessions.leave.*`, `sessions.draft.restored`. | — |
+| 47 | ✅ | ~~**Toutes les cartes suivantes hardcodées sombre** (`bg-white/10 backdrop-blur-md border-white/20 text-white`).~~ → **Résolu 2026-05-01** : toutes les cartes migrées vers tokens shadcn `bg-card border-border text-foreground text-muted-foreground`. Plus aucune valeur hardcodée dans `NewPlayView`. | — |
+| 48 | ✅ | ~~**Winner désigné par checkbox, pas par radio** — sémantique HTML fausse.~~ → **Résolu 2026-05-01** : `<RadioGroup value={winnerId} onValueChange={setWinnerId}>` avec option `value=""` « Aucun vainqueur / Match nul » séparée par une bordure. `radio-group.tsx` installé dans `src/shared/components/ui/`. Sémantique correcte, navigation clavier (flèches ↑↓), accessible. | — |
+| 49 | ✅ | ~~**Pas d'auto-sauvegarde, pas d'avertissement avant navigation**.~~ → **Résolu 2026-05-01** : (a) draft auto-save `localStorage` clé `newPlayDraft`, TTL 24 h, restauré au montage avec toast `sessions.draft.restored` ; (b) `beforeunload` handler si `isDirty` ; (c) `<AlertDialog>` sur retour/cancel si form modifié (`requestNavigation` + `confirmLeave`/`cancelLeave`). Draft effacé à la soumission et à la confirmation de départ. | — |
 | 50 | 🟡 | Validation éclatée : erreurs (`competitiveWinnerMissing`, `winnerScoreInvalid`, `durationMissing`) affichées dans les `CardHeader` respectifs, **loin** des champs en cause. L'utilisateur lit l'erreur en haut de carte, puis doit scroller jusqu'au champ concerné. | Double affichage : (a) `<FormMessage>` sous chaque champ en erreur (pattern shadcn standard) ; (b) banner d'erreurs en haut du formulaire avec liens `<a href="#field-id">` pour jump-to-error. |
 | 51 | 🟡 | Champ « Durée » : pas d'astérisque `*obligatoire` tant que l'erreur ne s'est pas déclenchée. L'utilisateur ne sait pas que c'est requis avant l'échec de soumission. | `<Label htmlFor="duration">Durée <span aria-hidden="true" className="text-destructive">*</span></Label>` + `<Input required>`. Clarifié dès l'affichage. |
 | 52 | 🟡 | Coopératif : `Team Success = false` + saisir un score d'équipe = cognitivement contradictoire. Le formulaire accepte les deux en même temps. | Si `teamSuccess === false`, désactiver (ou masquer avec animation) le champ score équipe, avec un helper `"Partie perdue — score optionnel pour le suivi"`. |
@@ -773,16 +773,15 @@ Tailwind config : `borderRadius.DEFAULT = 'var(--radius)'`, etc. Lint `rounded-[
 **État** : l'infrastructure `useLabels` / `t('...')` existe et fonctionne. **Le problème n'est pas l'infra, c'est l'adoption inégale** :
 
 - ✅ Bien utilisé : `PlayersPageView`, `AddPlayerDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog`.
-- 🟡 Partiel : `AddGameDialog`, `EditGameDialog` (titre/boutons encore hardcodés), `NewPlayView` (à vérifier § 46).
-- ✅ Résolu : `PlayerStatsView` (i18n complète via PR #85).
+- 🟡 Partiel : `AddGameDialog`, `EditGameDialog` (titre/boutons encore hardcodés).
+- ✅ Résolu : `PlayerStatsView` (i18n complète via PR #85), `NewPlayView` (§ 46 résolu 2026-05-01).
 
-**Statut après PR #85** : ~40 strings migrées via `t()` sur 9 composants. Restent :
+**Statut après Sprint B** : ~80 strings migrées via `t()`. Restent :
 - `EditGameDialog` : titre dialog et bouton submit hardcodés en français.
 - `AddGameDialog` : quelques labels (§ 91) potentiellement encore présents.
-- `NewPlayView` : à vérifier (§ 46).
 
 **Action restante** :
-1. Vérifier `AddGameDialog` et `NewPlayView` par grep ciblé.
+1. Vérifier `AddGameDialog` par grep ciblé.
 2. Activer `eslint-plugin-i18n-text` pour bloquer les régressions futures.
 
 ### 14.6 Accessibilité — récapitulatif
@@ -877,14 +876,14 @@ Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 réso
 ### Sprint A — Quick wins restants (≤ 1 jour chacun)
 
 1. **🔴 Bottom-nav active-state dérivé du `currentView`** (§ 30). Bouton « Games » toujours actif quelle que soit la page.
-2. **🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `NewPlayView` (§ 46), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé.
+2. **🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé. ~~`NewPlayView` (§ 46) — résolu 2026-05-01.~~
 3. **🟡 Créer le token `gameModeColors` sémantique** (§ 14.2). Élimine les incohérences § 27, § 55, § 69 en un seul fichier.
 
 ### Sprint B — Refactors ciblés (1-3 jours chacun)
 
 4. **🔴 Refactorer `AddGameDialog` + `EditGameDialog`** (§ 89-103). Inputs hardcodés dark, title/boutons partiellement hardcodés, taille dialog trop étroite. Créer `<FormDialog>` (§ 12.10) pour les couvrir en même temps.
-5. **🔴 Winner en `RadioGroup` dans `NewPlayView`** (§ 48). Sémantique HTML incorrecte (checkbox pour choix exclusif).
-6. **🟡 Auto-save + confirmation avant navigation dans `NewPlayView`** (§ 49). Risque de perte de données sur formulaire long.
+5. ~~**🔴 Winner en `RadioGroup` dans `NewPlayView`** (§ 48). Sémantique HTML incorrecte (checkbox pour choix exclusif).~~ → Résolu 2026-05-01.
+6. ~~**🟡 Auto-save + confirmation avant navigation dans `NewPlayView`** (§ 49). Risque de perte de données sur formulaire long.~~ → Résolu 2026-05-01.
 
 ### Sprint C — Chantiers structurants (≥ 1 semaine)
 

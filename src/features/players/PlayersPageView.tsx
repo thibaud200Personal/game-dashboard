@@ -5,11 +5,12 @@ import {
   MagnifyingGlass,
   Users,
   TrendUp,
+  Trophy,
   PencilSimple,
   Trash,
-  ChartLineUp,
   DotsThreeVertical
 } from '@phosphor-icons/react';
+import { InitialAvatar } from '@/shared/components/InitialAvatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -60,14 +61,25 @@ const PlayerCard = React.memo(function PlayerCard({ player, onViewStats, onEdit,
   const { t } = useLabels();
 
   return (
-    <div className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-xl p-4 border border-slate-200 dark:border-white/20 shadow-xl">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onViewStats(player.player_id)}
+      onKeyDown={(e) => e.key === 'Enter' && onViewStats(player.player_id)}
+      className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-xl p-4 border border-slate-200 dark:border-white/20 shadow-xl cursor-pointer hover:border-primary/50 transition-colors"
+      aria-label={`${player.player_name} — ${t('players.card.view_stats')}`}
+    >
       <div className="flex items-center space-x-4">
-        <img
-          src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop&crop=face&fm=webp&q=70`}
-          alt=""
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div className="flex-1">
+        {player.avatar ? (
+          <img
+            src={player.avatar}
+            alt=""
+            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <InitialAvatar name={player.player_name} className="w-12 h-12 flex-shrink-0 text-sm" />
+        )}
+        <div className="flex-1 min-w-0">
           <div className="font-semibold text-slate-900 dark:text-white">{player.player_name}</div>
           {player.pseudo && player.pseudo !== player.player_name && (
             <div className="text-xs text-slate-400 dark:text-white/40">@{player.pseudo}</div>
@@ -78,10 +90,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, onViewStats, onEdit,
           </div>
         </div>
         {/* Actions - Desktop */}
-        <div className="hidden sm:flex items-center space-x-1">
-          <Button variant="ghost" size="sm" onClick={() => onViewStats(player.player_id)} className="text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10" aria-label="View player stats">
-            <ChartLineUp className="w-4 h-4" />
-          </Button>
+        <div className="hidden sm:flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
           <Button variant="ghost" size="sm" onClick={() => onEdit(player)} className="text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10" aria-label="Edit player">
             <PencilSimple className="w-4 h-4" />
           </Button>
@@ -96,18 +105,14 @@ const PlayerCard = React.memo(function PlayerCard({ player, onViewStats, onEdit,
           />
         </div>
         {/* Actions - Mobile */}
-        <div className="sm:hidden">
+        <div className="sm:hidden" onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="icon" className="size-11">
                 <DotsThreeVertical className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white">
-              <DropdownMenuItem onClick={() => onViewStats(player.player_id)} className="hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-white">
-                <ChartLineUp className="w-4 h-4 mr-2" />
-                {t('players.card.menu.view_stats')}
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit(player)} className="hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-white">
                 <PencilSimple className="w-4 h-4 mr-2" />
                 {t('players.card.menu.edit')}
@@ -186,7 +191,10 @@ export function PlayersPageView(props: PlayersPageViewProps) {
           </div>
           <div className="bg-slate-50 dark:bg-white/10 dark:backdrop-blur-md rounded-xl p-3 border border-slate-200 dark:border-white/20">
             <div className="text-center">
-              <div className="text-lg font-bold text-purple-700 dark:text-white">{props.totalWins}</div>
+              <div className="flex items-center justify-center gap-1">
+                <Trophy className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{props.totalWins}</span>
+              </div>
               <div className="text-xs text-slate-500 dark:text-white/60">{t('players.stats.wins')}</div>
             </div>
           </div>

@@ -3,6 +3,9 @@ import { toast } from 'sonner';
 import { GameCharacter, Game } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
 
+const slugify = (text: string) =>
+  text.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') || 'character';
+
 export interface UseGameCharactersProps {
   game: Game;
   onNavigation: (view: string, gameId?: number, source?: string) => void;
@@ -47,15 +50,15 @@ export function useGameCharacters(props: UseGameCharactersProps) {
 
   const handleAddCharacter = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name.trim() || !formData.character_key.trim()) {
-      toast.error(t('character.toast.name_key_required'));
+
+    if (!formData.name.trim()) {
+      toast.error(t('character.toast.name_required'));
       return;
     }
 
     try {
       const characterData = {
-        character_key: formData.character_key.trim(),
+        character_key: slugify(formData.name),
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         avatar: formData.avatar.trim() || undefined,
@@ -74,14 +77,14 @@ export function useGameCharacters(props: UseGameCharactersProps) {
   const handleEditCharacter = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!editingCharacter || !formData.name.trim() || !formData.character_key.trim()) {
-      toast.error(t('character.toast.name_key_required'));
+    if (!editingCharacter || !formData.name.trim()) {
+      toast.error(t('character.toast.name_required'));
       return;
     }
 
     try {
       const characterData = {
-        character_key: formData.character_key.trim(),
+        character_key: formData.character_key || slugify(formData.name),
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
         avatar: formData.avatar.trim() || undefined,

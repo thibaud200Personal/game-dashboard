@@ -44,11 +44,6 @@ export function CharacterDialog({ mode, isOpen, onOpenChange, formData, setFormD
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="character_key">{t('character.form.key.label')}</Label>
-          <Input id="character_key" name="character_key" value={formData.character_key} onChange={onFieldChange} required />
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="avatar">{t('character.form.avatar.label')}</Label>
           <Input id="avatar" name="avatar" type="url" value={formData.avatar} onChange={onFieldChange} />
         </div>
