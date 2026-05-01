@@ -73,9 +73,10 @@ interface TeamScoringBlockProps {
   setTeamSuccess: (v: boolean) => void;
   teamScore: number;
   setTeamScore: (v: number) => void;
+  hintLost: string;
 }
 
-function TeamScoringBlock({ successLabel, scoreLabel, teamSuccess, setTeamSuccess, teamScore, setTeamScore }: TeamScoringBlockProps) {
+function TeamScoringBlock({ successLabel, scoreLabel, teamSuccess, setTeamSuccess, teamScore, setTeamScore, hintLost }: TeamScoringBlockProps) {
   return (
     <>
       <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
@@ -94,6 +95,9 @@ function TeamScoringBlock({ successLabel, scoreLabel, teamSuccess, setTeamSucces
           value={teamScore}
           onChange={(e) => setTeamScore(parseInt(e.target.value) || 0)}
         />
+        {!teamSuccess && (
+          <p className="text-xs text-muted-foreground mt-1">{hintLost}</p>
+        )}
       </div>
     </>
   );
@@ -330,6 +334,7 @@ export default function NewGameView({
                 setTeamSuccess={setTeamSuccess}
                 teamScore={teamScore}
                 setTeamScore={setTeamScore}
+                hintLost={t('sessions.cooperative.team_success.hint_score')}
               />
 
               {/* Objectives */}
@@ -358,46 +363,36 @@ export default function NewGameView({
                   </div>
                 )}
 
-                {objectives.map((objective, index) => (
+                {objectives.map((objective) => (
                   <div key={objective.id} className="space-y-2 p-3 bg-muted/30 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">#{index + 1}</span>
+                      <Checkbox
+                        checked={objective.completed}
+                        onCheckedChange={(checked) => updateObjective(objective.id, 'completed', !!checked)}
+                        className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 flex-shrink-0"
+                      />
+                      <Input
+                        placeholder={t('sessions.cooperative.objectives.description_placeholder')}
+                        value={objective.text}
+                        onChange={(e) => updateObjective(objective.id, 'text', e.target.value)}
+                        className="flex-1 min-w-0"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={objective.points}
+                        onChange={(e) => updateObjective(objective.id, 'points', parseInt(e.target.value) || 0)}
+                        className="w-16 flex-shrink-0"
+                      />
+                      <span className="text-muted-foreground text-sm flex-shrink-0">{t('sessions.cooperative.objectives.pts')}</span>
                       <Button
                         onClick={() => removeObjective(objective.id)}
                         size="sm"
                         variant="ghost"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1 h-auto"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1 h-auto flex-shrink-0"
                       >
                         <Trash className="w-3 h-3" />
                       </Button>
-                    </div>
-
-                    <Input
-                      placeholder={t('sessions.cooperative.objectives.description_placeholder')}
-                      value={objective.text}
-                      onChange={(e) => updateObjective(objective.id, 'text', e.target.value)}
-                    />
-
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={objective.points}
-                          onChange={(e) => updateObjective(objective.id, 'points', parseInt(e.target.value) || 0)}
-                          className="w-20"
-                        />
-                        <span className="text-muted-foreground text-sm">{t('sessions.cooperative.objectives.pts')}</span>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={objective.completed}
-                          onCheckedChange={(checked) => updateObjective(objective.id, 'completed', !!checked)}
-                          className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                        />
-                        <span className="text-muted-foreground text-sm">{t('sessions.cooperative.objectives.completed')}</span>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -428,12 +423,6 @@ export default function NewGameView({
                 <Trophy className="w-5 h-5" />
                 {t('sessions.competitive.title')}
               </CardTitle>
-              {competitiveWinnerMissing && (
-                <p className="text-orange-500 dark:text-orange-400 text-sm mt-1">{t('sessions.competitive.winner_missing')}</p>
-              )}
-              {winnerScoreInvalid && (
-                <p className="text-orange-500 dark:text-orange-400 text-sm mt-1">{t('sessions.competitive.score_invalid')}</p>
-              )}
             </CardHeader>
             <CardContent>
               <RadioGroup value={winnerId} onValueChange={setWinnerId} className="space-y-3">
@@ -452,7 +441,7 @@ export default function NewGameView({
                         placeholder="Score"
                         min={0}
                         max={999}
-                        value={playerScores[playerId] ?? ''}
+                        value={playerScores[playerId] || ''}
                         onChange={(e) => handleScoreChange(playerId, e.target.value)}
                         className="w-20"
                       />
@@ -466,6 +455,12 @@ export default function NewGameView({
                   </Label>
                 </div>
               </RadioGroup>
+              {competitiveWinnerMissing && (
+                <p className="text-orange-500 dark:text-orange-400 text-xs mt-2">{t('sessions.competitive.winner_missing')}</p>
+              )}
+              {winnerScoreInvalid && (
+                <p className="text-orange-500 dark:text-orange-400 text-xs mt-2">{t('sessions.competitive.score_invalid')}</p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -488,6 +483,7 @@ export default function NewGameView({
                   setTeamSuccess={setTeamSuccess}
                   teamScore={teamScore}
                   setTeamScore={setTeamScore}
+                  hintLost={t('sessions.cooperative.team_success.hint_score')}
                 />
               </CardContent>
             </Card>
@@ -514,7 +510,7 @@ export default function NewGameView({
                         placeholder="Score"
                         min={0}
                         max={999}
-                        value={playerScores[playerId] ?? ''}
+                        value={playerScores[playerId] || ''}
                         onChange={(e) => handleScoreChange(playerId, e.target.value)}
                         className="w-20"
                       />
@@ -538,12 +534,16 @@ export default function NewGameView({
             <CardContent className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Label className="text-muted-foreground">{t('sessions.details.duration.label')}</Label>
+                  <Label htmlFor="duration" className="text-muted-foreground">
+                    {t('sessions.details.duration.label')}
+                    <span aria-hidden="true" className="text-destructive ml-0.5">*</span>
+                  </Label>
                   {durationMissing && (
                     <span className="text-destructive text-xs">{t('sessions.details.duration.required')}</span>
                   )}
                 </div>
                 <Input
+                  id="duration"
                   type="number"
                   placeholder="60"
                   min={1}
@@ -553,8 +553,9 @@ export default function NewGameView({
                 />
               </div>
               <div>
-                <Label className="text-muted-foreground">{t('sessions.details.notes.label')}</Label>
+                <Label htmlFor="notes" className="text-muted-foreground">{t('sessions.details.notes.label')}</Label>
                 <Textarea
+                  id="notes"
                   placeholder={t('sessions.details.notes.placeholder')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}

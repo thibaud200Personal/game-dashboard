@@ -108,7 +108,7 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <div className="relative flex-1">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-white/60 w-4 h-4" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             id="bgg-search"
             name="bgg-search"
@@ -125,12 +125,13 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
           disabled={isSearching || isLoadingDetails || !query.trim()}
         >
           {isSearching ? (
-            <Circle className="w-4 h-4 animate-spin" />
+            <Circle className="w-4 h-4 animate-spin" aria-hidden="true" />
           ) : (
             <MagnifyingGlass className="w-4 h-4" />
           )}
         </Button>
       </div>
+      <p className="text-xs text-muted-foreground">{t('bgg.search.hint')}</p>
 
       {searchError && (
         <div className="text-red-700 dark:text-red-400 text-sm p-3 bg-red-100 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
@@ -139,9 +140,9 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
       )}
 
       {isLoadingDetails && (
-        <div className="flex items-center justify-center py-8">
-          <Circle className="w-6 h-6 animate-spin text-teal-400" />
-          <span className="ml-2 text-slate-500 dark:text-white/60">{t('bgg.search.loading_details')}</span>
+        <div role="status" aria-live="polite" className="flex items-center justify-center py-8">
+          <Circle className="w-6 h-6 animate-spin text-primary" aria-hidden="true" />
+          <span className="ml-2 text-muted-foreground">{t('bgg.search.loading_details')}</span>
         </div>
       )}
 
@@ -149,7 +150,7 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
         {searchResults.map((result, index) => (
           <Card
             key={`${result.bgg_id}-${index}`}
-            className="bg-white dark:bg-white/5 dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
+            className="bg-card border-border hover:bg-muted/50 transition-colors cursor-pointer"
             onClick={() => handleGameSelect(result)}
           >
             <CardContent className="p-3">
@@ -161,37 +162,46 @@ export default function BGGSearch({ onGameSelect, onClose }: BGGSearchProps) {
                     className="w-12 h-12 object-cover rounded flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded flex-shrink-0 bg-slate-200 dark:bg-white/10 flex items-center justify-center">
-                    <MagnifyingGlass className="w-5 h-5 text-slate-400 dark:text-white/30" />
+                  <div className="w-12 h-12 rounded flex-shrink-0 bg-muted flex items-center justify-center">
+                    <MagnifyingGlass className="w-5 h-5 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-slate-900 dark:text-white truncate">{result.name}</h3>
+                  <h3 className="font-medium text-foreground truncate">{result.name}</h3>
                   <div className="flex items-center space-x-2 mt-1">
                     {result.year_published !== undefined &&result.year_published > 0 && (
-                      <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
+                      <Badge variant="outline" className="border-border text-muted-foreground text-xs">
                         {result.year_published}
                       </Badge>
                     )}
-                    <Badge variant="outline" className="border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/60 text-xs">
+                    <Badge variant="outline" className="border-border text-muted-foreground text-xs">
                       {result.is_expansion ? t('games.card.expansion') : t('bgg.search.badge.base_game')}
                     </Badge>
                   </div>
                 </div>
-                <Link className="w-4 h-4 text-blue-400 dark:text-white/40 flex-shrink-0" />
+                <a
+                  href={`https://boardgamegeek.com/boardgame/${result.bgg_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={t('bgg.search.result.open_bgg')}
+                  className="text-primary hover:text-primary/80 flex-shrink-0"
+                >
+                  <Link className="w-4 h-4" />
+                </a>
               </div>
             </CardContent>
           </Card>
         ))}
 
         {searchResults.length === 0 && query && !isSearching && (
-          <div className="text-center py-8 text-slate-500 dark:text-white/60">
+          <div className="text-center py-8 text-muted-foreground">
             {t('bgg.search.empty')}
           </div>
         )}
       </div>
 
-      <div className="text-xs text-slate-400 dark:text-white/40 text-center">
+      <div className="text-xs text-muted-foreground text-center">
         {t('bgg.search.footer')}
       </div>
     </div>
