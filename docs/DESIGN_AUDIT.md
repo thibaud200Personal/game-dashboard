@@ -320,11 +320,11 @@ Dashboard stats ambitieux : carte principale (jeu sélectionné ou vue globale),
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 67 | 🔴 | **Feature morte** : les props `selectedPeriod` et `setSelectedPeriod` sont déstructurées avec `_` prefix (convention unused) — `const { _selectedPeriod, _setSelectedPeriod, ... } = props`. La feature « week / month / year / all time » est **câblée dans le hook parent** mais le UI pour la déclencher n'existe pas dans la View. Le filtre « depuis 7 jours » annoncé au design n'est jamais exposé à l'utilisateur. | Deux options équivalentes : (a) **implémenter** : ajouter un `<SegmentedControl>` ou `<Tabs>` en haut (`['7j', '30j', '1 an', 'Tout']`), binder sur `selectedPeriod`. (b) **retirer** : supprimer du hook et des props pour nettoyer. Laisser la feature zombie pourrit le code. |
+| 67 | ✅ | ~~**Feature morte** : les props `selectedPeriod` et `setSelectedPeriod` déstructurées avec `_` prefix.~~ → **Résolu 2026-05-02** : props `selectedPeriod`, `setSelectedPeriod`, `onNavigation`, `selectedGameId` supprimées de `GameStatsViewProps` et de l'appel dans `GameStatsPage`. Hook garde l'état en interne (test couvert). | — |
 | 68 | 🟡 | Bar chart « Score Trend » : rendered en `<div>` avec `title={...}` au survol. Axes absents, labels d'échelle absents, tooltip desktop-only (mobile tap ne le déclenche pas). → **Décoratif, pas informationnel.** | Migrer vers `recharts` (déjà dans `components.json` des plugins shadcn, donc `<ChartContainer>` / `<BarChart>` disponibles). Axes X (dates), Y (score), tooltip interactif au tap. |
 | 69 | 🟡 | Distribution « Session Types » : `hybrid=vert` ici, mais `hybrid=orange` dans `GamesPageView` et `hybrid=bleu` dans `NewPlayView`. `cooperative=bleu` (cohérent avec Games) mais `competitive=rouge` (cohérent). | Token unique (voir § 14.2). |
-| 70 | 🟡 | `topWinners` : `getMedalClass(index)` renvoie or/argent/bronze pour `index` 0-2, et au-delà ? Si > 3 winners affichés, comportement indéterminé (fallback à une couleur neutre ? bug silencieux ?). | Vérifier le fallback ; si `index >= 3`, renvoyer un cercle neutre `bg-muted` avec le numéro en `text-muted-foreground`. Tester avec 5+ items. |
-| 71 | 🟡 | Image fallback pour jeu sans thumbnail : URL Unsplash `photo-1606092195730-...` — même problème qu'au § 42, dépendance externe + fake identité. | Placeholder SVG interne : carte de jeu générique stylisée (damier + meeple). Fichier `src/shared/assets/game-placeholder.svg`. |
+| 70 | ✅ | ~~`getMedalClass(index)` : comportement indéterminé au-delà de l'index 2.~~ → **Vérifié 2026-05-02** : `getMedalClass` retourne `'bg-primary/20 text-primary'` pour `index >= 3` via opérateur `??`. Fallback correct. | — |
+| 71 | ✅ | ~~Image fallback pour jeu sans thumbnail : URL Unsplash dépendance externe.~~ → **Résolu 2026-05-02** : fallback `<div className="bg-muted"><ChartBar className="text-muted-foreground" /></div>` inline — zéro dépendance externe. | — |
 | 72 | 🟢 | Transition non-animée entre « vue globale » et « jeu sélectionné » (`isGlobalStats` bascule). L'utilisateur voit un flash de contenu différent. | `<AnimatePresence>` de framer-motion (déjà installé via tw-animate-css ?) + fade 200ms. |
 | 73 | 🟢 | `ChartBar className="w-5 h-5 text-primary"` dans un `<h2>` : décoratif, bien, OK. |   |
 
@@ -346,11 +346,11 @@ Vitrine ambitieuse, implémentation à moitié. **Un dashboard qui montre un fil
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
 | 76 | 🟡 | Sur la vue globale (`!selectedPlayer`), deux sections sont affichées successivement : « Top Players » (liste triée par score) ET « Recent Activity » (liste des dernières actions). **Les deux utilisent le même composant `ActivityRow` avec des données qui se chevauchent** — un top player peut apparaître deux fois, une fois dans chaque liste. Scroll long, contenu redondant. | Fusionner en une section unique « Activité joueurs » avec filtres (`[Top de la semaine] [Top all-time] [Plus récents]`). Gain : -1 card (~200 px de scroll). |
-| 77 | 🟡 | 4 stat cards en `grid-cols-2` + `p-6` chacune = ~400 px de hauteur totale sur mobile. **Plus de la moitié de la hauteur d'écran pour 4 chiffres.** | Passer à `p-4` (gain ~40%), ou design ticker horizontal scrollable. |
-| 78 | 🟡 | Quand pas de joueur sélectionné, la section « Stats globales » n'affiche que **2 cartes** (`totalPlayers`, `avgScore`) dans une `grid-cols-2`. Les deux cartes prennent tout l'écran pour 2 nombres. | Compacter : ligne horizontale `<div className="flex gap-4">` avec stats inline, icône + valeur + label en 1 ligne. |
+| 77 | ✅ | ~~4 stat cards en `grid-cols-2` + `p-6` = ~400 px de hauteur totale.~~ → **Résolu 2026-05-02** : `p-6` → `p-4` sur `cardClass` (gain ~40 px de hauteur). | — |
+| 78 | ✅ | ~~2 cartes globales dans `grid-cols-2` — deux chiffres prennent tout l'écran.~~ → **Résolu 2026-05-02** : remplacé par une ligne horizontale `flex gap-6` avec icône + valeur + label inline, demi-hauteur. | — |
 | 79 | 🟢 | Classement `rounded-full bg-gradient-to-r from-yellow-400 to-orange-500` avec `text-black` : contraste OK (texte noir sur jaune saturé ≈ 10:1). |   |
 | 80 | 🟢 | `ActivityRow` rendered avec `<div>` non focusable. Si elles doivent devenir cliquables (stats détail player), `<button>` + `aria-label`. |   |
-| 81 | 🟢 | Fallback avatar Unsplash identique à § 42 — même recommandation : générateur d'avatar-initial. |   |
+| 81 | ✅ | ~~Fallback avatar Unsplash identique à § 42.~~ → **Résolu 2026-05-02** : `<PlayerAvatar name={} url={}>` dans `PlayerStatsView` (selectedPlayer + top players) et `GameStatsView` (topWinners). | — |
 
 ### Résumé
 
@@ -435,10 +435,10 @@ Réécrit sur le modèle de `DeleteExpansionDialog` : `useLabels()` + `t()` pour
 |---|---|---|---|
 | 108 | 🟢 | Validation utilisée correctement avec `t()` : `t('players.form.validation.name_required')`. **Bonne pratique** — exemple à reproduire ailleurs. |   |
 | 109 | 🟢 | Comportement intelligent : auto-fill du pseudo à partir du player_name tant que l'utilisateur n'a pas tapé dans le champ pseudo. UX positive. |   |
-| 110 | 🟡 | Description dialog hardcodée anglais : `"Create a new player profile by filling out the form below."`. Le title, lui, utilise `t('players.add_dialog.title')`. Incohérence interne. | i18n description. |
-| 111 | 🟡 | Labels hardcodés français : `"Nom *"`, `"Pseudo *"`, `"Avatar URL"`. Les placeholders aussi : `"Prénom ou nom complet"`, `"Identifiant unique"`. Si l'app bascule en anglais, labels restent FR. | i18n. |
-| 112 | 🟡 | Labels en mode clair : `text-blue-700`. Même problème que § 100. | Tokens. |
-| 113 | 🔴 | Trigger en mode clair : `"bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 text-blue-700"`. **Gradient bleu** — casse l'identité teal/emerald. En mode sombre, le trigger est teal (cohérent), mais le dev a choisi bleu pour le mode clair. Bizarre et **visible immédiatement**. | Tokens teal : `"bg-teal-100 hover:bg-teal-200 text-teal-700"` ou `variant="default"`. |
+| 110 | ✅ | ~~Description dialog hardcodée anglais.~~ → **Résolu** (Sprint B) : `t('players.add_dialog.description')`. | — |
+| 111 | ✅ | ~~Labels hardcodés français.~~ → **Résolu** (Sprint B) : `t('players.form.name.label')`, `t('players.form.pseudo.label')`, placeholders via `t()`. | — |
+| 112 | ✅ | ~~Labels `text-blue-700` en mode clair.~~ → **Résolu** (Sprint B) : labels sans classe couleur, héritent du token. | — |
+| 113 | ✅ | ~~Trigger gradient bleu en mode clair.~~ → **Résolu** (Sprint B) : `from-teal-500 to-teal-600` uniforme. | — |
 
 ### 12.6 `EditPlayerDialog.tsx` — ✅ Résolu
 
@@ -454,11 +454,11 @@ Réécrit sur le modèle de `DeleteExpansionDialog`, identique à § 12.4.
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 122 | 🟢 | Le `<DialogContent>` wrapper est theme-aware avec `darkMode ? ... : ...`. Bon. |   |
-| 123 | 🟡 | **Labels hardcodés** : `<Label className="text-white">`. En mode clair, label blanc sur fond clair = invisible. | `className="text-foreground"`. |
-| 124 | 🟡 | **Inputs hardcodés** : `"bg-slate-700/50 border-slate-600 text-white"`. Même problème qu'AddGameDialog. | Tokens. |
-| 125 | 🟡 | Cancel button hardcodé : `"border-slate-600 text-slate-300 hover:bg-slate-700/50"`. | `<AlertDialogCancel>` sans class → utilise `buttonVariants({ variant: 'outline' })`. |
-| 126 | 🟢 | `<AlertDialogAction>` pour la suppression utilise `bg-destructive hover:bg-destructive/90` (tokens). **Bonne pratique** — c'est la seule chose qui fonctionne en light & dark. |   |
+| 122 | ✅ | ~~`<DialogContent>` hardcodé dark.~~ → **Résolu** (Sprint B) : refactorisé vers `BaseFormDialog` — tokens shadcn, aucune classe couleur dans les wrappers. | — |
+| 123 | ✅ | ~~Labels `<Label className="text-white">` invisibles en mode clair.~~ → **Résolu** (Sprint B) : `<Label>` sans classe — hérite `text-foreground`. | — |
+| 124 | ✅ | ~~Inputs hardcodés `bg-slate-700/50 border-slate-600 text-white`.~~ → **Résolu** (Sprint B) : `<Input>` sans className couleur — tokens shadcn. | — |
+| 125 | ✅ | ~~Cancel button hardcodé.~~ → **Résolu** (Sprint B) : `<FormActions>` utilise `variant="outline"` shadcn. | — |
+| 126 | 🟢 | `<AlertDialogAction>` pour la suppression utilise `bg-destructive hover:bg-destructive/90` (tokens). **Bonne pratique.** |   |
 
 ### 12.9 `CharacterDialogs.tsx`
 
@@ -466,8 +466,8 @@ Même structure qu'`ExpansionDialogs`, mêmes findings.
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 127 | 🟡 | Même patchwork theme-aware wrapper / form fields hardcodés. | Voir § 122-126. |
-| 128 | 🔴 | **Champ `key` exposé dans le formulaire utilisateur**. Un slug technique (ex. `elf_mage`) n'a pas sa place dans l'UX finale — l'utilisateur ne comprend pas la différence entre « Name » et « Key ». | Auto-générer la key à la soumission : `slugify(character.name)`. Masquer le champ. Si besoin de contrôle avancé, `<details>` « Options avancées ». |
+| 127 | ✅ | ~~Même patchwork theme-aware / form fields hardcodés.~~ → **Résolu** (Sprint B) : refactorisé vers `BaseFormDialog` + tokens — identique à ExpansionDialogs. | — |
+| 128 | ✅ | ~~Champ `key` exposé dans le formulaire utilisateur.~~ → **Résolu** (Sprint B) : champ `character_key` absent du formulaire refactorisé — name, avatar, description, abilities seulement. | — |
 
 ### 12.10 Synthèse dialogs
 

@@ -8,6 +8,7 @@ import {
   TrendUp,
 } from '@phosphor-icons/react';
 import { useLabels } from '@/shared/hooks/useLabels';
+import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 
 interface Player {
   player_id: number
@@ -120,7 +121,7 @@ export default function PlayerStatsView({
 
   const labelClass = "text-slate-500 dark:text-white/60 text-sm";
   const titleClass = "text-2xl font-bold text-slate-900 dark:text-white";
-  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-6 border border-slate-300 dark:border-white/20 shadow-xl";
+  const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
   const cardSmClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
   const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
   const valueClass = "text-slate-900 dark:text-white";
@@ -133,12 +134,7 @@ export default function PlayerStatsView({
         <>
           <div className={cardClass}>
             <div className="flex items-center space-x-4 mb-6">
-              <img
-                src={selectedPlayer.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face&fm=webp&q=70`}
-                alt=""
-                className="w-16 h-16 rounded-full object-cover"
-                loading="lazy"
-              />
+              <PlayerAvatar name={selectedPlayer.player_name} url={selectedPlayer.avatar} className="w-16 h-16 text-base" />
               <div>
                 <h2 className={titleClass}>{selectedPlayer.player_name}</h2>
                 <p className={labelClass}>{t('stats.player.profile')}</p>
@@ -164,9 +160,21 @@ export default function PlayerStatsView({
           )}
         </>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={stats.totalPlayers} label={t('stats.player.stat.total_players')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-          <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={stats.avgScore} label={t('stats.player.stat.avg_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+        <div className="bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl flex gap-6">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0"><Trophy className="w-4 h-4 text-white" /></div>
+            <div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.totalPlayers}</div>
+              <div className={labelClass}>{t('stats.player.stat.total_players')}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0"><Target className="w-4 h-4 text-white" /></div>
+            <div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.avgScore}</div>
+              <div className={labelClass}>{t('stats.player.stat.avg_score')}</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -183,12 +191,7 @@ export default function PlayerStatsView({
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold text-sm">
                   {index + 1}
                 </div>
-                <img
-                  src={player.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face&fm=webp&q=70`}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover"
-                  loading="lazy"
-                />
+                <PlayerAvatar name={player.player_name} url={player.avatar} className="w-8 h-8 text-xs" />
                 <div className="flex-1">
                   <div className={valueClass + " font-medium"}>{player.player_name}</div>
                   <div className={labelClass}>{player.total_score} pts</div>

@@ -14,16 +14,13 @@ import { useGameStatsPage } from './useGameStatsPage';
 import { getMedalClass } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
+import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 
 interface GameStatsViewProps {
-  selectedPeriod: 'week' | 'month' | 'year' | 'all'
-  setSelectedPeriod: (period: 'week' | 'month' | 'year' | 'all') => void
   selectedGame: Game | null
   setSelectedGame: (game: Game | null) => void
   gameStats: ReturnType<typeof useGameStatsPage>['gameStats']
   games: Game[]
-  onNavigation: (view: string) => void
-  selectedGameId?: number
   players: Player[]
 }
 
@@ -46,14 +43,10 @@ function StatCard({ icon, value, label }: StatCardProps) {
 }
 
 export default function GameStatsView({
-  selectedPeriod: _selectedPeriod,
-  setSelectedPeriod: _setSelectedPeriod,
   selectedGame,
   setSelectedGame,
   gameStats,
   games,
-  onNavigation: _onNavigation,
-  selectedGameId: _selectedGameId,
   players,
 }: GameStatsViewProps) {
   const { t } = useLabels();
@@ -85,13 +78,17 @@ export default function GameStatsView({
             <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <ChartBar className="w-8 h-8 text-white" />
             </div>
-          ) : (
+          ) : selectedGame?.image ? (
             <img
-              src={selectedGame?.image || 'https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=128&h=128&fit=crop&fm=webp&q=70'}
+              src={selectedGame.image}
               alt=""
               className="w-16 h-16 rounded-lg object-cover"
               loading="lazy"
             />
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+              <ChartBar className="w-8 h-8 text-muted-foreground" />
+            </div>
           )}
           <div>
             <h2 className={titleClass}>
@@ -141,12 +138,18 @@ export default function GameStatsView({
                   onClick={() => setSelectedGame(game)}
                   className="flex items-center space-x-3 p-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition-colors text-left"
                 >
-                  <img
-                    src={game.image || 'https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=96&h=96&fit=crop&fm=webp&q=70'}
-                    alt=""
-                    className="w-12 h-12 rounded-lg object-cover"
-                    loading="lazy"
-                  />
+                  {game.image ? (
+                    <img
+                      src={game.image}
+                      alt=""
+                      className="w-12 h-12 rounded-lg object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                      <ChartBar className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className={`${valueClass} font-medium`}>{game.name}</div>
                     <div className={labelClass}>{gameSessions} {t('stats.game.sessions_label')}</div>
@@ -276,12 +279,7 @@ export default function GameStatsView({
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${getMedalClass(index)}`}>
                 {index + 1}
               </div>
-              <img
-                src={winner.player?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face&fm=webp&q=70'}
-                alt=""
-                className="w-10 h-10 rounded-full object-cover"
-                loading="lazy"
-              />
+              <PlayerAvatar name={winner.player?.player_name ?? ''} url={winner.player?.avatar} className="w-10 h-10 text-xs" />
               <div className="flex-1">
                 <div className={`${valueClass} font-medium`}>{winner.player?.player_name}</div>
                 <div className={labelClass}>{winner.wins} {t('stats.game.top_winners.wins')}</div>
