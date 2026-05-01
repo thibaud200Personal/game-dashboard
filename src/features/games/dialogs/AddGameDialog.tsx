@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Plus, Link } from '@phosphor-icons/react';
 import BGGSearch from '@/features/bgg/BGGSearch';
@@ -15,9 +15,12 @@ export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDa
 
   return (
     <Dialog open={isOpen} onOpenChange={(v) => { onOpenChange(v); if(!v) onResetForm(); }}>
-      <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Ajouter un jeu</Button></DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Ajouter un nouveau jeu</DialogTitle></DialogHeader>
+      <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> {t('games.add_dialog.title')}</Button></DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>{t('games.add_dialog.title')}</DialogTitle>
+          <DialogDescription>{t('games.add_dialog.description')}</DialogDescription>
+        </DialogHeader>
 
         <Button variant="outline" className="w-full mb-4 border-teal-600" onClick={() => onBGGSearchToggle(true)}>
           <Link className="mr-2 h-4 w-4" /> {t('games.form.bgg_search')}
@@ -33,7 +36,7 @@ export default function AddGameDialog({ isOpen, onOpenChange, formData, onFormDa
           onRemoveCharacter={handleRemoveCharacter}
         />
 
-        <Button className="w-full mt-4 bg-teal-600" onClick={onAddGame}>Enregistrer le jeu</Button>
+        <Button className="w-full mt-4" onClick={onAddGame}>{t('games.add_dialog.submit')}</Button>
       </DialogContent>
     </Dialog>
   );

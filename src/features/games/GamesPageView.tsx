@@ -86,7 +86,7 @@ function getGameModesBadges(game: Game, t: (key: string) => string): React.React
     const colors = gameModeColors[mode] ?? gameModeFallback;
     return [
       <Badge key={mode} variant="outline" className={`${colors.badge} text-xs`}>
-        {MODE_ICONS[mode]}{t(`games.mode.${mode}`)}
+        {MODE_ICONS[mode]}{t(`games.card.modes.${mode}`)}
       </Badge>
     ];
   });
@@ -198,7 +198,7 @@ const GameCard = React.memo(function GameCard({ game, expandedGame, setExpandedG
 
                 <div className="flex flex-wrap gap-2 mb-2">
                   {game.is_expansion && (
-                    <Badge variant="outline" className="border-amber-500/40 text-amber-400 text-xs">
+                    <Badge variant="outline" className="border-amber-600/60 text-amber-700 dark:border-amber-500/40 dark:text-amber-400 text-xs">
                       {t('games.card.expansion')}
                     </Badge>
                   )}
@@ -452,17 +452,17 @@ export function GamesPageView(props: GamesPageViewProps) {
         {/* Games Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className={statCardClass}>
-            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalGames}</div>
+            <div className="text-2xl font-bold text-foreground">{totalGames}</div>
             <div className={statSubClass}>{t('games.stats.total')}</div>
           </div>
           <div className={statCardClass}>
-            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+            <div className="text-2xl font-bold text-foreground">
               {[...new Set(safeGames.map(g => g.category || 'Unknown'))].length}
             </div>
             <div className={statSubClass}>{t('games.stats.categories')}</div>
           </div>
           <div className={statCardClass}>
-            <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">
+            <div className="text-2xl font-bold text-foreground">
               {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
             </div>
             <div className={statSubClass}>{t('games.stats.avg_rating')}</div>

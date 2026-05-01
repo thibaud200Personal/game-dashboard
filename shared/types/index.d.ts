@@ -83,6 +83,10 @@ export interface GameFormData {
   bgg_id?: number;
   thumbnail?: string;
   playing_time?: number;
+  min_playtime?: number;
+  max_playtime?: number;
+  categories?: string[];
+  mechanics?: string[];
 }
 
 export interface GameValidationErrors {

@@ -2,7 +2,7 @@
 
 **Portée** : revue exhaustive page par page (`src/features/**/View.tsx`), dialogs (`src/features/**/dialogs/*.tsx`), primitives UI (`src/shared/components/ui/*.tsx`), et patterns transverses.
 **Date** : 2026-04-18
-**Mise à jour** : 2026-04-30 — nettoyage post-sprints + fix §1 Login + fix §11 Settings + fix §11-12-14-15-16 Dashboard. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
+**Mise à jour** : 2026-05-01 — Sprint A terminé (PR #95) + fix régressions PR #91 (labels, GameForm, i18n, bottom-nav) + Sprint B §24-30 GamesPageView + GameDetailView. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
 **Méthode** : lecture ligne-à-ligne du code, cross-reference avec les spécifications WCAG 2.1 AA, audit de cohérence entre pages et entre modes clair/sombre.
 
 ---
@@ -139,10 +139,10 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 | 21 | ✅ | ~~`DropdownMenuContent` hardcodé dark.~~ → **Résolu** : `<DropdownMenuContent align="end">` sans classes couleur — tokens shadcn. Items : `dark:` préfixés via `dropdownItemClass` dans `gameHelpers.ts`. | — |
 | 22 | ✅ | ~~Double point d'entrée Add Game simultanément visible.~~ → **Résolu** : FAB `md:hidden` (mobile only), trigger header enveloppé dans `hidden md:flex` (desktop only). | — |
 | 23 | ✅ | ~~Actions desktop carte : `p-2` + `w-4 h-4` ≈ 32 px.~~ → **Résolu** : `p-2.5` + `w-5 h-5` ≈ 44 px sur les 4 boutons (Eye, ChartLineUp, PencilSimple, Trash). | — |
-| 24 | 🟡 | Le bouton `caret` d'expand/collapse est un `<button>` imbriqué dans une grille de badges, elle-même dans un container qui peut être cliquable (suivant le contexte). **Boutons imbriqués = HTML invalide + comportement lecteur d'écran cassé + navigation clavier confuse**. | Séparer : la carte n'est pas cliquable globalement, les actions (ouvrir, expand) sont des boutons explicites et distincts. |
-| 25 | 🟡 | Badge « Extension » : `<Badge variant="outline" className="border-amber-500/40 text-amber-400">`. Calcul en mode clair : `#f59e0b` (amber-400) sur `#ffffff` ≈ **2.3:1**. Échec AA. Et la bordure `border-amber-500/40` est à peine visible. | Tokens sémantiques par mode : `dark:text-amber-400 dark:border-amber-500/40 text-amber-700 border-amber-600/60`. |
-| 26 | 🟢 | Stats en haut : 3 cartes avec des couleurs arbitraires — `text-emerald-400` pour « Jeux », `text-blue-400` pour « Joueurs actifs », `text-purple-400` pour « Cette semaine ». Le choix de couleur ne véhicule aucune information sémantique — c'est décoratif. Pour l'utilisateur, c'est du bruit. | Adopter une couleur unique neutre (`text-foreground`) et réserver les accents pour les statuts (positif/négatif) et les modes de session. |
-| 27 | 🟢 | Incohérence de palette : dans `GamesPageView`, mode `competitive=rouge`, `cooperative=bleu`, `campaign=violet`, `hybrid=orange`. Dans `GameStatsView.distribution`, mode `cooperative=bleu` (OK) mais `hybrid=vert`. Dans `NewPlayView`, `competitive=orange`. Au moins **3 mappings incompatibles** pour le même concept. | Fichier unique `src/shared/theme/gameModeColors.ts` exportant un objet `{ competitive: { bg, text, border }, cooperative: {...}, ... }`, importé partout. Supprimer les classes inline pour ces couleurs. |
+| 24 | ✅ | ~~Le bouton `caret` d'expand/collapse est un `<button>` imbriqué dans une grille de badges, elle-même dans un container qui peut être cliquable.~~ → **Analysé 2026-05-01** : le caret est un `<button>` autonome dans la zone de badges, la `<Card>` n'est pas un élément interactif. HTML valide, pas de boutons imbriqués. Aucune action requise. | — |
+| 25 | ✅ | ~~Badge « Extension » : `text-amber-400` sur blanc ≈ 2.3:1. Échec AA.~~ → **Résolu 2026-05-01** : `border-amber-600/60 text-amber-700 dark:border-amber-500/40 dark:text-amber-400`. WCAG AA conforme en mode clair. | — |
+| 26 | ✅ | ~~Stats en haut : couleurs arbitraires emerald/blue/purple sans valeur sémantique.~~ → **Résolu 2026-05-01** : `text-emerald-700/blue-700/purple-700 dark:*-400` → `text-foreground` sur les 3 valeurs. | — |
+| 27 | ✅ | ~~Incohérence de palette gameModeColors entre pages.~~ → **Résolu PR #91** : `src/shared/theme/gameModeColors.ts` créé, importé dans GamesPageView, GameStatsView, NewPlayView. | — |
 
 ### Accessibilité
 
@@ -152,7 +152,7 @@ La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : 
 
 ### Résumé
 
-Page informativement riche mais cognitivement lourde. Critiques restantes : §21 (DropdownMenu hardcodé dark), §22 (double point d'entrée Add), §23 (zones tactiles cartes).
+Page informativement riche mais cognitivement lourde. §24-27 tous résolus. Aucun finding restant dans cette section.
 
 ---
 
@@ -160,24 +160,24 @@ Page informativement riche mais cognitivement lourde. Critiques restantes : §21
 
 ### Première impression
 
-Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview / Expansions / Characters. Bien structurée sur desktop. Le double `<h1>` a été corrigé. Les problèmes restants concernent `GameOverview` (hardcodé dark, § 29) et la bottom-nav toujours active (§ 30).
+Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview / Expansions / Characters. Bien structurée sur desktop. Le double `<h1>` a été corrigé. §29 (GameOverview tokens) et §30 (bottom-nav) résolus le 2026-05-01. Restant : §31 (kebab mobile), §32 (header bg hardcodé).
 
 ### Constats détaillés
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 29 | 🔴 | `GameOverview` (composant imbriqué) est **entièrement hardcodé sombre** : `bg-slate-800/50`, `border-slate-700/50`, `text-white`, `text-slate-300`, `text-slate-400`. Le wrapper externe applique `darkMode ? "" : "bg-white text-slate-900"` mais les cartes internes restent sombres. En mode clair, blocs sombres flottant au milieu d'une page claire — **break visuel majeur**. | Refactor complet de `GameOverview` : remplacer tous les `bg-slate-800/*`, `border-slate-700/*`, `text-white`, `text-slate-300` par les tokens shadcn (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`). Une passe globale — ~40 remplacements. |
-| 30 | 🔴 | Bottom nav mobile : `<button className="... text-primary">` pour l'onglet « Games » sans condition. Le bouton est **toujours en state actif** peu importe la page courante. Sur la Dashboard, l'onglet « Games » est bleu-actif → incohérence mentale. | Dériver `isActive` depuis `currentView`/route : `className={currentView === 'games' ? 'text-primary' : 'text-muted-foreground'}`. À faire pour les 4 onglets (Dashboard, Games, Players, Stats). |
-| 31 | 🟡 | Le kebab mobile mélange **5 items** dont 3 sont des onglets de navigation (« Overview », « Expansions », « Characters ») et 2 sont des actions (« Edit », « Delete »). Sur mobile, c'est le seul moyen d'accéder aux onglets Expansions/Characters → comportement non-standard. | Séparer : en mobile, afficher les **onglets visiblement** en haut de la page (comme en desktop, `<TabsList>` horizontal scrollable si nécessaire), et réserver le kebab aux actions de gestion (Edit/Delete). |
-| 32 | 🟡 | Header `sticky top-0 z-10 bg-slate-800/50 backdrop-blur-sm`. Fond sombre hardcodé qui flotte en mode clair au-dessus du contenu clair : rupture visuelle. Double contrainte : sur sticky + bottom-nav fixed, l'utilisateur perd ~112 px d'écran utile en permanence sur mobile. | (a) Theme-aware : `bg-background/80` ; (b) envisager `hide-on-scroll` : cacher la header quand on scrolle vers le bas (pattern IntersectionObserver), réapparaître au scroll up. Gain écran utile : ~64 px. |
-| 33 | 🟡 | Preview Expansions/Characters sur desktop : un lien « Gérer » est affiché mais les cartes d'extension/personnage **ne sont pas cliquables**. Incohérent avec la liste de jeux où la carte est cliquable. L'utilisateur hésite — clic centré sur la carte ou sur « Gérer » ? | Soit carte cliquable + ghost-link « Gérer » retiré, soit carte non-cliquable + `hover:bg-...` retiré pour ne pas suggérer l'interactivité. |
-| 34 | 🟡 | Rating pill `<div className="bg-amber-500/20 text-amber-400 rounded-full px-3 py-1 flex items-center gap-1">` en top-right de la carte principale. Accroche visuelle forte — compétition avec le titre. En mode clair : `text-amber-400` sur `bg-amber-500/20` ≈ **2.5:1**, échec AA. | (a) Contraste : `text-amber-700` en mode clair ; (b) hiérarchie : intégrer la note dans une ligne de stats sous le titre, plus discrète. |
+| 29 | ✅ | ~~`GameOverview` entièrement hardcodé sombre : `bg-slate-800/50`, `border-slate-700/50`, `text-white`, `text-slate-300`, `text-slate-400`.~~ → **Résolu 2026-05-01** : refactor complet — `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`, `bg-muted`, `bg-muted/50`. Page wrapper `bg-gradient-to-br slate` → `bg-background`. Rating pill amber WCAG AA corrigé. | — |
+| 30 | ✅ | ~~Bottom nav mobile : onglet « Games » toujours `text-primary` peu importe la page.~~ → **Résolu 2026-05-01** : bottom-nav dupliquée inline dans `GameDetailView` supprimée. Le `<Layout>` global fournit `<BottomNavigation>` avec `useLocation()` correct. | — |
+| 31 | ✅ | ~~Le kebab mobile mélange 5 items : 3 onglets de navigation + 2 actions de gestion.~~ → **Résolu 2026-05-01** : kebab réduit aux 2 actions de gestion (Manage Expansions / Manage Characters). `<TabsList>` rendu sur toutes les tailles d'écran (suppression des blocs `hidden md:block` / `md:hidden` séparés — un seul `<Tabs>` unifié). | — |
+| 32 | ✅ | ~~Header `bg-slate-800/50 backdrop-blur-sm` hardcodé sombre.~~ → **Résolu 2026-05-01** : `bg-background/95 backdrop-blur-sm border-border`. Boutons ghost : `text-muted-foreground hover:text-foreground hover:bg-muted`. Hide-on-scroll déféré (non-bloquant). | — |
+| 33 | ✅ | ~~Preview Expansions/Characters : lien « Gérer » affiché mais cartes non-cliquables — ambiguïté UX.~~ → **Résolu 2026-05-01** : `<Card>` entier cliquable (`cursor-pointer hover:border-primary/50 transition-colors`) → navigation vers management. Bouton « Gérer » retiré, remplacé par `<CaretRight>` indicator. | — |
+| 34 | ✅ | ~~Rating pill `text-amber-400` sur `bg-amber-500/20` ≈ 2.5:1, échec AA en mode clair.~~ → **Résolu 2026-05-01** dans §29 : `bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400`. WCAG AA conforme. | — |
 | 35 | 🟢 | `<TabsTrigger data-[state=active]:bg-primary data-[state=active]:text-primary-foreground>` : dépend du token `--primary`. À vérifier : la valeur exacte de `--primary` dans `theme.json` + que le contraste `primary-foreground/primary` est ≥ 4.5:1. |   |
 | 36 | 🟢 | Pas d'état de chargement visible pendant le fetch du game detail. React Query gère via `isLoading`, mais le composant affiche « … » ou rien → UX pauvre. | Ajouter un skeleton de page dedié (`<GameDetailSkeleton />`) avec `<Skeleton>` pour le hero, le titre, les stats. |
 
 ### Résumé
 
-La page contient **2 problèmes critiques** restants : `GameOverview` hardcodé dark (§ 29) et bottom-nav toujours active (§ 30). Tous deux sont des bugs factuels. Le refactor de `GameOverview` est le plus lourd (~40 remplacements).
+§29–§33 résolus. Restant : §35-36 🟢 (TabsTrigger contraste à vérifier, skeleton chargement).
 
 ---
 
