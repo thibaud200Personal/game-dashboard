@@ -2,25 +2,31 @@
 
 **📈 Status**: 346 tests (212 backend + 134 frontend) · Phase 3 in progress
 
-## TECH DEBT AND BUGS
+---
 
-#### PENDING [Details](docs/TECH_DEBT_AND_BUGS.md)
-#### DONE [Details](docs/TECH_DEBT_&_BUGS_DONE.md)
+## 🧹 TECH DEBT & BUGS
 
-## DESIGN
-
-#### DESIGN_AUDIT [Details](docs/DESIGN_AUDIT.md)
-
-## 🎯 Current Phase — Phase 3: UX Polish
-
-Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`), time-series charts + backend BGG cache to implement. → [see detail](#-phase-3--ux-polish)
+- 🟡 [Pending](docs/TECH_DEBT_AND_BUGS.md)
+- 🟢 [Done](docs/TECH_DEBT_AND_BUGS_DONE.md)
 
 ---
 
-## Evolution Plan
+## 🎨 DESIGN
 
-#### ✅ Phase 1 — Foundation (complete) [Details](docs/ROADMAP_ARCHIVE.md)
-#### ✅ Phase 2 — BGG & DB Polish (complete)[Details](docs/ROADMAP_ARCHIVE.md)
+- 📊 [Design Audit](docs/DESIGN_AUDIT.md)
+
+---
+
+## 🎯 Current Phase — Phase 3: UX Polish
+
+Functional dark/light theme (migration from prop-drilling → Tailwind `dark:`), time-series charts, and backend BGG cache improvements in progress.
+
+---
+
+## 📈 Evolution Plan
+
+- ✅ Phase 1 — Foundation (complete) → [details](docs/ROADMAP_ARCHIVE.md)
+- ✅ Phase 2 — BGG & DB Polish (complete) → [details](docs/ROADMAP_ARCHIVE.md)
 ---
 
 ### 🎨 Phase 3 — UX Polish
