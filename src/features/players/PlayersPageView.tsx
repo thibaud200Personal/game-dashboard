@@ -22,6 +22,7 @@ import {
 import { AddPlayerDialog, EditPlayerDialog, DeletePlayerDialog } from './dialogs';
 import { Player, PlayerFormData } from '@/types';
 import { useLabels } from '@/shared/hooks/useLabels';
+import EmptyState from '@/shared/components/EmptyState';
 
 interface PlayersPageViewProps {
   players: Player[];
@@ -217,17 +218,20 @@ export function PlayersPageView(props: PlayersPageViewProps) {
         ))}
 
         {props.players.length === 0 && (
-          <div className="text-center py-8">
-            <Users className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-white/20" />
-            <div className="text-slate-500 dark:text-white/60 mb-4">{t('players.empty')}</div>
-            <Button
-              onClick={() => props.handleAddDialogOpen(true)}
-              className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('players.empty.add_first')}
-            </Button>
-          </div>
+          <EmptyState
+            icon={<Users />}
+            title={t('players.empty.title')}
+            description={t('players.empty.description')}
+            action={
+              <Button
+                onClick={() => props.handleAddDialogOpen(true)}
+                className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('players.empty.add_first')}
+              </Button>
+            }
+          />
         )}
       </div>
 

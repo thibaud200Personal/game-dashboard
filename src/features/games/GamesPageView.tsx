@@ -37,6 +37,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { getDifficultyColor, formatExpansion, getCredit, getGameCardStyles } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
+import EmptyState from '@/shared/components/EmptyState';
 
 interface GamesPageViewProps {
   games: Game[];
@@ -491,10 +492,10 @@ export function GamesPageView(props: GamesPageViewProps) {
         </div>
 
         {games.length === 0 && (
-          <div className="text-center py-12">
-            <GameController className="w-16 h-16 mx-auto mb-4 opacity-20" />
-            <p className="text-white/60">{t('games.empty')}</p>
-          </div>
+          <EmptyState
+            icon={<GameController />}
+            title={t('games.empty')}
+          />
         )}
       </div>
 

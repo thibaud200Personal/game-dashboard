@@ -235,6 +235,8 @@
   "players.card.menu.edit": "Edit",
   "players.card.menu.delete": "Delete",
   "players.empty": "No players found",
+  "players.empty.title": "No players yet",
+  "players.empty.description": "Add your first player to start tracking games and stats.",
   "players.empty.add_first": "Add Your First Player",
   "players.add_dialog.title": "Add New Player",
   "players.add_dialog.description": "Create a new player profile by filling out the form below.",
