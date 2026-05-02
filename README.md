@@ -40,7 +40,7 @@ A web application for tracking scores and managing a board game collection, with
 
 - **Players** — CRUD, statistics (plays, wins, scores), avatars
 - **Games** — CRUD, automatic import from BoardGameGeek, 4 modes (competitive / cooperative / campaign / hybrid)
-- **Expansions & Characters** — management per game, avatars, abilities
+- **Expansions & Characters** — management per game, avatars, abilities (in progress)
 - **Plays** — play recording, scoring, history
 - **Statistics** — global dashboard, stats per player and per game
 - **BGG Search** — search and import from the BoardGameGeek API
