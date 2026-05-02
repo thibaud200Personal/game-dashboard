@@ -5,9 +5,12 @@ A responsive web application for desktop and mobile.
   <img src="https://img.shields.io/badge/TypeScript-5-blue" />
   <img src="https://img.shields.io/badge/Node.js-24-green" />
   <img src="https://img.shields.io/badge/SQLite-Database-lightgrey" />
+  <img src="https://img.shields.io/badge/license-MIT-green" />
+  <img src="https://img.shields.io/badge/docker-ready-blue" />
+  <img src="https://img.shields.io/badge/tests-Vitest-success" />
 </p>
 
-A full-stack web application for tracking board game sessions, players, and statistics, with BoardGameGeek (BGG) API integration for game search and import.
+Track board game sessions, manage players, analyze statistics, and import games directly from BoardGameGeek (BGG).
 
 <p align="center">
   <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
