@@ -61,7 +61,7 @@
 ## Monorepo Structure
 
 ```
-game-dashboard/
+boardgame-dashboard/
 ├── shared/                  ← shared types and utilities (front/back)
 │   ├── types/index.ts
 │   └── utils/formatters.ts

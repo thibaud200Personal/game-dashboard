@@ -118,15 +118,15 @@ cp .env.example .env
 
 ```bash
 # Build the image
-docker build -t game-dashboard .
+docker build -t boardgame-dashboard .
 
 # Start with environment variables
 docker run -d \
-  --name game-dashboard \
+  --name boardgame-dashboard \
   -p 443:3001 \
   -v game_db:/app/data \
   --env-file .env \
-  game-dashboard
+  boardgame-dashboard
 ```
 
 ## Backups
@@ -170,11 +170,11 @@ Caddy automatically handles the Let's Encrypt certificate and HTTP→HTTPS redir
 Logs are on stdout in JSON format (pino). Viewing:
 
 ```bash
-docker logs game-dashboard --follow
-docker logs game-dashboard --since 1h | grep '"level":50'  # errors only
+docker logs boardgame-dashboard --follow
+docker logs boardgame-dashboard --since 1h | grep '"level":50'  # errors only
 ```
 
 To filter by level:
 ```bash
-docker logs game-dashboard | npx pino-pretty  # readable formatting in dev
+docker logs boardgame-dashboard | npx pino-pretty  # readable formatting in dev
 ```
