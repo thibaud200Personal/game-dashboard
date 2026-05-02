@@ -1,3 +1,4 @@
+# 🗺️ Board Game Dashboard - THECH DEBT & BUGS
 ---
 
 ## 🧹 Technical Debt — Remaining
