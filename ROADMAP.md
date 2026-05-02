@@ -4,8 +4,8 @@
 
 ## TECH DEBT AND BUGS
 
-### PENDING [Details](docs/TECH_DEBT_AND_BUGS.md)
-### DONE [Details](docs/TECH_DEBT_&_BUGS_DONE.md)
+#### PENDING [Details](docs/TECH_DEBT_AND_BUGS.md)
+#### DONE [Details](docs/TECH_DEBT_&_BUGS_DONE.md)
 
 ## 🎯 Current Phase — Phase 3: UX Polish
 
@@ -13,13 +13,13 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 
 ## DESIGN
 
-DESIGN_AUDIT [Details](docs/DESIGN_AUDIT.md)
+#### DESIGN_AUDIT [Details](docs/DESIGN_AUDIT.md)
 ---
 
 ## Evolution Plan
 
-### ✅ Phase 1 — Foundation (complete) [Details](docs/ROADMAP_ARCHIVE.md)
-### ✅ Phase 2 — BGG & DB Polish (complete)[Details](docs/ROADMAP_ARCHIVE.md)
+#### ✅ Phase 1 — Foundation (complete) [Details](docs/ROADMAP_ARCHIVE.md)
+#### ✅ Phase 2 — BGG & DB Polish (complete)[Details](docs/ROADMAP_ARCHIVE.md)
 ---
 
 ### 🎨 Phase 3 — UX Polish
