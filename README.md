@@ -1,4 +1,4 @@
-# 🎲 Board Game Dashboard
+# 🎲 Board Game Dashboard - Designed for both desktop and mobile
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19-blue" />
@@ -8,7 +8,6 @@
 </p>
 
 A full-stack web application for tracking board game sessions, players, and statistics, with BoardGameGeek (BGG) API integration for game search and import.
-Designed for both desktop and mobile.
 
 <p align="center">
   <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
