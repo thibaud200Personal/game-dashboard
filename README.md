@@ -1,6 +1,6 @@
 # Board Game Dashboard
 
-Web application for tracking scores and managing a board game collection. it uses BGG API for searching Games and adding it.
+A web application for tracking scores and managing a board game collection, with BoardGameGeek (BGG) API integration for game search and import.
 <p align="center">
   <img height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
   &nbsp;&nbsp;
