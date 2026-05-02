@@ -15,8 +15,8 @@
 
 ## 🐛 Bugs — Remaining
 
-- **📱 Dialogs — responsive mobile/tablette** : les popups (AddGameDialog, EditGameDialog, BGGSearch) débordent en scroll horizontal sur petits écrans — contenu partiellement hors-champ. À investiguer globalement : contraintes `max-w`, `overflow`, `mx-4`, scroll interne vs externe. Concerne probablement tous les dialogs. **Inclut le placement du filtre année BGG** (voir item ci-dessous) — où le mettre dépend du layout final des dialogs.
-- **📅 BGG year filter** : filtrage côté client sur les résultats de recherche locale (pas de paramètre `year_published` serveur). À placer dans BGGSearch — **dépendant de la refonte responsive des dialogs** (item ci-dessus). Low priority.
+- **📱 Dialogs — mobile/tablet responsiveness**: popups (AddGameDialog, EditGameDialog, BGGSearch) overflow horizontally on small screens, with content partially off-screen. Needs global investigation: `max-w`, `overflow`, `mx-4`, internal vs external scrolling. Likely affects all dialogs. **Includes BGG year filter placement** (see item below) — where to place it depends on the final dialog layout.
+- **📅 BGG year filter** : Client side filter on local search result (no parameters `year_published` serveur). À placer dans BGGSearch — **dépendant de la refonte responsive des dialogs** (item ci-dessus). Low priority.
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
 - **🔽 BGG search — live autocomplete**: recherche en/fr/es et transmission du `bgg_id` déjà en place ✅. Reste : passer au pattern autocomplete (suggestions live au keystroke, sans bouton Search).
@@ -119,27 +119,27 @@ Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`)
 
 #### **Dark/Light Theme** — functional, refactor pending
 - ✅ `DarkModeContext` + localStorage + Settings toggle + `DarkModeProvider` in `App.tsx`
-- ✅ Migration `dark:` Tailwind CSS variant complète — prop `darkMode` supprimé partout
-- ⚠️ Toggle dark mode grisé en Settings (Sprint 2 l'a retiré — à rétablir lors d'une vraie passe design mode clair)
+- ✅ Complete migration to Tailwind CSS `dark:` variant — `darkMode` prop removed everywhere
+- ⚠️ Dark mode toggle disabled in Settings (removed during Sprint 2 — to restore during a proper light-mode design pass)
 
 #### **UX Quick Wins — Sprint 1** ✅ (April 2026)
-- ✅ Double `<h1>` supprimé dans `GameDetailView`
-- ✅ Données fictives Dashboard ("5 minutes ago") → empty state réel
-- ✅ Empty state `GamesPageView` avec icône `<GameController>`
+- ✅ Duplicate `<h1>` removed in `GameDetailView`
+- ✅ Fake Dashboard data ("5 minutes ago") → replaced with real empty state
+- ✅ Empty state `GamesPageView` with icon `<GameController>`
 - ✅ `AlertDialog` de confirmation sur Reset data
 - ✅ Placeholder "Performance charts coming soon" retiré
 - ✅ Bottom-nav active-state déjà correct via `useLocation`
 
 #### **Player Stats — recent plays** ✅ (April 2026)
 - ✅ `GET /api/v1/stats/players/:id/recent-plays` — endpoint + repo + service
-- ✅ Frontend branché via React Query dans `PlayerStatsPage`
+- ✅ Frontend wired via React Query in `PlayerStatsPage`
 - ✅ MSW handler + 3 tests backend + 1 test frontend
 
 #### **Global UI/UX Harmonization — Sprint 2** ✅ (April 2026)
-- ✅ `DeleteGameDialog` + `DeletePlayerDialog` : i18n + nom de l'entité affiché
+- ✅ `DeleteGameDialog` + `DeletePlayerDialog`: i18n + entity name displayed
 - ✅ `EditPlayerDialog` : suppression prop `darkMode`
-- ✅ `AddPlayerDialog` : migration i18n complète (EN + FR labels, migration 023)
-- ✅ `EditGameDialog` + `AddGameDialog` : i18n complète (~30 strings), token `gameModeColors`
+- ✅ `AddPlayerDialog` : Complete migration i18n (EN + FR labels, migration 023)
+- ✅ `EditGameDialog` + `AddGameDialog` : i18n complete (~30 strings), token `gameModeColors`
 - ✅ `NewPlayView` : difficulty i18n + mode badges via `gameModeColors` (migration 024)
 - ✅ `gameModeColors` token centralisé (`src/shared/theme/gameModeColors.ts`) — `GameStatsView` + `NewPlayView` harmonisés (hybrid était vert → orange)
 - ✅ Bug dashboard : boutons "New Game" / "Add Player" se chevauchaient au hover — fixé via `hover:z-10`
