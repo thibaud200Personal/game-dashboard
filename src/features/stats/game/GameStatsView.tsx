@@ -65,7 +65,6 @@ export default function GameStatsView({
   const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-6 border border-slate-300 dark:border-white/20 shadow-xl";
   const valueClass = "text-slate-900 dark:text-white";
   const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
-  const sectionTitleClass = "text-lg font-semibold text-slate-900 dark:text-white";
   const progressBgClass = "w-full bg-slate-200 dark:bg-white/10 rounded-full h-2";
 
   const isGlobalStats = gameStats.isGlobalStats;
@@ -129,7 +128,7 @@ export default function GameStatsView({
       {/* Game Selector - only in global stats mode */}
       {isGlobalStats && (
         <div className={cardClass}>
-          <h3 className={`${sectionTitleClass} mb-4`}>{t('stats.game.select.title')}</h3>
+          <SectionHeader title={t('stats.game.select.title')} />
           <div className="grid grid-cols-1 gap-3">
             {games.map((game) => {
               const gameSessions = gameStats.gamePopularity[game.name] || 0;
