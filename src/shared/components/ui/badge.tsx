@@ -17,6 +17,14 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        competitive:
+          "border-red-400/30 bg-red-500/10 text-red-600 dark:text-red-400",
+        cooperative:
+          "border-blue-400/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+        campaign:
+          "border-purple-400/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
+        hybrid:
+          "border-orange-400/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
       },
     },
     defaultVariants: {

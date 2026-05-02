@@ -7,6 +7,7 @@ import { gameApi } from '@/features/games/gameApi';
 import { queryKeys } from '@/shared/services/api/queryKeys';
 import { useNavigationAdapter } from '@/shared/hooks/useNavigationAdapter';
 import { useLabels } from '@/shared/hooks/useLabels';
+import PageHeader from '@/shared/components/PageHeader';
 import PlayerStatsPage from './player/PlayerStatsPage';
 import GameStatsPage from './game/GameStatsPage';
 
@@ -55,17 +56,19 @@ export default function StatsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
       <div className="px-4 pt-8 pb-6">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={handleBackNavigation}
-            aria-label="Go back"
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-2xl font-bold text-white">{t('stats.page.title')}</h1>
-          <div className="w-10" />
-        </div>
+        <PageHeader
+          title={t('stats.page.title')}
+          left={
+            <button
+              onClick={handleBackNavigation}
+              aria-label="Go back"
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          }
+          className="mb-6"
+        />
 
         <div className="flex space-x-2 mb-6">
           <button

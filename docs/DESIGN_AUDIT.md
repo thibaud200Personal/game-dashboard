@@ -322,7 +322,7 @@ Dashboard stats ambitieux : carte principale (jeu sélectionné ou vue globale),
 |---|---|---|---|
 | 67 | ✅ | ~~**Feature morte** : les props `selectedPeriod` et `setSelectedPeriod` déstructurées avec `_` prefix.~~ → **Résolu 2026-05-02** : props `selectedPeriod`, `setSelectedPeriod`, `onNavigation`, `selectedGameId` supprimées de `GameStatsViewProps` et de l'appel dans `GameStatsPage`. Hook garde l'état en interne (test couvert). | — |
 | 68 | 🟡 | Bar chart « Score Trend » : rendered en `<div>` avec `title={...}` au survol. Axes absents, labels d'échelle absents, tooltip desktop-only (mobile tap ne le déclenche pas). → **Décoratif, pas informationnel.** | Migrer vers `recharts` (déjà dans `components.json` des plugins shadcn, donc `<ChartContainer>` / `<BarChart>` disponibles). Axes X (dates), Y (score), tooltip interactif au tap. |
-| 69 | 🟡 | Distribution « Session Types » : `hybrid=vert` ici, mais `hybrid=orange` dans `GamesPageView` et `hybrid=bleu` dans `NewPlayView`. `cooperative=bleu` (cohérent avec Games) mais `competitive=rouge` (cohérent). | Token unique (voir § 14.2). |
+| 69 | ✅ | ~~Distribution « Session Types » : `hybrid=vert` ici, mais `hybrid=orange` dans `GamesPageView` et `hybrid=bleu` dans `NewPlayView`.~~ → **Résolu 2026-05-02** : GamesPageView, NewPlayView et GameStatsView importent tous `gameModeColors` depuis `src/shared/theme/gameModeColors.ts`. Token `hybrid=orange` cohérent sur toutes les vues. | — |
 | 70 | ✅ | ~~`getMedalClass(index)` : comportement indéterminé au-delà de l'index 2.~~ → **Vérifié 2026-05-02** : `getMedalClass` retourne `'bg-primary/20 text-primary'` pour `index >= 3` via opérateur `??`. Fallback correct. | — |
 | 71 | ✅ | ~~Image fallback pour jeu sans thumbnail : URL Unsplash dépendance externe.~~ → **Résolu 2026-05-02** : fallback `<div className="bg-muted"><ChartBar className="text-muted-foreground" /></div>` inline — zéro dépendance externe. | — |
 | 72 | 🟢 | Transition non-animée entre « vue globale » et « jeu sélectionné » (`isGlobalStats` bascule). L'utilisateur voit un flash de contenu différent. | `<AnimatePresence>` de framer-motion (déjà installé via tw-animate-css ?) + fade 200ms. |
@@ -598,7 +598,7 @@ Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 142 | 🟡 | `AlertDialogAction` par défaut en teal — piège pour les dialogs de suppression. | Créer un wrapper `<DestructiveAlertDialog>` qui force `variant="destructive"` sur Action, ou documenter en commentaire header du fichier. |
+| 142 | ✅ | ~~`AlertDialogAction` default `buttonVariants()` = teal primaire sur les dialogs de suppression.~~ → **Résolu 2026-05-02** : tous les `AlertDialogAction` de suppression utilisent `className="bg-destructive text-destructive-foreground hover:bg-destructive/90"`. `confirmLeave` dans `NewPlayView` également corrigé. | — |
 
 #### 13.3.7 `select.tsx` ✅
 
@@ -656,7 +656,7 @@ Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 146 | 🟡 | Badge n'a pas de variants `mode-competitive`, `mode-cooperative`, etc. Chaque view recrée ses couleurs (§ 27, § 55). | Étendre `badgeVariants` CVA pour inclure `variant: { competitive, cooperative, campaign, hybrid }`. Source unique. |
+| 146 | ✅ | ~~`Badge` sans variants `mode-*`.~~ → **Résolu 2026-05-02** : `badgeVariants` CVA étendu avec `competitive`, `cooperative`, `campaign`, `hybrid` dans `badge.tsx`. | — |
 
 #### 13.3.15 `alert.tsx` ✅
 
@@ -675,10 +675,10 @@ Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 148 | 🟡 | Pas de `<EmptyState>` partagé. Chaque view recrée son empty state (bien dans Players, pourri dans Games). | Créer `src/shared/components/ui/empty-state.tsx` avec props `icon`, `title`, `description`, `action?`. |
-| 149 | 🟡 | Pas de `<PageHeader>` partagé (retour + titre + actions). Chaque page reconstruit son header avec un hack `<div className="w-10" />` pour équilibrer. | `<PageHeader title actions backHref?>`. |
-| 150 | 🟡 | Pas de `<SectionHeader>` (icône + titre + action optionnelle). Pattern répété ~15× dans les views. | Composant. |
-| 151 | 🟡 | Pas de `<StatCard>` sémantique. Chaque stat est un `<div>` manuel avec icône + valeur + label. | Composant avec `variant: stat | highlight`. |
+| 148 | ✅ | ~~Pas de `<EmptyState>` partagé. Chaque view recrée son empty state (bien dans Players, pourri dans Games).~~ → **Résolu 2026-05-02** : `src/shared/components/EmptyState.tsx` créé (`icon`, `title`, `description?`, `action?`, `className?`). Adopté dans GamesPageView + PlayersPageView. | — |
+| 149 | ✅ | ~~Pas de `<PageHeader>` partagé. Hack `<div className="w-10" />` pour équilibrer.~~ → **Résolu 2026-05-02** : `src/shared/components/PageHeader.tsx` créé (`title`, `left?`, `right?`, `className?`). Adopté dans StatsPage + SettingsPageView. Fix `text-white` hardcodé → `text-foreground`. | — |
+| 150 | ✅ | ~~Pas de `<SectionHeader>` (icône + titre + action optionnelle). Pattern répété ~15× dans les views.~~ → **Résolu 2026-05-02** : `src/shared/components/SectionHeader.tsx` créé. Adopté dans GameStatsView (7 occurrences) + PlayerStatsView (6 occurrences). Utilise `cn()`. | — |
+| 151 | ✅ | ~~Pas de `<StatCard>` sémantique. Chaque stat est un `<div>` manuel.~~ → **Résolu 2026-05-02** : `src/shared/components/StatCard.tsx` créé avec `layout="vertical"` (défaut) et `layout="horizontal"`. Remplace les 2 définitions locales dans GameStatsView + PlayerStatsView. Tokens `bg-card border-border text-foreground`. | — |
 
 ### 13.5 Synthèse shared/ui
 
@@ -829,13 +829,13 @@ button:focus-visible:not(.custom-focus) {
 
 | Page | Quality | Détail |
 |---|---|---|
-| `PlayersPageView` | ✅ Bon | Icône large, title, description, CTA |
-| `GamesPageView` | 🔴 Faible | `<div>` vide sans icône |
+| `PlayersPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title, description, CTA |
+| `GamesPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title |
 | Stats | 🔴 Absent | Texte « No data » simple |
 | `BGGSearch` | 🟢 OK | Texte « Aucun résultat » sans icône |
 | `NewPlayView` (pas de joueurs disponibles) | 🔴 Aucun | |
 
-**Action** : créer `<EmptyState icon title description action?>` (§ 148) et imposer via lint ou code review.
+✅ **`<EmptyState>` créé et adopté dans GamesPageView + PlayersPageView** (§ 148 — 2026-05-02). Restant : Stats, BGGSearch, NewPlayView.
 
 ### 14.9 Loading states
 
@@ -880,12 +880,12 @@ Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 réso
 ### Sprint A — Quick wins restants (≤ 1 jour chacun)
 
 1. **🔴 Bottom-nav active-state dérivé du `currentView`** (§ 30). Bouton « Games » toujours actif quelle que soit la page.
-2. **🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé. ~~`NewPlayView` (§ 46) — résolu 2026-05-01.~~
-3. **🟡 Créer le token `gameModeColors` sémantique** (§ 14.2). Élimine les incohérences § 27, § 55, § 69 en un seul fichier.
+2. ~~**🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé. ~~`NewPlayView` (§ 46) — résolu 2026-05-01.~~~~  → **Résolu 2026-05-02** : `AddGameDialog` et `EditGameDialog` utilisent `t()` pour tous les labels.
+3. ~~**🟡 Créer le token `gameModeColors` sémantique** (§ 14.2). Élimine les incohérences § 27, § 55, § 69 en un seul fichier.~~ → **Résolu 2026-05-02** : `src/shared/theme/gameModeColors.ts` créé, utilisé par toutes les vues (§ 69 résolu).
 
 ### Sprint B — Refactors ciblés (1-3 jours chacun)
 
-4. **🔴 Refactorer `AddGameDialog` + `EditGameDialog`** (§ 89-103). Inputs hardcodés dark, title/boutons partiellement hardcodés, taille dialog trop étroite. Créer `<FormDialog>` (§ 12.10) pour les couvrir en même temps.
+4. ~~**🔴 Refactorer `AddGameDialog` + `EditGameDialog`** (§ 89-103). Inputs hardcodés dark, title/boutons partiellement hardcodés, taille dialog trop étroite. Créer `<FormDialog>` (§ 12.10) pour les couvrir en même temps.~~ → **Résolu 2026-05-02** : dialogs refactorisés (Sprint E PR #100), tokens theme-aware, Cancel buttons corrigés.
 5. ~~**🔴 Winner en `RadioGroup` dans `NewPlayView`** (§ 48). Sémantique HTML incorrecte (checkbox pour choix exclusif).~~ → Résolu 2026-05-01.
 6. ~~**🟡 Auto-save + confirmation avant navigation dans `NewPlayView`** (§ 49). Risque de perte de données sur formulaire long.~~ → Résolu 2026-05-01.
 
@@ -893,8 +893,8 @@ Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 réso
 
 7. **🔴 Refactor `darkMode` prop → tokens CSS + `dark:` Tailwind** (§ 14.1). Débloque §§ 19, 21, 29, 47, 54, 63, 101, 123. ROI global le plus élevé du backlog restant.
 8. **🔴 `NewPlayView` : wizard multi-étapes** (§ 53). Réduction de charge cognitive sur le formulaire le plus long.
-9. **🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants, patterns codifiés en Annexe E.
-10. **🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Feature zombie à trancher.
+9. ~~**🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants.~~ → **Résolu 2026-05-02** : `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>` créés et adoptés (Sprint F PR #101). `<InitialAvatar>` existait déjà.
+10. ~~**🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Feature zombie à trancher.~~ → **Résolu 2026-05-02** : props `selectedPeriod`/`setSelectedPeriod` supprimées de `GameStatsViewProps`, hook gère l'état en interne (§ 67 résolu).
 11. **🟡 Migrer les formulaires vers `<Form>` + Zod** (§ 14.11, § 132). Un form par semaine.
 
 ### Gain estimé restant

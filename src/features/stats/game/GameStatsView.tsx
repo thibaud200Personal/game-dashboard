@@ -15,6 +15,8 @@ import { getMedalClass } from '@/shared/utils/gameHelpers';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
 import { PlayerAvatar } from '@/shared/components/InitialAvatar';
+import SectionHeader from '@/shared/components/SectionHeader';
+import StatCard from '@/shared/components/StatCard';
 
 interface GameStatsViewProps {
   selectedGame: Game | null
@@ -23,25 +25,6 @@ interface GameStatsViewProps {
   games: Game[]
   players: Player[]
 }
-
-
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}
-
-function StatCard({ icon, value, label }: StatCardProps) {
-  return (
-    <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 text-center">
-      {icon}
-      <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
-      <div className="text-slate-500 dark:text-white/60 text-sm">{label}</div>
-    </div>
-  );
-}
-
 export default function GameStatsView({
   selectedGame,
   setSelectedGame,
@@ -64,7 +47,6 @@ export default function GameStatsView({
   const cardClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-6 border border-slate-300 dark:border-white/20 shadow-xl";
   const valueClass = "text-slate-900 dark:text-white";
   const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
-  const sectionTitleClass = "text-lg font-semibold text-slate-900 dark:text-white";
   const progressBgClass = "w-full bg-slate-200 dark:bg-white/10 rounded-full h-2";
 
   const isGlobalStats = gameStats.isGlobalStats;
@@ -108,10 +90,10 @@ export default function GameStatsView({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400 mx-auto mb-2" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} />
-          <StatCard icon={<Users className="w-8 h-8 text-green-400 mx-auto mb-2" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} />
-          <StatCard icon={<Clock className="w-8 h-8 text-purple-400 mx-auto mb-2" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} />
-          <StatCard icon={<Target className="w-8 h-8 text-orange-400 mx-auto mb-2" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} />
+          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} />
+          <StatCard icon={<Users className="w-8 h-8 text-green-400" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} />
+          <StatCard icon={<Clock className="w-8 h-8 text-purple-400" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} />
+          <StatCard icon={<Target className="w-8 h-8 text-orange-400" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} />
         </div>
         {!isGlobalStats && (
           <div className="mt-4 pt-4 border-t border-white/10">
@@ -128,7 +110,7 @@ export default function GameStatsView({
       {/* Game Selector - only in global stats mode */}
       {isGlobalStats && (
         <div className={cardClass}>
-          <h3 className={`${sectionTitleClass} mb-4`}>{t('stats.game.select.title')}</h3>
+          <SectionHeader title={t('stats.game.select.title')} />
           <div className="grid grid-cols-1 gap-3">
             {games.map((game) => {
               const gameSessions = gameStats.gamePopularity[game.name] || 0;
@@ -165,10 +147,10 @@ export default function GameStatsView({
       {/* Game Popularity - only in global stats mode */}
       {isGlobalStats && (
         <div className={cardClass}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className={sectionTitleClass}>{t('stats.game.popularity.title')}</h3>
-            <ChartBar className="w-5 h-5 text-primary" />
-          </div>
+          <SectionHeader
+            icon={<ChartBar className="w-5 h-5" />}
+            title={t('stats.game.popularity.title')}
+          />
           <div className="space-y-3">
             {Object.entries(gameStats.gamePopularity)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
@@ -193,10 +175,10 @@ export default function GameStatsView({
 
       {/* Score Trend */}
       <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={sectionTitleClass}>{t('stats.game.score_trend.title')}</h3>
-          <TrendUp className="w-5 h-5 text-primary" />
-        </div>
+        <SectionHeader
+          icon={<TrendUp className="w-5 h-5" />}
+          title={t('stats.game.score_trend.title')}
+        />
         <div className="h-32 flex items-end space-x-2">
           {gameStats.performanceTrend.map((score: number, index: number) => {
             const maxScore = Math.max(...gameStats.performanceTrend);
@@ -216,10 +198,10 @@ export default function GameStatsView({
 
       {/* Session Types Distribution */}
       <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={sectionTitleClass}>{t('stats.game.session_types.title')}</h3>
-          <ChartBar className="w-5 h-5 text-secondary" />
-        </div>
+        <SectionHeader
+          icon={<ChartBar className="w-5 h-5 text-secondary" />}
+          title={t('stats.game.session_types.title')}
+        />
         <div className="space-y-3">
           {Object.entries(gameStats.sessionTypes).map(([type, count]) => {
             const percentage = (count as number / gameStats.totalSessions) * 100;
@@ -243,10 +225,10 @@ export default function GameStatsView({
 
       {/* Player Count Distribution */}
       <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={sectionTitleClass}>{t('stats.game.player_dist.title')}</h3>
-          <ChartBar className="w-5 h-5 text-accent" />
-        </div>
+        <SectionHeader
+          icon={<ChartBar className="w-5 h-5 text-accent" />}
+          title={t('stats.game.player_dist.title')}
+        />
         <div className="space-y-3">
           {Object.entries(gameStats.playerCountDistribution)
             .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
@@ -269,10 +251,10 @@ export default function GameStatsView({
 
       {/* Top Winners */}
       <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={sectionTitleClass}>{t('stats.game.top_winners.title')}</h3>
-          <Trophy className="w-5 h-5 text-yellow-400" />
-        </div>
+        <SectionHeader
+          icon={<Trophy className="w-5 h-5 text-yellow-400" />}
+          title={t('stats.game.top_winners.title')}
+        />
         <div className="space-y-3">
           {gameStats.topWinners.map((winner, index: number) => (
             <div key={winner.player?.player_id} className="flex items-center space-x-3">
@@ -291,10 +273,10 @@ export default function GameStatsView({
 
       {/* Recent Sessions */}
       <div className={cardClass}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={sectionTitleClass}>{t('stats.game.recent.title')}</h3>
-          <Calendar className="w-5 h-5 text-accent" />
-        </div>
+        <SectionHeader
+          icon={<Calendar className="w-5 h-5 text-accent" />}
+          title={t('stats.game.recent.title')}
+        />
         <div className="space-y-3">
           {gameStats.recentSessions.map((session, index: number) => {
             const winner = players.find(p => p.player_id === session.winner_player_id);

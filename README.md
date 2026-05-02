@@ -97,7 +97,7 @@ npm run test:coverage # coverage report
 ## 📂 Project Structure
 
 ```
-Boardgame-dashboard/
+boardgame-dashboard/
 ├── src/
 │   ├── features/        # Feature-based architecture (UI + logic co-located)
 │   │   ├── auth/

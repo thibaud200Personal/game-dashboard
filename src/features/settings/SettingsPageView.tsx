@@ -18,6 +18,7 @@ import {
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/shared/components/ui/alert-dialog';
 import { useLabels } from '@/shared/hooks/useLabels';
+import PageHeader from '@/shared/components/PageHeader';
 
 interface SettingsPageViewProps {
   currentView: string;
@@ -59,17 +60,19 @@ export function SettingsPageView(props: SettingsPageViewProps) {
   <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white">
       {/* Header */}
       <div className="px-4 pt-8 pb-6">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={props.handleBackClick}
-            aria-label="Go back"
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-2xl font-bold">{t('settings.page.title')}</h1>
-          <div className="w-10 h-10" aria-hidden="true" />
-        </div>
+        <PageHeader
+          title={t('settings.page.title')}
+          left={
+            <button
+              onClick={props.handleBackClick}
+              aria-label="Go back"
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          }
+          className="mb-6"
+        />
       </div>
 
       {/* Content */}
