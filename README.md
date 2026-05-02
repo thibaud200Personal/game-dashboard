@@ -156,6 +156,7 @@ boardgame-dashboard/
 
 ## 📚 Documentation
 
+### 🧠 Architecture / technics
 | File | Description |
 |------|-------------|
 | `docs/architecture/OVERVIEW.md` | Full-stack architecture |
@@ -163,10 +164,18 @@ boardgame-dashboard/
 | `docs/architecture/BACKEND.md` | Backend architecture |
 | `docs/architecture/DATABASE.md` | DB schema + views |
 | `docs/architecture/DATA_MAPPING.md` | TS ↔ SQL mapping |
+
+### 🧑‍💻 Development Guides
+| File | Description |
+|------|-------------|
 | `docs/guides/CONTRIBUTING.md` | Contribution guide |
 | `docs/guides/DEVELOPMENT.md` | Coding standards |
 | `docs/guides/DEPLOYMENT.md` | Docker & environment setup |
 | `docs/security/SECURITY.md` | Security model |
+
+### 📈 Project Tracking
+| File | Description |
+|------|-------------|
 | `ROADMAP.md` | Development roadmap |
 
 ---
