@@ -1,5 +1,5 @@
-# 🎲 Board Game Dashboard - Designed for both desktop and mobile
-
+# 🎲 Board Game Dashboard
+A responsive web application for desktop and mobile.
 <p align="center">
   <img src="https://img.shields.io/badge/React-19-blue" />
   <img src="https://img.shields.io/badge/TypeScript-5-blue" />
