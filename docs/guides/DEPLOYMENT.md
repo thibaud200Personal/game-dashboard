@@ -118,15 +118,15 @@ cp .env.example .env
 
 ```bash
 # Build the image
-docker build -t game-dashboard .
+docker build -t boardgame-dashboard .
 
 # Start with environment variables
 docker run -d \
-  --name game-dashboard \
+  --name boardgame-dashboard \
   -p 443:3001 \
   -v game_db:/app/data \
   --env-file .env \
-  game-dashboard
+  boardgame-dashboard
 ```
 
 ## Backups
