@@ -68,3 +68,7 @@ backend/database/import/*.csv
 backend/database/import/*.json
 backend/database/import/*.txt
 backend/database/import/*.py
+
+# Internal docs — local only
+docs/decisions/
+docs/superpowers/
