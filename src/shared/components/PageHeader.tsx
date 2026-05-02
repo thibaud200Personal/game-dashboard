@@ -13,7 +13,7 @@ export default function PageHeader({ title, left, right, className }: PageHeader
     <div className={cn('flex items-center justify-between', className)}>
       <div className="w-10 flex justify-start">{left}</div>
       <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-      <div className="w-10 flex justify-end" aria-hidden={!right}>
+      <div className="w-10 flex justify-end" aria-hidden={right ? undefined : true}>
         {right}
       </div>
     </div>
