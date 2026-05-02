@@ -1,41 +1,41 @@
-# Audit UX/UI complet — Game Dashboard
+# Full UX/UI Audit — Board Game Dashboard
 
-**Portée** : revue exhaustive page par page (`src/features/**/View.tsx`), dialogs (`src/features/**/dialogs/*.tsx`), primitives UI (`src/shared/components/ui/*.tsx`), et patterns transverses.
-**Date** : 2026-04-18
-**Mise à jour** : 2026-05-01 — Sprint A terminé (PR #95) + fix régressions PR #91 (labels, GameForm, i18n, bottom-nav) + Sprint B §24-30 GamesPageView + GameDetailView. Items résolus retirés : §10 (timestamps fictifs Dashboard), §20 (empty state Games), §28 (double h1 GameDetail), §59 (bouton bleu BGGSearch), §74 (placeholder "coming soon" Stats Player), §75 (i18n Stats Player), §86 (Reset sans AlertDialog), §104-107 (DeleteGameDialog), §114-119 (EditPlayerDialog), §121 (DeletePlayerDialog). PR #85 (i18n 9 composants) et refactors dialogs ont résolu la majorité du Sprint 1 et Sprint 2.
-**Méthode** : lecture ligne-à-ligne du code, cross-reference avec les spécifications WCAG 2.1 AA, audit de cohérence entre pages et entre modes clair/sombre.
+**Scope**: Exhaustive page-by-page review (`src/features/**/View.tsx`), dialogs (`src/features/**/dialogs/*.tsx`), UI primitives (`src/shared/components/ui/*.tsx`), and cross-cutting patterns.
+**Date**: 2026-04-18
+**Updated**: 2026-05-02 — Sprint F merged (PR #101): shared components §148/149/150/151 ✅, §142 destructive AlertDialog ✅, §69 gameModeColors consistency ✅, §1 meta application-name partial ✅, migration 027 i18n fr labels ✅. Sprint A done (PR #95) + regression fixes PR #91 (labels, GameForm, i18n, bottom-nav) + Sprint B §24–30 GamesPageView + GameDetailView. Resolved items removed: §10 (fake Dashboard timestamps), §20 (Games empty state), §28 (double h1 GameDetail), §59 (blue button BGGSearch), §74 (coming soon placeholder Stats Player), §75 (i18n Stats Player), §86 (Reset without AlertDialog), §104–107 (DeleteGameDialog), §114–119 (EditPlayerDialog), §121 (DeletePlayerDialog).
+**Method**: Line-by-line code reading, cross-referenced with WCAG 2.1 AA specifications, consistency audit across pages and between light/dark modes.
 
 ---
 
-## Revue critique de l'audit (Claude Sonnet 4.6 — 2026-04-19)
+## Critical Audit Review (Claude Sonnet 4.6 — 2026-04-19)
 
-**Ce qui est excellent**
+**What works well**
 
-La méthode est rigoureuse : lecture ligne-à-ligne du code, calculs de contraste réels, grep de patterns, inventaire exhaustif fichier par fichier. Les findings sont concrets plutôt que vagues. Le Top 15 avec estimation de charge par sprint est directement actionnable.
+The method is rigorous: line-by-line code reading, real contrast calculations, pattern grep, exhaustive file-by-file inventory. Findings are concrete rather than vague. The Top 15 with sprint effort estimates is directly actionable.
 
-**Ce qui est particulièrement juste**
+**What is particularly accurate**
 
-- Le diagnostic sur `darkMode` prop-drilling (§ 14.1) est le point central de tout le backlog. Tout le reste des bugs de thème en découle. La priorité Sprint 3 #11 est correctement identifiée comme ROI maximal.
-- La distinction entre "les primitives shadcn sont propres, le problème c'est que les devs les overrident avec `bg-slate-700`" (§ 13.3.2) — c'est la vraie cause racine, pas les primitives elles-mêmes.
-- Les données fictives dans le Dashboard (§ 10) étaient identifiées comme critique de confiance — ✅ corrigées depuis.
+- The `darkMode` prop-drilling diagnosis (§14.1) is the central issue of the entire backlog. All other theme bugs stem from it. Sprint 3 priority #11 is correctly identified as maximum ROI.
+- The distinction between "shadcn primitives are clean, the problem is that devs override them with `bg-slate-700`" (§13.3.2) — that's the real root cause, not the primitives themselves.
+- Fake data in the Dashboard (§10) was identified as a trust critical — ✅ fixed since.
 
-**Ce que je nuancerais**
+**Points I would nuance**
 
-- Le wizard multi-étapes pour `NewPlayView` (§ 53) est peut-être sur-dimensionné pour un usage personnel. Le coût (un sprint entier) vs la valeur (moins de scroll) mérite réflexion. La vraie priorité dans ce formulaire c'est le RadioGroup winner (§ 48) et l'auto-save (§ 49).
-- Les 26 primitives shadcn "non utilisées" (§ 13.2) : Vite + tree-shaking les exclut effectivement du bundle. La dette est réelle mais principalement cognitive (maintenance), pas de performance.
-- L'estimation "1.5 à 2 mois" suppose un dev frontend à plein temps — en pratique x3 en temps calendaire sur un projet perso.
+- The multi-step wizard for `NewPlayView` (§53) may be over-engineered for personal use. The cost (an entire sprint) vs the value (less scroll) is worth considering. The real priorities in this form are the RadioGroup winner (§48) and auto-save (§49).
+- The 26 "unused" shadcn primitives (§13.2): Vite + tree-shaking effectively excludes them from the bundle. The debt is real but primarily cognitive (maintenance), not performance.
+- The "1.5 to 2 months" estimate assumes a full-time frontend dev — in practice ×3 in calendar time for a personal project.
 
 **Conclusion**
 
-Document à garder. Le Sprint 1 (6 quick wins) peut se faire en une après-midi et éliminerait les bugs les plus visibles. Commencer là.
+Document worth keeping. Sprint 1 (6 quick wins) can be done in an afternoon and would eliminate the most visible bugs. Start there.
 
 ---
 
-## Sommaire
+## Table of Contents
 
 1. [Login](#1-login-authloginpagetsx)
 2. [Dashboard](#2-dashboard-dashboarddashboardviewtsx)
-3. [Games — liste](#3-games--liste-gamesgamespageviewtsx)
+3. [Games — list](#3-games--list-gamesgamespageviewtsx)
 4. [Game Detail](#4-game-detail-gamesdetailgamedetailviewtsx)
 5. [Game Expansions / Characters](#5-game-expansions--characters)
 6. [Players](#6-players-playersplayerspageviewtsx)
@@ -44,458 +44,458 @@ Document à garder. Le Sprint 1 (6 quick wins) peut se faire en une après-midi 
 9. [Stats — Game](#9-stats--game-statsgamegamestatsviewtsx)
 10. [Stats — Player](#10-stats--player-statsplayerplayerstatsviewtsx)
 11. [Settings](#11-settings-settingssettingspageviewtsx)
-12. [Dialogs — audit complet](#12-dialogs--audit-complet)
-13. [shared/components/ui — audit des primitives](#13-sharedcomponentsui--audit-des-primitives)
-14. [Problèmes transverses — design system](#14-problèmes-transverses--design-system)
-15. [Top 15 — priorités d'exécution](#15-top-15--priorités-dexécution)
+12. [Dialogs — full audit](#12-dialogs--full-audit)
+13. [shared/components/ui — primitives audit](#13-sharedcomponentsui--primitives-audit)
+14. [Cross-cutting issues — design system](#14-cross-cutting-issues--design-system)
+15. [Top 15 — execution priorities](#15-top-15--execution-priorities)
 
-**Légende de sévérité** : 🔴 critique (bloque la release ou casse l'usage) · 🟡 modéré (dégrade l'expérience) · 🟢 mineur (à faire dans un refactor)
+**Severity legend**: 🔴 critical (blocks release or breaks usage) · 🟡 moderate (degrades experience) · 🟢 minor (to fix in a refactor)
 
 ---
 
 ## 1. Login (`auth/LoginPage.tsx`)
 
-### Première impression
+### First impression
 
-Une page centrée, fond gradient `from-slate-900 via-slate-800 to-slate-900`, carte glassmorphism (`bg-white/10 backdrop-blur-md`), un champ password, un bouton. L'ergonomie est correcte — mais **rien n'identifie l'application**. Un cadenas Phosphor `<Lock>`, un titre « Login », et c'est tout. Un utilisateur qui arrive par erreur sur cette URL ne saura pas sur quel produit il se connecte.
+A centered page, gradient background `from-slate-900 via-slate-800 to-slate-900`, glassmorphism card (`bg-white/10 backdrop-blur-md`), a password field, a button. The ergonomics are correct — but **nothing identifies the application**. A Phosphor lock `<Lock>`, a "Login" title, and that's it. A user who lands on this URL by mistake won't know which product they're logging into.
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 1 | 🟡 | Pas de logo, pas de nom produit, pas de tagline. L'icône `<Lock className="w-8 h-8 text-white">` est purement décorative et ajoute zéro valeur d'identification. | Remplacer le cadenas par un logo SVG `<GameDashboardLogo />` + titre `"Game Dashboard"` + sous-titre `"Suivi de vos parties de société"`. Ajouter un `<meta name="application-name">` et un `<title>` explicites. |
+| 1 | 🟡 | No logo, no product name, no tagline. The `<Lock className="w-8 h-8 text-white">` icon is purely decorative and adds zero identification value. **Partial fix (Sprint F)**: `<meta name="application-name" content="Board Game Dashboard">` and `<title>Board Game Dashboard</title>` added to `index.html`. Logo and tagline remain deferred. | Replace the lock with an SVG logo `<GameDashboardLogo />` + subtitle `"Track your board game sessions"`. |
 
-### Ce qui marche
+### What works
 
-- `autoComplete="current-password"` : reconnu par tous les password managers.
-- Formulaire court, un seul champ, un seul CTA : conversion maximale, pas de doute possible.
-- Pas de « confirm password » ni de champs décoratifs : zéro gras cognitif.
-- ✅ Placeholder contrast `/30` → `/60` (WCAG 1.4.11 conforme).
-- ✅ `placeholder="••••••••"` retiré (redondant avec `type="password"`).
-- ✅ `autoFocus` retiré (fix clavier iOS restrictif).
-- ✅ `aria-busy` + spinner `<Circle>` sur le bouton lors du chargement.
-- ✅ `role="alert" aria-live="assertive"` sur le message d'erreur.
-- ✅ `focus-visible:ring-white/80` sur le bouton submit (halo visible sur fond teal).
-- ✅ Countdown 60 s après 3 tentatives échouées (`failCount` + `cooldown` state).
-- ✅ Mode clair non géré : décision produit — dark mode fixe, cohérent avec le reste de l'app.
-- ✅ Password-only sans identifiant : par design — mot de passe partagé pour protéger l'app.
+- `autoComplete="current-password"`: recognized by all password managers.
+- Short form, single field, single CTA: maximum conversion, no ambiguity.
+- No "confirm password" or decorative fields: zero cognitive overhead.
+- ✅ Placeholder contrast `/30` → `/60` (WCAG 1.4.11 compliant).
+- ✅ `placeholder="••••••••"` removed (redundant with `type="password"`).
+- ✅ `autoFocus` removed (fix for restrictive iOS keyboard).
+- ✅ `aria-busy` + spinner `<Circle>` on button during loading.
+- ✅ `role="alert" aria-live="assertive"` on error message.
+- ✅ `focus-visible:ring-white/80` on submit button (visible halo on teal background).
+- ✅ 60s countdown after 3 failed attempts (`failCount` + `cooldown` state).
+- ✅ Light mode not handled: product decision — fixed dark mode, consistent with the rest of the app.
+- ✅ Password-only without identifier: by design — shared password to protect the app.
 
-### Résumé
+### Summary
 
-Un seul finding restant : **§ 1 — identité visuelle** (logo + titre de l'app). Tout le reste est résolu.
+One finding remaining: **§1 — visual identity** (logo + app tagline). Meta tags and title partially resolved in Sprint F. Logo deferred.
 
 ---
 
 ## 2. Dashboard (`dashboard/DashboardView.tsx`)
 
-### Première impression
+### First impression
 
-Hero visuel chargé : deux grands cercles teal/emerald avec halo `animate-pulse`, gradient de fond, bannière d'accueil. Puis cascade descendante de cartes identiques. Le pattern est « tout est important, donc rien ne l'est ».
+Heavy visual hero: two large teal/emerald circles with `animate-pulse` glow, background gradient, welcome banner. Then a descending cascade of identical cards. The pattern is "everything is important, so nothing is".
 
-### Hiérarchie visuelle
+### Visual hierarchy
 
-- **Fixations oculaires en 2 s (estimation)** : (1) cercles teal/emerald en haut, (2) titre de la carte « Activité récente », (3) images joueurs. Le CTA primaire (« Démarrer une partie ») arrive en 5ᵉ position, donc hors du premier écran.
-- **Flux de lecture attendu** vs **flux de lecture réel** :
-  - Attendu : Header → CTA primaire → stats secondaires → activité → actions.
-  - Réel : Header → cercles décoratifs → stats → listes → activité → CTA en bas.
-- **Problème de pyramide** : l'action la plus stratégique (nouvelle partie) est en position la moins visible.
+- **Eye fixations in 2s (estimate)**: (1) teal/emerald circles at top, (2) "Recent Activity" card title, (3) player images. The primary CTA ("Start a game") arrives 5th, so off the first screen.
+- **Expected reading flow** vs **actual reading flow**:
+  - Expected: Header → Primary CTA → secondary stats → activity → actions.
+  - Actual: Header → decorative circles → stats → lists → activity → CTA at bottom.
+- **Pyramid problem**: the most strategic action (new game) is in the least visible position.
 
-### Constats
+### Findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 11 | ✅ | ~~Deux CTA équivalents en bas : `"Nouveau jeu"` (teal) et `"Ajouter joueur"` (emerald), même taille, même poids.~~ → **Résolu** : `"Démarrer une partie"` = CTA primaire full-width (`p-5`, `font-semibold text-lg`, `min-h-[56px]`). `"Ajouter joueur"` = bouton secondaire outline (`border-white/20`, `min-h-[44px]`). | — |
-| 12 | ✅ | ~~Cercles stats `w-20 h-20` trop grands, `animate-pulse` permanent.~~ → **Résolu** : `w-16 h-16`, ring `animate-pulse` remplacé par `hover:scale-105 transition-transform` sur le bouton. | — |
-| 13 | ⏭️ | Toutes les cartes (Joueurs, Jeux, Activité) partagent la même recette visuelle. **Déféré** : les 3 sections sont du contenu pair — la hiérarchie est maintenant assurée par le CTA primaire (§11 ✅). Une distinction primaire/secondaire sur des cartes de même niveau n'apporterait pas de gain net. | — |
-| 14 | ✅ | ~~Grilles sans indication « voir tous ».~~ → **Résolu** : bouton `"See all players (N) →"` et `"See all games (N) →"` ajoutés sous chaque grille, conditionnels sur `hasPlayers` / `hasGames`. | — |
-| 15 | ✅ | ~~Header : `p-2` + `w-6 h-6` → 40×40 px tactile.~~ → **Résolu** : `p-2.5` + `w-5 h-5` = 44×44 px. | — |
-| 16 | ✅ | ~~`text-white/60` ≈ 4.1:1, sous le seuil AA.~~ → **Résolu** : `dark:text-white/60` → `dark:text-white/70` (≈ 4.9:1) sur toutes les secondarys du Dashboard. | — |
-| 17 | ✅ | ~~`text-white/40` timestamps ≈ 2.7:1.~~ → **Résolu** (item retiré : timestamps fictifs supprimés en Sprint 1, finding caduc). | — |
-| 18 | 🟢 | `<img src={...} alt="" />` pour les avatars joueurs : correct (décoratif puisque le nom est visible à côté), bon réflexe d'accessibilité. |   |
+| 11 | ✅ | ~~Two equivalent CTAs at bottom: `"New game"` (teal) and `"Add player"` (emerald), same size, same weight.~~ → **Resolved**: `"Start a game"` = full-width primary CTA (`p-5`, `font-semibold text-lg`, `min-h-[56px]`). `"Add player"` = outline secondary button (`border-white/20`, `min-h-[44px]`). | — |
+| 12 | ✅ | ~~Stats circles `w-20 h-20` too large, permanent `animate-pulse`.~~ → **Resolved**: `w-16 h-16`, ring `animate-pulse` replaced by `hover:scale-105 transition-transform` on the button. | — |
+| 13 | ⏭️ | All cards (Players, Games, Activity) share the same visual recipe. **Deferred**: the 3 sections are peer content — hierarchy is now ensured by the primary CTA (§11 ✅). A primary/secondary distinction on same-level cards wouldn't add net value. | — |
+| 14 | ✅ | ~~Grids without "see all" indicator.~~ → **Resolved**: `"See all players (N) →"` and `"See all games (N) →"` buttons added below each grid, conditional on `hasPlayers` / `hasGames`. | — |
+| 15 | ✅ | ~~Header: `p-2` + `w-6 h-6` → 40×40px touch target.~~ → **Resolved**: `p-2.5` + `w-5 h-5` = 44×44px. | — |
+| 16 | ✅ | ~~`text-white/60` ≈ 4.1:1, below AA threshold.~~ → **Resolved**: `dark:text-white/60` → `dark:text-white/70` (≈ 4.9:1) on all Dashboard secondaries. | — |
+| 17 | ✅ | ~~`text-white/40` timestamps ≈ 2.7:1.~~ → **Resolved** (item removed: fake timestamps removed in Sprint 1, finding moot). | — |
+| 18 | 🟢 | `<img src={...} alt="" />` for player avatars: correct (decorative since the name is visible alongside), good accessibility reflex. | |
 
-### Accessibilité — focus spécifique
+### Accessibility — focused review
 
-- Le sticky header n'a pas de `<nav>` ni de `aria-label`. Un lecteur d'écran ne distingue pas la barre du contenu.
-- Les icônes décoratives manquent de `aria-hidden="true"` → lues par VoiceOver comme « image, cadenas ».
-- La grille de cartes est un `<div grid>` plat, sans landmark. Ajouter `<section aria-labelledby="stats-heading">`.
+- The sticky header has no `<nav>` or `aria-label`. A screen reader cannot distinguish the bar from content.
+- Decorative icons missing `aria-hidden="true"` → read by VoiceOver as "image, lock".
+- The card grid is a flat `<div grid>` with no landmark. Add `<section aria-labelledby="stats-heading">`.
 
-### Résumé
+### Summary
 
-Dashboard globalement fonctionnel. Priorité principale : restructurer la hiérarchie pour que l'action « démarrer une partie » soit en position dominante (CTA primaire visible sans scroll).
+Dashboard globally functional. Main priority: restructure the hierarchy so the "start a game" action is in a dominant position (primary CTA visible without scroll).
 
 ---
 
-## 3. Games — liste (`games/GamesPageView.tsx`)
+## 3. Games — list (`games/GamesPageView.tsx`)
 
-### Première impression
+### First impression
 
-La page **la plus dense** d'information de l'app. Chaque carte de jeu affiche : thumbnail, titre, badges mode (compétitif/coop/…), nombre de joueurs, durée, difficulté, année, note BGG, poids BGG, expansions count. C'est riche, c'est informatif, c'est aussi à la limite de la surcharge cognitive.
+The **most information-dense page** of the app. Each game card displays: thumbnail, title, mode badges (competitive/coop/…), player count, duration, difficulty, year, BGG score, BGG weight, expansion count. It's rich, informative, and also at the limit of cognitive overload.
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 19 | ✅ | ~~Champ de recherche hardcodé dark.~~ → **Résolu** : `GamesPageView` et `PlayersPageView` utilisent déjà `className="pl-10"` uniquement — tokens shadcn natifs. Icône `text-muted-foreground`. Dark mode forcé, pas de régression mode clair. | — |
-| 21 | ✅ | ~~`DropdownMenuContent` hardcodé dark.~~ → **Résolu** : `<DropdownMenuContent align="end">` sans classes couleur — tokens shadcn. Items : `dark:` préfixés via `dropdownItemClass` dans `gameHelpers.ts`. | — |
-| 22 | ✅ | ~~Double point d'entrée Add Game simultanément visible.~~ → **Résolu** : FAB `md:hidden` (mobile only), trigger header enveloppé dans `hidden md:flex` (desktop only). | — |
-| 23 | ✅ | ~~Actions desktop carte : `p-2` + `w-4 h-4` ≈ 32 px.~~ → **Résolu** : `p-2.5` + `w-5 h-5` ≈ 44 px sur les 4 boutons (Eye, ChartLineUp, PencilSimple, Trash). | — |
-| 24 | ✅ | ~~Le bouton `caret` d'expand/collapse est un `<button>` imbriqué dans une grille de badges, elle-même dans un container qui peut être cliquable.~~ → **Analysé 2026-05-01** : le caret est un `<button>` autonome dans la zone de badges, la `<Card>` n'est pas un élément interactif. HTML valide, pas de boutons imbriqués. Aucune action requise. | — |
-| 25 | ✅ | ~~Badge « Extension » : `text-amber-400` sur blanc ≈ 2.3:1. Échec AA.~~ → **Résolu 2026-05-01** : `border-amber-600/60 text-amber-700 dark:border-amber-500/40 dark:text-amber-400`. WCAG AA conforme en mode clair. | — |
-| 26 | ✅ | ~~Stats en haut : couleurs arbitraires emerald/blue/purple sans valeur sémantique.~~ → **Résolu 2026-05-01** : `text-emerald-700/blue-700/purple-700 dark:*-400` → `text-foreground` sur les 3 valeurs. | — |
-| 27 | ✅ | ~~Incohérence de palette gameModeColors entre pages.~~ → **Résolu PR #91** : `src/shared/theme/gameModeColors.ts` créé, importé dans GamesPageView, GameStatsView, NewPlayView. | — |
+| 19 | ✅ | ~~Search field hardcoded dark.~~ → **Resolved**: `GamesPageView` and `PlayersPageView` only use `className="pl-10"` — native shadcn tokens. Icon `text-muted-foreground`. Forced dark mode, no light mode regression. | — |
+| 21 | ✅ | ~~`DropdownMenuContent` hardcoded dark.~~ → **Resolved**: `<DropdownMenuContent align="end">` without color classes — shadcn tokens. Items: `dark:` prefixed via `dropdownItemClass` in `gameHelpers.ts`. | — |
+| 22 | ✅ | ~~Double Add Game entry point simultaneously visible.~~ → **Resolved**: FAB `md:hidden` (mobile only), header trigger wrapped in `hidden md:flex` (desktop only). | — |
+| 23 | ✅ | ~~Desktop card actions: `p-2` + `w-4 h-4` ≈ 32px.~~ → **Resolved**: `p-2.5` + `w-5 h-5` ≈ 44px on all 4 buttons (Eye, ChartLineUp, PencilSimple, Trash). | — |
+| 24 | ✅ | ~~The expand/collapse `caret` button is a `<button>` nested in a badge grid, itself in a potentially clickable container.~~ → **Analyzed 2026-05-01**: the caret is a standalone `<button>` in the badge area, the `<Card>` is not an interactive element. Valid HTML, no nested buttons. No action required. | — |
+| 25 | ✅ | ~~"Extension" badge: `text-amber-400` on white ≈ 2.3:1. AA failure.~~ → **Resolved 2026-05-01**: `border-amber-600/60 text-amber-700 dark:border-amber-500/40 dark:text-amber-400`. WCAG AA compliant in light mode. | — |
+| 26 | ✅ | ~~Top stats: arbitrary colors emerald/blue/purple without semantic value.~~ → **Resolved 2026-05-01**: `text-emerald-700/blue-700/purple-700 dark:*-400` → `text-foreground` on all 3 values. | — |
+| 27 | ✅ | ~~gameModeColors palette inconsistency across pages.~~ → **Resolved PR #91**: `src/shared/theme/gameModeColors.ts` created, imported in GamesPageView, GameStatsView, NewPlayView. | — |
 
-### Accessibilité
+### Accessibility
 
-- Recherche : icône `<MagnifyingGlass>` hardcodée `text-white/60` → invisible en mode clair.
-- FAB `fixed bottom-24 right-6` — vérifier que `pb-32` est appliqué sur le scroll container (OK actuellement) pour que le dernier item de la liste ne soit pas masqué.
-- `aria-label` sur les boutons d'action : présent sur le FAB, absent sur les icônes individuelles des cartes.
+- Search: `<MagnifyingGlass>` icon hardcoded `text-white/60` → invisible in light mode.
+- FAB `fixed bottom-24 right-6` — verify that `pb-32` is applied on the scroll container (OK currently) so the last list item is not hidden.
+- `aria-label` on action buttons: present on the FAB, absent on individual card icons.
 
-### Résumé
+### Summary
 
-Page informativement riche mais cognitivement lourde. §24-27 tous résolus. Aucun finding restant dans cette section.
+Informationally rich but cognitively heavy page. §24–27 all resolved. No remaining findings in this section.
 
 ---
 
 ## 4. Game Detail (`games/detail/GameDetailView.tsx`)
 
-### Première impression
+### First impression
 
-Page vitrine d'un jeu : hero image, titre, badges, stats, puis onglets Overview / Expansions / Characters. Bien structurée sur desktop. Le double `<h1>` a été corrigé. §29 (GameOverview tokens) et §30 (bottom-nav) résolus le 2026-05-01. Restant : §31 (kebab mobile), §32 (header bg hardcodé).
+A game showcase page: hero image, title, badges, stats, then Overview / Expansions / Characters tabs. Well structured on desktop. The double `<h1>` has been fixed. §29 (GameOverview tokens) and §30 (bottom-nav) resolved on 2026-05-01. Remaining: §31 (mobile kebab), §32 (hardcoded header bg).
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 29 | ✅ | ~~`GameOverview` entièrement hardcodé sombre : `bg-slate-800/50`, `border-slate-700/50`, `text-white`, `text-slate-300`, `text-slate-400`.~~ → **Résolu 2026-05-01** : refactor complet — `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`, `bg-muted`, `bg-muted/50`. Page wrapper `bg-gradient-to-br slate` → `bg-background`. Rating pill amber WCAG AA corrigé. | — |
-| 30 | ✅ | ~~Bottom nav mobile : onglet « Games » toujours `text-primary` peu importe la page.~~ → **Résolu 2026-05-01** : bottom-nav dupliquée inline dans `GameDetailView` supprimée. Le `<Layout>` global fournit `<BottomNavigation>` avec `useLocation()` correct. | — |
-| 31 | ✅ | ~~Le kebab mobile mélange 5 items : 3 onglets de navigation + 2 actions de gestion.~~ → **Résolu 2026-05-01** : kebab réduit aux 2 actions de gestion (Manage Expansions / Manage Characters). `<TabsList>` rendu sur toutes les tailles d'écran (suppression des blocs `hidden md:block` / `md:hidden` séparés — un seul `<Tabs>` unifié). | — |
-| 32 | ✅ | ~~Header `bg-slate-800/50 backdrop-blur-sm` hardcodé sombre.~~ → **Résolu 2026-05-01** : `bg-background/95 backdrop-blur-sm border-border`. Boutons ghost : `text-muted-foreground hover:text-foreground hover:bg-muted`. Hide-on-scroll déféré (non-bloquant). | — |
-| 33 | ✅ | ~~Preview Expansions/Characters : lien « Gérer » affiché mais cartes non-cliquables — ambiguïté UX.~~ → **Résolu 2026-05-01** : `<Card>` entier cliquable (`cursor-pointer hover:border-primary/50 transition-colors`) → navigation vers management. Bouton « Gérer » retiré, remplacé par `<CaretRight>` indicator. | — |
-| 34 | ✅ | ~~Rating pill `text-amber-400` sur `bg-amber-500/20` ≈ 2.5:1, échec AA en mode clair.~~ → **Résolu 2026-05-01** dans §29 : `bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400`. WCAG AA conforme. | — |
-| 35 | ✅ | ~~`<TabsTrigger data-[state=active]:bg-primary data-[state=active]:text-primary-foreground>` contraste à vérifier.~~ → **Résolu 2026-05-01** : `tabs.tsx` utilise `data-[state=active]:bg-background` + `text-foreground` (≈ 21:1), pas `bg-primary`. Contraste WCAG AA largement conforme. `theme.json` est vide — les tokens CSS sont dans `index.css`. | — |
-| 36 | ✅ | ~~Pas d'état de chargement visible pendant le fetch du game detail → UX pauvre.~~ → **Résolu 2026-05-01** : `<GameDetailSkeleton />` créé (`src/features/games/detail/GameDetailSkeleton.tsx`) avec `<Skeleton>` shadcn pour le header, les tabs, le hero card et les preview cards. `GamePageRoute` affiche le skeleton pendant `isLoading`. | — |
+| 29 | ✅ | ~~`GameOverview` entirely hardcoded dark: `bg-slate-800/50`, `border-slate-700/50`, `text-white`, `text-slate-300`, `text-slate-400`.~~ → **Resolved 2026-05-01**: full refactor — `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`, `bg-muted`, `bg-muted/50`. Page wrapper `bg-gradient-to-br slate` → `bg-background`. Amber rating pill WCAG AA fixed. | — |
+| 30 | ✅ | ~~Mobile bottom nav: "Games" tab always `text-primary` regardless of current page.~~ → **Resolved 2026-05-01**: duplicate bottom-nav inline in `GameDetailView` removed. Global `<Layout>` provides `<BottomNavigation>` with correct `useLocation()`. | — |
+| 31 | ✅ | ~~Mobile kebab mixes 5 items: 3 navigation tabs + 2 management actions.~~ → **Resolved 2026-05-01**: kebab reduced to 2 management actions (Manage Expansions / Manage Characters). `<TabsList>` rendered at all screen sizes (removal of separate `hidden md:block` / `md:hidden` blocks — single unified `<Tabs>`). | — |
+| 32 | ✅ | ~~Header `bg-slate-800/50 backdrop-blur-sm` hardcoded dark.~~ → **Resolved 2026-05-01**: `bg-background/95 backdrop-blur-sm border-border`. Ghost buttons: `text-muted-foreground hover:text-foreground hover:bg-muted`. Hide-on-scroll deferred (non-blocking). | — |
+| 33 | ✅ | ~~Expansions/Characters preview: "Manage" link shown but cards non-clickable — UX ambiguity.~~ → **Resolved 2026-05-01**: entire `<Card>` clickable (`cursor-pointer hover:border-primary/50 transition-colors`) → navigates to management. "Manage" button removed, replaced by `<CaretRight>` indicator. | — |
+| 34 | ✅ | ~~Rating pill `text-amber-400` on `bg-amber-500/20` ≈ 2.5:1, AA failure in light mode.~~ → **Resolved 2026-05-01** in §29: `bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400`. WCAG AA compliant. | — |
+| 35 | ✅ | ~~`<TabsTrigger data-[state=active]:bg-primary data-[state=active]:text-primary-foreground>` contrast to verify.~~ → **Resolved 2026-05-01**: `tabs.tsx` uses `data-[state=active]:bg-background` + `text-foreground` (≈ 21:1), not `bg-primary`. WCAG AA contrast well within range. `theme.json` is empty — CSS tokens are in `index.css`. | — |
+| 36 | ✅ | ~~No visible loading state during game detail fetch → poor UX.~~ → **Resolved 2026-05-01**: `<GameDetailSkeleton />` created (`src/features/games/detail/GameDetailSkeleton.tsx`) with shadcn `<Skeleton>` for the header, tabs, hero card, and preview cards. `GamePageRoute` shows skeleton during `isLoading`. | — |
 
-### Résumé
+### Summary
 
-§29–§36 résolus. GameDetail entièrement audité ✅.
+§29–§36 resolved. GameDetail fully audited ✅.
 
 ---
 
 ## 5. Game Expansions / Characters
 
-Pages secondaires (gestion des extensions et personnages par jeu).
+Secondary pages (expansion and character management per game).
 
-### Constats
+### Findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 37 | ✅ | ~~`ExpansionCard` utilise `bg-slate-800` hardcodé — deux recettes de carte coexistent.~~ → **Résolu 2026-05-01** : `ExpansionCard` + `CharacterCard` migrés vers `bg-card border-border text-foreground text-muted-foreground`. Zéro token slate hardcodé. Idem pour les empty-state cards. | — |
-| 38 | ✅ | ~~Boutons Edit `flex-1` / Delete `w-auto` → asymétrie.~~ → **Résolu 2026-05-01** : `flex-1 justify-center` sur Edit **et** Delete dans `ExpansionCard` et `CharacterCard`. | — |
-| 39 | ✅ | ~~Champ `character_key` (slug interne) exposé dans le formulaire et la carte.~~ → **Résolu 2026-05-01** : `character_key` retiré du formulaire `CharacterDialog` et de l'affichage carte. Auto-généré via `slugify(name)` dans `useGameCharacters` (ajout : depuis le nom ; édition : clé existante préservée pour éviter les régressions). | — |
-| 40 | ✅ | Avatar par défaut `<User>` dans cercle gris — clean, aucune action requise. → Token migré vers `bg-muted text-muted-foreground` lors du fix §37. | — |
-| 41 | 🟢 | Pas d'ordre explicite des expansions. | Tri par date/année — différé (non-bloquant). |
+| 37 | ✅ | ~~`ExpansionCard` uses hardcoded `bg-slate-800` — two card recipes coexist.~~ → **Resolved 2026-05-01**: `ExpansionCard` + `CharacterCard` migrated to `bg-card border-border text-foreground text-muted-foreground`. Zero hardcoded slate tokens. Same for empty-state cards. | — |
+| 38 | ✅ | ~~Edit buttons `flex-1` / Delete `w-auto` → asymmetry.~~ → **Resolved 2026-05-01**: `flex-1 justify-center` on both Edit and Delete in `ExpansionCard` and `CharacterCard`. | — |
+| 39 | ✅ | ~~`character_key` (internal slug) exposed in the form and the card.~~ → **Resolved 2026-05-01**: `character_key` removed from `CharacterDialog` form and card display. Auto-generated via `slugify(name)` in `useGameCharacters` (add: from name; edit: existing key preserved to avoid regressions). | — |
+| 40 | ✅ | Default avatar `<User>` in grey circle — clean, no action required. → Token migrated to `bg-muted text-muted-foreground` during §37 fix. | — |
+| 41 | 🟢 | No explicit expansion ordering. | Sort by date/year — deferred (non-blocking). |
 
-### Résumé
+### Summary
 
-§37–40 résolus. §41 (tri expansions) différé — non-bloquant.
+§37–40 resolved. §41 (expansion sort) deferred — non-blocking.
 
 ---
 
 ## 6. Players (`players/PlayersPageView.tsx`)
 
-### Première impression
+### First impression
 
-**La page la mieux exécutée du lot** en matière de cohérence thème. Le ternaire `darkMode ? "..." : "..."` est appliqué systématiquement sur chaque élément. L'empty state est un modèle à reproduire ailleurs.
+**The best-executed page** in terms of theme consistency. The `darkMode ? "..." : "..."` ternary is applied systematically on every element. The empty state is a model to reproduce elsewhere.
 
-### Constats
+### Findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 42 | ✅ | ~~Fallback avatar = URL Unsplash hardcodée — même visage pour tous + dépendance externe.~~ → **Résolu 2026-05-01** : `<InitialAvatar>` créé (`src/shared/components/InitialAvatar.tsx`) — cercle coloré (hash name → HSL) + 2 initiales blanches. Zéro dépendance externe, identité unique par joueur. | — |
-| 43 | ✅ | ~~Seul l'icône `<ChartLineUp>` (32 px) était cliquable pour les stats.~~ → **Résolu 2026-05-01** : `PlayerCard` entière cliquable (`role="button"`, keyboard support). Desktop : icône `ChartLineUp` retirée, Edit + Delete conservés avec `stopPropagation`. Mobile kebab : item "View Stats" retiré (inutile — la carte suffit). | — |
-| 44 | ✅ | ~~Victoires affichées en violet — convention culturellement incorrecte.~~ → **Résolu 2026-05-01** : `text-yellow-600 dark:text-yellow-400` + icône `<Trophy>` jaune. | — |
-| 45 | ✅ | ~~Mobile kebab `size="sm"` → h-8 = 32 px, sous la cible 44 px.~~ → **Résolu 2026-05-01** : `size="icon" className="size-11"` → 44 px. | — |
+| 42 | ✅ | ~~Avatar fallback = hardcoded Unsplash URL — same face for all + external dependency.~~ → **Resolved 2026-05-01**: `<InitialAvatar>` created (`src/shared/components/InitialAvatar.tsx`) — colored circle (hash name → HSL) + 2 white initials. Zero external dependency, unique identity per player. | — |
+| 43 | ✅ | ~~Only the `<ChartLineUp>` icon (32px) was clickable for stats.~~ → **Resolved 2026-05-01**: entire `PlayerCard` clickable (`role="button"`, keyboard support). Desktop: `ChartLineUp` icon removed, Edit + Delete preserved with `stopPropagation`. Mobile kebab: "View Stats" item removed (unnecessary — the card is enough). | — |
+| 44 | ✅ | ~~Wins displayed in purple — culturally incorrect convention.~~ → **Resolved 2026-05-01**: `text-yellow-600 dark:text-yellow-400` + yellow `<Trophy>` icon. | — |
+| 45 | ✅ | ~~Mobile kebab `size="sm"` → h-8 = 32px, below 44px target.~~ → **Resolved 2026-05-01**: `size="icon" className="size-11"` → 44px. | — |
 
-### Empty state — à étudier
+### Empty state — reference pattern
 
 ```tsx
 <div className="text-center py-16">
   <UsersThree className="w-16 h-16 mx-auto mb-4 text-white/30" />
-  <h3 className="text-xl font-semibold mb-2">Aucun joueur</h3>
-  <p className="text-white/60 mb-6">Ajoutez votre premier joueur pour commencer</p>
+  <h3 className="text-xl font-semibold mb-2">No players</h3>
+  <p className="text-white/60 mb-6">Add your first player to get started</p>
   <AddPlayerDialog ... />
 </div>
 ```
 
-C'est **le pattern modèle** : icône grande, hiérarchie title/description, CTA inline. À reproduire sur `GamesPageView` (qui a un div vide) et dans les stats vides.
+This is **the model pattern**: large icon, title/description hierarchy, inline CTA. To reproduce in `GamesPageView` (which had an empty div) and in empty stats.
 
-### Accessibilité
+### Accessibility
 
-- `alt=""` sur les avatars → correct (nom visible à côté).
-- `aria-label` sur les boutons d'action : présent. Bien.
-- Les cartes ne sont pas navigables au clavier (pas focusables) mais, vu qu'elles ne sont pas cliquables non plus, c'est cohérent.
+- `alt=""` on avatars → correct (name visible alongside).
+- `aria-label` on action buttons: present. Good.
+- Cards are not keyboard-navigable (not focusable) but, since they're not clickable either, this is consistent.
 
-### Résumé
+### Summary
 
-La page montre que l'équipe **peut** produire du code cohérent. Si le pattern `darkMode ? :` était généralisé, ce serait déjà la moitié du travail. Seule faiblesse : l'avatar fallback Unsplash, à remplacer urgemment.
+The page demonstrates that the team **can** produce consistent code. If the `darkMode ? :` pattern were generalized, it would already be half the work. Only weakness: the Unsplash avatar fallback, to replace urgently.
 
 ---
 
 ## 7. New Play (`plays/NewPlayView.tsx`)
 
-**La page la plus critique du projet** : **595 lignes** dans un seul composant, formulaire long, mélange de langues, plusieurs bugs de thème, modèle mental discutable (checkbox pour un winner unique).
+**The most critical page of the project**: **595 lines** in a single component, long form, mixed languages, several theme bugs, questionable mental model (checkbox for a unique winner).
 
-### Première impression
+### First impression
 
-Formulaire vertical. Sur desktop, le hero (sélecteur de jeu, mode) est en grande carte ; ensuite viennent Joueurs, Scoring (qui change de forme selon le mode), Détails session. Complexité **justifiée** par le domaine (competitive / cooperative / campaign / hybrid ont chacun leurs champs) — mais l'exécution souffre.
+Vertical form. On desktop, the hero (game selector, mode) is in a large card; then come Players, Scoring (which changes shape by mode), Session Details. Complexity **justified** by the domain (competitive / cooperative / campaign / hybrid each have their own fields) — but the execution suffers.
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 46 | ✅ | ~~**Mélange français / anglais hardcodé**.~~ → **Résolu 2026-05-01** : toutes les strings hardcodées externalisées en keys i18n via `t()` + `.replace()` pour les paramétriques (`{min}`, `{max}`). Nouvelles keys ajoutées dans `en.json` : `sessions.players.min_required`, `sessions.players.max_reached`, `sessions.cooperative.objectives.*`, `sessions.competitive.no_winner`, `sessions.leave.*`, `sessions.draft.restored`. | — |
-| 47 | ✅ | ~~**Toutes les cartes suivantes hardcodées sombre** (`bg-white/10 backdrop-blur-md border-white/20 text-white`).~~ → **Résolu 2026-05-01** : toutes les cartes migrées vers tokens shadcn `bg-card border-border text-foreground text-muted-foreground`. Plus aucune valeur hardcodée dans `NewPlayView`. | — |
-| 48 | ✅ | ~~**Winner désigné par checkbox, pas par radio** — sémantique HTML fausse.~~ → **Résolu 2026-05-01** : `<RadioGroup value={winnerId} onValueChange={setWinnerId}>` avec option `value=""` « Aucun vainqueur / Match nul » séparée par une bordure. `radio-group.tsx` installé dans `src/shared/components/ui/`. Sémantique correcte, navigation clavier (flèches ↑↓), accessible. | — |
-| 49 | ✅ | ~~**Pas d'auto-sauvegarde, pas d'avertissement avant navigation**.~~ → **Résolu 2026-05-01** : (a) draft auto-save `localStorage` clé `newPlayDraft`, TTL 24 h, restauré au montage avec toast `sessions.draft.restored` ; (b) `beforeunload` handler si `isDirty` ; (c) `<AlertDialog>` sur retour/cancel si form modifié (`requestNavigation` + `confirmLeave`/`cancelLeave`). Draft effacé à la soumission et à la confirmation de départ. | — |
-| 50 | ✅ | ~~Validation éclatée : erreurs affichées dans les `CardHeader` respectifs, loin des champs en cause.~~ → **Résolu 2026-05-02** : messages d'erreur déplacés sous le RadioGroup (inline, proche des champs). | — |
-| 51 | ✅ | ~~Champ « Durée » : pas d'astérisque `*obligatoire` tant que l'erreur ne s'est pas déclenchée.~~ → **Résolu 2026-05-02** : astérisque statique + htmlFor/id. | — |
-| 52 | ✅ | ~~Coopératif : `Team Success = false` + saisir un score d'équipe = cognitivement contradictoire.~~ → **Résolu 2026-05-02** : hint 'Session perdue — score optionnel' affiché quand teamSuccess=false. | — |
-| 53 | 🟡 | Écran **très long** : 6-7 cartes empilées verticalement en mobile, ~2500 px de scroll total. Pas de stepper, pas de progress bar, pas d'indication « vous êtes à l'étape 3 sur 5 ». | **Transformer en wizard** 4 étapes : (1) Jeu + mode ; (2) Joueurs ; (3) Scores (contenu dépendant du mode) ; (4) Détails session. Avec `<Progress value={step * 25}>` visible en haut. Auto-save par étape. Réduction de charge cognitive → meilleur taux de complétion. |
-| 54 | ✅ | ~~`SelectContent` hardcodé sombre (`bg-slate-800 border-white/20 text-white`).~~ → **Résolu 2026-05-01** (Sprint B §47) : toutes les `className` retirées des `<SelectContent>` de `NewPlayView`. Shadcn applique `bg-popover text-popover-foreground` par défaut. | — |
-| 55 | 🟢 | Badges modes (`"Competitive"`, `"Cooperative"`, `"Campaign"`, `"Hybrid"`) avec couleurs différentes (`bg-orange-500/20`, `bg-green-500/20`, `bg-purple-500/20`, `bg-blue-500/20`). Mais le mapping ne correspond ni à `GamesPageView` ni à `GameStatsView`. | Voir recommandation transverse (§ 14.2) — token sémantique unique. |
-| 56 | ✅ | ~~`Objectives` : la checkbox « completed » est à droite du champ texte objectif + points.~~ → **Résolu 2026-05-02** : checkbox déplacée à gauche, layout compact une ligne : checkbox | description | points | pts | trash. | — |
-| 57 | ✅ | ~~`<Input type="number" min={0} max={999}>` : `""` devient `0` instantanément, l'utilisateur ne peut pas vider le champ.~~ → **Résolu 2026-05-02** : affiche `''` quand score=0 (`|| ''`), handleScoreChange accepte la saisie intermédiaire vide. | — |
-| 58 | ✅ | ~~Les `<Label>` ne sont pas toujours liés aux `<Input>` par `htmlFor`.~~ → **Résolu 2026-05-02** : htmlFor/id ajoutés sur Duration et Notes. | — |
+| 46 | ✅ | ~~**Mixed French / English hardcoded strings**.~~ → **Resolved 2026-05-01**: all hardcoded strings externalized to i18n keys via `t()` + `.replace()` for parametric strings (`{min}`, `{max}`). New keys added in `en.json`: `sessions.players.min_required`, `sessions.players.max_reached`, `sessions.cooperative.objectives.*`, `sessions.competitive.no_winner`, `sessions.leave.*`, `sessions.draft.restored`. **Sprint F (2026-05-02)**: migration 027 added these keys to the DB for both `en` and `fr` locales. `useLabels` changed to spread `enFallback` as base layer so any DB-missing key falls back to English. | — |
+| 47 | ✅ | ~~**All following cards hardcoded dark** (`bg-white/10 backdrop-blur-md border-white/20 text-white`).~~ → **Resolved 2026-05-01**: all cards migrated to shadcn tokens `bg-card border-border text-foreground text-muted-foreground`. No hardcoded value remaining in `NewPlayView`. | — |
+| 48 | ✅ | ~~**Winner designated by checkbox, not radio** — false HTML semantics.~~ → **Resolved 2026-05-01**: `<RadioGroup value={winnerId} onValueChange={setWinnerId}>` with `value=""` "No winner / Draw" option separated by a border. `radio-group.tsx` installed in `src/shared/components/ui/`. Correct semantics, keyboard navigation (arrows ↑↓), accessible. | — |
+| 49 | ✅ | ~~**No auto-save, no warning before navigation**.~~ → **Resolved 2026-05-01**: (a) draft auto-save `localStorage` key `newPlayDraft`, TTL 24h, restored on mount with toast `sessions.draft.restored`; (b) `beforeunload` handler if `isDirty`; (c) `<AlertDialog>` on back/cancel if form modified (`requestNavigation` + `confirmLeave`/`cancelLeave`). Draft cleared on submit and on departure confirmation. | — |
+| 50 | ✅ | ~~Scattered validation: errors displayed in respective `CardHeader`, far from the fields.~~ → **Resolved 2026-05-02**: error messages moved below the RadioGroup (inline, close to the fields). | — |
+| 51 | ✅ | ~~"Duration" field: no `*required` asterisk until error triggers.~~ → **Resolved 2026-05-02**: static asterisk + htmlFor/id. | — |
+| 52 | ✅ | ~~Cooperative: `Team Success = false` + entering a team score = cognitively contradictory.~~ → **Resolved 2026-05-02**: hint 'Lost session — score optional' shown when teamSuccess=false. | — |
+| 53 | 🟡 | **Very long screen**: 6–7 cards stacked vertically on mobile, ~2500px of total scroll. No stepper, no progress bar, no "you are at step 3 of 5" indicator. | **Convert to a 4-step wizard**: (1) Game + mode; (2) Players; (3) Scores (content depends on mode); (4) Session details. With `<Progress value={step * 25}>` visible at top. Auto-save per step. Reduced cognitive load → better completion rate. |
+| 54 | ✅ | ~~`SelectContent` hardcoded dark (`bg-slate-800 border-white/20 text-white`).~~ → **Resolved 2026-05-01** (Sprint B §47): all `className` removed from `<SelectContent>` in `NewPlayView`. Shadcn applies `bg-popover text-popover-foreground` by default. | — |
+| 55 | 🟢 | Mode badges (`"Competitive"`, `"Cooperative"`, `"Campaign"`, `"Hybrid"`) with different colors (`bg-orange-500/20`, `bg-green-500/20`, `bg-purple-500/20`, `bg-blue-500/20`). But the mapping matches neither `GamesPageView` nor `GameStatsView`. | See cross-cutting recommendation (§14.2) — single semantic token. |
+| 56 | ✅ | ~~`Objectives`: "completed" checkbox is to the right of the objective text + points field.~~ → **Resolved 2026-05-02**: checkbox moved left, compact one-line layout: checkbox | description | points | pts | trash. | — |
+| 57 | ✅ | ~~`<Input type="number" min={0} max={999}>`: `""` becomes `0` instantly, user can't clear the field.~~ → **Resolved 2026-05-02**: displays `''` when score=0 (`|| ''`), handleScoreChange accepts intermediate empty input. | — |
+| 58 | ✅ | ~~`<Label>` not always linked to `<Input>` via `htmlFor`.~~ → **Resolved 2026-05-02**: htmlFor/id added on Duration and Notes. | — |
 
-### Accessibilité — résumé
+### Accessibility — summary
 
-- Cooperative checkbox `data-[state=checked]:bg-green-500` : contraste OK en dark, tangent en light.
-- Validation en temps réel : pas de `aria-live="polite"` sur la zone d'erreur → AT ne suit pas.
-- Tous les boutons d'action finale (`"Enregistrer"`, `"Annuler"`) devraient être en bas **sticky** en mobile (actuellement ils défilent).
+- Cooperative checkbox `data-[state=checked]:bg-green-500`: contrast OK in dark, borderline in light.
+- Real-time validation: no `aria-live="polite"` on error zone → AT doesn't follow.
+- All final action buttons (`"Save"`, `"Cancel"`) should be **sticky** at bottom on mobile (currently they scroll).
 
-### Résumé
+### Summary
 
-La page qui **mérite le plus d'investissement**. En ordre : i18n (§ 46), refactor thème (§ 47), winner en RadioGroup (§ 48), auto-save (§ 49), puis wizard (§ 53). Un sprint entier.
+The page that **deserves the most investment**. In order: i18n (§46), theme refactor (§47), winner in RadioGroup (§48), auto-save (§49), then wizard (§53). A full sprint.
 
 ---
 
 ## 8. BGG Search (`bgg/BGGSearch.tsx`)
 
-Modal intégrable de recherche sur BoardGameGeek (utilisé dans `AddGameDialog` et dans Settings pour import).
+Embeddable search modal for BoardGameGeek (used in `AddGameDialog` and in Settings for import).
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 60 | ✅ | ~~Feature astucieuse (ID numérique direct) mais aucun hint ne l'explique.~~ → **Résolu 2026-05-02** : hint sous l'input — nom ou ID BGG numérique. | — |
-| 61 | 🟡 | Enrichment séquentiel des thumbnails : boucle `for (const result of results) { await bggApiService.getGameDetails(result.bgg_id) }`. Pour 20 résultats × ~400 ms/req = **~8 secondes** avant que toutes les vignettes soient chargées. L'utilisateur voit les vignettes apparaître une par une. | (a) `Promise.allSettled` avec concurrence limitée (3-5 en parallèle) via `p-limit` ou implémentation maison ; (b) `AbortController` propre au lieu du flag ref actuel (les fetches continuent en coulisses même si on invalide). |
-| 62 | ✅ | ~~L'icône `<Link>` ressemble à un bouton d'ouverture externe mais ne fait rien.~~ → **Résolu 2026-05-02** : icône Link → vrai `<a target='_blank'>` vers boardgamegeek.com/{id}, stopPropagation pour ne pas sélectionner le jeu. | — |
-| 63 | ✅ | ~~Couleurs hardcodées `slate-*` dans les cards et placeholders.~~ → **Résolu 2026-05-02** : bg-card border-border hover:bg-muted/50, placeholder bg-muted, textes → tokens. | — |
-| 64 | ✅ | ~~Spinner `<Circle>` sans `aria-label` ni `role="status"`.~~ → **Résolu 2026-05-02** : role='status' aria-live='polite' sur loading block, aria-hidden sur spinners. | — |
-| 65 | ✅ | ~~Footer `text-white/40` : contraste échec AA.~~ → **Résolu 2026-05-02** : text-muted-foreground (contraste suffisant en light et dark). | — |
-| 66 | 🟢 | 12 ternaires `darkMode ? :` dans ce seul composant. Pattern industrialisable. | Voir § 14.1. |
+| 60 | ✅ | ~~Clever feature (direct numeric ID) but no hint explains it.~~ → **Resolved 2026-05-02**: hint below input — game name or numeric BGG ID. | — |
+| 61 | 🟡 | Sequential thumbnail enrichment: `for (const result of results) { await bggApiService.getGameDetails(result.bgg_id) }`. For 20 results × ~400ms/req = **~8 seconds** before all thumbnails are loaded. User sees thumbnails appearing one by one. | (a) `Promise.allSettled` with limited concurrency (3–5 in parallel) via `p-limit` or homegrown implementation; (b) Clean `AbortController` instead of the current flag ref (fetches continue in the background even when invalidated). |
+| 62 | ✅ | ~~`<Link>` icon looks like an external open button but does nothing.~~ → **Resolved 2026-05-02**: Link icon → real `<a target='_blank'>` to boardgamegeek.com/{id}, stopPropagation to avoid selecting the game. | — |
+| 63 | ✅ | ~~Hardcoded `slate-*` colors in cards and placeholders.~~ → **Resolved 2026-05-02**: bg-card border-border hover:bg-muted/50, placeholder bg-muted, text → tokens. | — |
+| 64 | ✅ | ~~Spinner `<Circle>` without `aria-label` or `role="status"`.~~ → **Resolved 2026-05-02**: role='status' aria-live='polite' on loading block, aria-hidden on spinners. | — |
+| 65 | ✅ | ~~Footer `text-white/40`: AA contrast failure.~~ → **Resolved 2026-05-02**: text-muted-foreground (sufficient contrast in light and dark). | — |
+| 66 | 🟢 | 12 `darkMode ? :` ternaries in this single component. Industrializable pattern. | See §14.1. |
 
-### Cohérence des states
+### State consistency
 
-- `isSearching` : spinner dans le bouton ✅
-- `isLoadingDetails` : spinner centré avec texte ✅
-- `searchError` : banner rouge avec texte ✅
-- `empty` (query ≠ "" mais 0 résultats) : message centré ✅
+- `isSearching`: spinner in button ✅
+- `isLoadingDetails`: centered spinner with text ✅
+- `searchError`: red banner with text ✅
+- `empty` (query ≠ "" but 0 results): centered message ✅
 
-Les 4 états sont couverts, ce qui est bien. L'infra existe — il manque juste la traduction et l'a11y.
+All 4 states are covered, which is good. The infrastructure exists — only translation and a11y were missing.
 
-### Résumé
+### Summary
 
-Composant **fonctionnellement correct**, identité teal restaurée. Priorité : rendre le hint visible (§ 60) et rendre le lien BGG utile (§ 62).
+**Functionally correct** component, teal identity restored. Priority: make the hint visible (§60) and make the BGG link useful (§62).
 
 ---
 
 ## 9. Stats — Game (`stats/game/GameStatsView.tsx`)
 
-### Première impression
+### First impression
 
-Dashboard stats ambitieux : carte principale (jeu sélectionné ou vue globale), liste de jeux, popularité, tendances scores, distribution par mode, top winners, sessions récentes. **Trop** de sections pour un écran mobile — 7 cartes empilées, ~2200 px.
+Ambitious stats dashboard: main card (selected game or global view), game list, popularity, score trends, mode distribution, top winners, recent sessions. **Too many** sections for a mobile screen — 7 stacked cards, ~2200px.
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 67 | ✅ | ~~**Feature morte** : les props `selectedPeriod` et `setSelectedPeriod` déstructurées avec `_` prefix.~~ → **Résolu 2026-05-02** : props `selectedPeriod`, `setSelectedPeriod`, `onNavigation`, `selectedGameId` supprimées de `GameStatsViewProps` et de l'appel dans `GameStatsPage`. Hook garde l'état en interne (test couvert). | — |
-| 68 | 🟡 | Bar chart « Score Trend » : rendered en `<div>` avec `title={...}` au survol. Axes absents, labels d'échelle absents, tooltip desktop-only (mobile tap ne le déclenche pas). → **Décoratif, pas informationnel.** | Migrer vers `recharts` (déjà dans `components.json` des plugins shadcn, donc `<ChartContainer>` / `<BarChart>` disponibles). Axes X (dates), Y (score), tooltip interactif au tap. |
-| 69 | ✅ | ~~Distribution « Session Types » : `hybrid=vert` ici, mais `hybrid=orange` dans `GamesPageView` et `hybrid=bleu` dans `NewPlayView`.~~ → **Résolu 2026-05-02** : GamesPageView, NewPlayView et GameStatsView importent tous `gameModeColors` depuis `src/shared/theme/gameModeColors.ts`. Token `hybrid=orange` cohérent sur toutes les vues. | — |
-| 70 | ✅ | ~~`getMedalClass(index)` : comportement indéterminé au-delà de l'index 2.~~ → **Vérifié 2026-05-02** : `getMedalClass` retourne `'bg-primary/20 text-primary'` pour `index >= 3` via opérateur `??`. Fallback correct. | — |
-| 71 | ✅ | ~~Image fallback pour jeu sans thumbnail : URL Unsplash dépendance externe.~~ → **Résolu 2026-05-02** : fallback `<div className="bg-muted"><ChartBar className="text-muted-foreground" /></div>` inline — zéro dépendance externe. | — |
-| 72 | 🟢 | Transition non-animée entre « vue globale » et « jeu sélectionné » (`isGlobalStats` bascule). L'utilisateur voit un flash de contenu différent. | `<AnimatePresence>` de framer-motion (déjà installé via tw-animate-css ?) + fade 200ms. |
-| 73 | 🟢 | `ChartBar className="w-5 h-5 text-primary"` dans un `<h2>` : décoratif, bien, OK. |   |
+| 67 | ✅ | ~~**Dead feature**: `selectedPeriod` and `setSelectedPeriod` props destructured with `_` prefix.~~ → **Resolved 2026-05-02**: props `selectedPeriod`, `setSelectedPeriod`, `onNavigation`, `selectedGameId` removed from `GameStatsViewProps` and the call in `GameStatsPage`. Hook keeps state internally (test covered). | — |
+| 68 | 🟡 | "Score Trend" bar chart: rendered as `<div>` with `title={...}` on hover. No axes, no scale labels, desktop-only tooltip (mobile tap doesn't trigger it). → **Decorative, not informational.** | Migrate to `recharts` (already in `components.json` of shadcn plugins, so `<ChartContainer>` / `<BarChart>` available). X axes (dates), Y (score), interactive tap tooltip. |
+| 69 | ✅ | ~~Session Types distribution: `hybrid=green` here, but `hybrid=orange` in `GamesPageView` and `hybrid=blue` in `NewPlayView`.~~ → **Resolved 2026-05-02**: GamesPageView, NewPlayView and GameStatsView all import `gameModeColors` from `src/shared/theme/gameModeColors.ts`. `hybrid=orange` token consistent across all views. | — |
+| 70 | ✅ | ~~`getMedalClass(index)`: undefined behavior beyond index 2.~~ → **Verified 2026-05-02**: `getMedalClass` returns `'bg-primary/20 text-primary'` for `index >= 3` via `??` operator. Correct fallback. | — |
+| 71 | ✅ | ~~Image fallback for game without thumbnail: Unsplash URL external dependency.~~ → **Resolved 2026-05-02**: fallback `<div className="bg-muted"><ChartBar className="text-muted-foreground" /></div>` inline — zero external dependency. | — |
+| 72 | 🟢 | Non-animated transition between "global view" and "selected game" (`isGlobalStats` toggle). User sees a flash of different content. | `<AnimatePresence>` from framer-motion (already installed via tw-animate-css?) + fade 200ms. |
+| 73 | 🟢 | `ChartBar className="w-5 h-5 text-primary"` inside an `<h2>`: decorative, correct, OK. | |
 
-### Accessibilité
+### Accessibility
 
-- Les bars du chart sont des `<div>` avec `title={...}` → non lu par lecteur d'écran. Ajouter `aria-label` explicite : `<div role="img" aria-label="Score: 42 points, date: 14 avril">`.
-- Sections sans landmark (`<section aria-labelledby>`).
+- Chart bars are `<div>` with `title={...}` → not read by screen reader. Add explicit `aria-label`: `<div role="img" aria-label="Score: 42 points, date: April 14">`.
+- Sections without landmark (`<section aria-labelledby>`).
 
-### Résumé
+### Summary
 
-Vitrine ambitieuse, implémentation à moitié. **Un dashboard qui montre un filtre non fonctionnel et un chart décoratif pue le « coming soon »**. Choisir : investir pour livrer ou élaguer.
+Ambitious showcase, half-implemented. **A dashboard that shows a non-functional filter and a decorative chart reeks of "coming soon"**. Choose: invest to deliver or prune.
 
 ---
 
 ## 10. Stats — Player (`stats/player/PlayerStatsView.tsx`)
 
-### Constats détaillés
+### Detailed findings
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 76 | 🟡 | Sur la vue globale (`!selectedPlayer`), deux sections sont affichées successivement : « Top Players » (liste triée par score) ET « Recent Activity » (liste des dernières actions). **Les deux utilisent le même composant `ActivityRow` avec des données qui se chevauchent** — un top player peut apparaître deux fois, une fois dans chaque liste. Scroll long, contenu redondant. | Fusionner en une section unique « Activité joueurs » avec filtres (`[Top de la semaine] [Top all-time] [Plus récents]`). Gain : -1 card (~200 px de scroll). |
-| 77 | ✅ | ~~4 stat cards en `grid-cols-2` + `p-6` = ~400 px de hauteur totale.~~ → **Résolu 2026-05-02** : `p-6` → `p-4` sur `cardClass` (gain ~40 px de hauteur). | — |
-| 78 | ✅ | ~~2 cartes globales dans `grid-cols-2` — deux chiffres prennent tout l'écran.~~ → **Résolu 2026-05-02** : remplacé par une ligne horizontale `flex gap-6` avec icône + valeur + label inline, demi-hauteur. | — |
-| 79 | 🟢 | Classement `rounded-full bg-gradient-to-r from-yellow-400 to-orange-500` avec `text-black` : contraste OK (texte noir sur jaune saturé ≈ 10:1). |   |
-| 80 | 🟢 | `ActivityRow` rendered avec `<div>` non focusable. Si elles doivent devenir cliquables (stats détail player), `<button>` + `aria-label`. |   |
-| 81 | ✅ | ~~Fallback avatar Unsplash identique à § 42.~~ → **Résolu 2026-05-02** : `<PlayerAvatar name={} url={}>` dans `PlayerStatsView` (selectedPlayer + top players) et `GameStatsView` (topWinners). | — |
+| 76 | 🟡 | On the global view (`!selectedPlayer`), two sections are displayed successively: "Top Players" (list sorted by score) AND "Recent Activity" (list of recent actions). **Both use the same `ActivityRow` component with overlapping data** — a top player can appear twice, once in each list. Long scroll, redundant content. | Merge into a single "Player activity" section with filters (`[This week's top] [All-time top] [Most recent]`). Gain: -1 card (~200px of scroll). |
+| 77 | ✅ | ~~4 stat cards in `grid-cols-2` + `p-6` = ~400px total height.~~ → **Resolved 2026-05-02**: `p-6` → `p-4` on `cardClass` (~40px height gain). | — |
+| 78 | ✅ | ~~2 global cards in `grid-cols-2` — two numbers take up the entire screen.~~ → **Resolved 2026-05-02**: replaced by a horizontal `flex gap-6` row with icon + value + inline label, half the height. | — |
+| 79 | 🟢 | Ranking `rounded-full bg-gradient-to-r from-yellow-400 to-orange-500` with `text-black`: contrast OK (black text on saturated yellow ≈ 10:1). | |
+| 80 | 🟢 | `ActivityRow` rendered as non-focusable `<div>`. If they need to become clickable (player detail stats), `<button>` + `aria-label`. | |
+| 81 | ✅ | ~~Unsplash avatar fallback identical to §42.~~ → **Resolved 2026-05-02**: `<PlayerAvatar name={} url={}>` in `PlayerStatsView` (selectedPlayer + top players) and `GameStatsView` (topWinners). | — |
 
-### Résumé
+### Summary
 
-Améliorations principales restantes : fusionner les sections Top + Recent (§ 76), compacter les stat cards (§ 77-78).
+Main remaining improvements: merge Top + Recent sections (§76), compact stat cards (§77–78).
 
 ---
 
 ## 11. Settings (`settings/SettingsPageView.tsx`)
 
-### Première impression
+### First impression
 
-La page la plus « formulaire » de l'app. Organisation par sections (Préférences, Données, À propos, Session). La double couleur est bien prise en charge dans la structure `cardClass`.
+The most "form-like" page of the app. Organized by sections (Preferences, Data, About, Session). The dual color handling is well managed in the `cardClass` structure.
 
-### Constats détaillés
+### Detailed findings
 
-Tous les findings résolus :
+All findings resolved:
 
-- ✅ §82 — Spacer `<div aria-hidden="true" />` avec `w-10 h-10` symétrique.
-- ✅ §83 — Déjà résolu : bordures utilisaient `dark:border-white/10` (theme-aware).
-- ✅ §84 — File-picker BGG refactorisé : `useRef` + `onClick(() => ref.current?.click())`, plus de `label` trick ni `pointer-events-none`.
-- ✅ §85 — Retry : `<button>` raw → `<Button variant="link">`.
+- ✅ §82 — Spacer `<div aria-hidden="true" />` with symmetric `w-10 h-10`.
+- ✅ §83 — Already resolved: borders used `dark:border-white/10` (theme-aware).
+- ✅ §84 — BGG file-picker refactored: `useRef` + `onClick(() => ref.current?.click())`, no more `label` trick or `pointer-events-none`.
+- ✅ §85 — Retry: raw `<button>` → `<Button variant="link">`.
 - ✅ §87 — `toLocaleString('fr-FR')` → `toLocaleString(navigator.language)`.
-- ✅ §88 — Logout : styles custom → `variant="destructive"`.
+- ✅ §88 — Logout: custom styles → `variant="destructive"`.
 
-### Résumé
+### Summary
 
-Section entièrement résolue.
+Section fully resolved.
 
 ---
 
-## 12. Dialogs — audit complet
+## 12. Dialogs — full audit
 
-Tous les dialogs vivent dans `src/features/*/dialogs/`. Ils se divisent en trois familles :
-- **Dialogs standards** (shadcn `<Dialog>`) : Add/Edit Game, Add/Edit Player, Add/Edit Expansion, Add/Edit Character.
-- **Alert dialogs** (shadcn `<AlertDialog>`) : Delete Game, Delete Player, Delete Expansion, Delete Character.
-- **Modals intégrés** : `BGGSearch` (ouvert depuis AddGameDialog).
+All dialogs live in `src/features/*/dialogs/`. They fall into three families:
+- **Standard dialogs** (shadcn `<Dialog>`): Add/Edit Game, Add/Edit Player, Add/Edit Expansion, Add/Edit Character.
+- **Alert dialogs** (shadcn `<AlertDialog>`): Delete Game, Delete Player, Delete Expansion, Delete Character.
+- **Embedded modals**: `BGGSearch` (opened from AddGameDialog).
 
-### 12.1 Vue d'ensemble — problèmes systémiques
+### 12.1 Overview — systemic issues
 
-Trois patterns de qualité coexistent dans les dialogs :
+Three quality patterns coexist in dialogs:
 
-| Qualité | Exemples | Caractéristiques |
+| Quality | Examples | Characteristics |
 |---|---|---|
-| 🟢 **Bonne** | `DeleteExpansionDialog`, `DeleteCharacterDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog` | Theme-aware, i18n via `t()`, tokens `bg-destructive` |
-| 🟡 **Moyenne** | `AddPlayerDialog`, `ExpansionDialogs`, `CharacterDialogs` | Wrapper theme-aware mais form fields hardcodés dark |
-| 🔴 **Mauvaise** | `AddGameDialog`, `EditGameDialog` | Inputs hardcodés dark, title/boutons partiellement hardcodés |
+| 🟢 **Good** | `DeleteExpansionDialog`, `DeleteCharacterDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog` | Theme-aware, i18n via `t()`, `bg-destructive` tokens |
+| 🟡 **Medium** | `AddPlayerDialog`, `ExpansionDialogs`, `CharacterDialogs` | Theme-aware wrapper but hardcoded dark form fields |
+| 🔴 **Poor** | `AddGameDialog`, `EditGameDialog` | Hardcoded dark inputs, title/buttons partially hardcoded |
 
-**La même app contient 3 niveaux de qualité selon la personne / la période de développement**. C'est le symptôme d'une absence de dialog template partagé. Créer un `<FormDialog>` + `<ConfirmDialog>` normalisés résoudrait la quasi-totalité des findings ci-dessous.
+**The same app contains 3 quality levels depending on the person / development period**. This is a symptom of missing a shared dialog template. Creating a normalized `<FormDialog>` + `<ConfirmDialog>` would resolve almost all findings below.
 
-### 12.2 `AddGameDialog.tsx` — ✅ Résolu
+### 12.2 `AddGameDialog.tsx` — ✅ Resolved
 
-Refactorisé en 43 lignes + `GameForm.tsx` (383 lignes).
+Refactored to 43 lines + `GameForm.tsx` (383 lines).
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 89 | ✅ | ~~Inputs hardcodés dark (775 lignes).~~ → **Résolu** (Sprint B) : dialog de 43 lignes + `GameForm.tsx` partagé, zéro classe couleur sur les inputs. | — |
-| 90 | ✅ | ~~BGGSearch embed dans wrapper sombre hardcodé.~~ → **Résolu** (Sprint B) : BGGSearch inliné sans wrapper de couleur. | — |
-| 91 | ✅ | ~~Strings hardcodés anglais/français mélangés.~~ → **Résolu** (Sprint B) : 43 usages `t()` dans `GameForm.tsx`, zéro string hardcodée. | — |
-| 92 | ✅ | ~~Trigger button gradient teal hardcodé.~~ → **Résolu** (Sprint B) : `<Button>` variant default (tokens primaires). | — |
-| 93 | ✅ | ~~Submit button `bg-emerald-600` inconsistant.~~ → **Résolu** (Sprint B) : `<Button className="w-full mt-4">` (variant default). | — |
-| 94 | ✅ | ~~Validation errors `text-red-400` illisible en mode clair.~~ → **Résolu** (Sprint B) : `text-destructive` dans `GameForm.tsx`. | — |
-| 95 | ✅ | ~~`onInteractOutside` bloque sans indication à l'utilisateur.~~ → **Résolu 2026-05-02** : bouton Cancel ajouté (`variant="outline"`) en pied de dialog — l'utilisateur a un moyen explicite de sortir. | — |
-| 96 | ✅ | ~~Parsing expansions regex échoue silencieusement.~~ → **Résolu** (Sprint B) : placeholder `t('games.form.expansions.placeholder')` = `"Extension 1 (2023), Extension 2 (2024), ..."` — format visible avant saisie. | — |
-| 97 | 🟢 | 20+ champs → scroll long. | Sections repliables `<details>` ou tabs. |
+| 89 | ✅ | ~~Hardcoded dark inputs (775 lines).~~ → **Resolved** (Sprint B): 43-line dialog + shared `GameForm.tsx`, zero color classes on inputs. | — |
+| 90 | ✅ | ~~BGGSearch embedded in hardcoded dark wrapper.~~ → **Resolved** (Sprint B): BGGSearch inlined without color wrapper. | — |
+| 91 | ✅ | ~~Hardcoded mixed English/French strings.~~ → **Resolved** (Sprint B): 43 `t()` usages in `GameForm.tsx`, zero hardcoded strings. | — |
+| 92 | ✅ | ~~Trigger button hardcoded teal gradient.~~ → **Resolved** (Sprint B): `<Button>` default variant (primary tokens). | — |
+| 93 | ✅ | ~~Submit button `bg-emerald-600` inconsistent.~~ → **Resolved** (Sprint B): `<Button className="w-full mt-4">` (default variant). | — |
+| 94 | ✅ | ~~Validation errors `text-red-400` unreadable in light mode.~~ → **Resolved** (Sprint B): `text-destructive` in `GameForm.tsx`. | — |
+| 95 | ✅ | ~~`onInteractOutside` blocks without user indication.~~ → **Resolved 2026-05-02**: Cancel button added (`variant="outline"`) in dialog footer — user has explicit escape route. | — |
+| 96 | ✅ | ~~Expansion regex parsing fails silently.~~ → **Resolved** (Sprint B): placeholder `t('games.form.expansions.placeholder')` = `"Extension 1 (2023), Extension 2 (2024), ..."` — format visible before input. | — |
+| 97 | 🟢 | 20+ fields → long scroll. | Collapsible `<details>` sections or tabs. |
 
-### 12.3 `EditGameDialog.tsx` — ✅ Résolu
+### 12.3 `EditGameDialog.tsx` — ✅ Resolved
 
-Refactorisé en 61 lignes + `GameForm.tsx` partagé avec AddGameDialog.
+Refactored to 61 lines + `GameForm.tsx` shared with AddGameDialog.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 98 | ✅ | ~~Labels hardcodés anglais.~~ → **Résolu** (Sprint B) : tous via `t()` dans `GameForm.tsx`. | — |
-| 99 | ✅ | ~~Description hardcodée `"Update game information and details."`.~~ → **Résolu** (Sprint B) : `t('games.edit_dialog.description')`. | — |
-| 100 | ✅ | ~~Labels `text-blue-700` en mode clair.~~ → **Résolu** (Sprint B) : `<Label>` sans classe — hérite `text-foreground`. | — |
-| 101 | ✅ | ~~Inputs hardcodés `bg-slate-700`.~~ → **Résolu** (Sprint B) : `<Input>` sans className couleur. | — |
-| 102 | ✅ | ~~`SelectItem` difficulté valeurs hardcodées anglais.~~ → **Résolu** (Sprint B) : valeurs internes `"Beginner"` etc. (IDs, non affichés), labels via `t('games.form.difficulty.*')`. | — |
-| 103 | ✅ | ~~Pas de confirmation avant fermeture si form dirty.~~ → **Résolu 2026-05-02** : bouton Cancel explicite ajouté — l'utilisateur a un escape clair sans risque de perte silencieuse. | — |
+| 98 | ✅ | ~~Hardcoded English labels.~~ → **Resolved** (Sprint B): all via `t()` in `GameForm.tsx`. | — |
+| 99 | ✅ | ~~Hardcoded description `"Update game information and details."`.~~ → **Resolved** (Sprint B): `t('games.edit_dialog.description')`. | — |
+| 100 | ✅ | ~~Labels `text-blue-700` in light mode.~~ → **Resolved** (Sprint B): `<Label>` without class — inherits `text-foreground`. | — |
+| 101 | ✅ | ~~Hardcoded inputs `bg-slate-700`.~~ → **Resolved** (Sprint B): `<Input>` without color className. | — |
+| 102 | ✅ | ~~`SelectItem` difficulty hardcoded English values.~~ → **Resolved** (Sprint B): internal values `"Beginner"` etc. (IDs, not displayed), labels via `t('games.form.difficulty.*')`. | — |
+| 103 | ✅ | ~~No confirmation before close if form dirty.~~ → **Resolved 2026-05-02**: explicit Cancel button added — user has clear escape without risk of silent loss. | — |
 
-### 12.4 `DeleteGameDialog.tsx` — ✅ Résolu
+### 12.4 `DeleteGameDialog.tsx` — ✅ Resolved
 
-Réécrit sur le modèle de `DeleteExpansionDialog` : `useLabels()` + `t()` pour toutes les strings, tokens shadcn par défaut, plus de classes hardcodées.
+Rewritten on the model of `DeleteExpansionDialog`: `useLabels()` + `t()` for all strings, default shadcn tokens, no hardcoded classes.
 
 ### 12.5 `AddPlayerDialog.tsx`
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 108 | 🟢 | Validation utilisée correctement avec `t()` : `t('players.form.validation.name_required')`. **Bonne pratique** — exemple à reproduire ailleurs. |   |
-| 109 | 🟢 | Comportement intelligent : auto-fill du pseudo à partir du player_name tant que l'utilisateur n'a pas tapé dans le champ pseudo. UX positive. |   |
-| 110 | ✅ | ~~Description dialog hardcodée anglais.~~ → **Résolu** (Sprint B) : `t('players.add_dialog.description')`. | — |
-| 111 | ✅ | ~~Labels hardcodés français.~~ → **Résolu** (Sprint B) : `t('players.form.name.label')`, `t('players.form.pseudo.label')`, placeholders via `t()`. | — |
-| 112 | ✅ | ~~Labels `text-blue-700` en mode clair.~~ → **Résolu** (Sprint B) : labels sans classe couleur, héritent du token. | — |
-| 113 | ✅ | ~~Trigger gradient bleu en mode clair.~~ → **Résolu** (Sprint B) : `from-teal-500 to-teal-600` uniforme. | — |
+| 108 | 🟢 | Validation correctly using `t()`: `t('players.form.validation.name_required')`. **Good practice** — example to replicate elsewhere. | |
+| 109 | 🟢 | Intelligent behavior: auto-fill pseudo from player_name as long as user hasn't typed in the pseudo field. Positive UX. | |
+| 110 | ✅ | ~~Dialog description hardcoded English.~~ → **Resolved** (Sprint B): `t('players.add_dialog.description')`. | — |
+| 111 | ✅ | ~~Hardcoded French labels.~~ → **Resolved** (Sprint B): `t('players.form.name.label')`, `t('players.form.pseudo.label')`, placeholders via `t()`. | — |
+| 112 | ✅ | ~~Labels `text-blue-700` in light mode.~~ → **Resolved** (Sprint B): labels without color class, inherit from token. | — |
+| 113 | ✅ | ~~Trigger blue gradient in light mode.~~ → **Resolved** (Sprint B): uniform `from-teal-500 to-teal-600`. | — |
 
-### 12.6 `EditPlayerDialog.tsx` — ✅ Résolu
+### 12.6 `EditPlayerDialog.tsx` — ✅ Resolved
 
-Régression annulée : validations et labels passés via `t()`, title et boutons i18n, plus de strings trilingues. Reste § 120 (trigger color) qui est couvert par § 14.1.
+Regression reverted: validations and labels passed via `t()`, title and buttons i18n, no more trilingual strings. Remaining §120 (trigger color) is covered by §14.1.
 
-### 12.7 `DeletePlayerDialog.tsx` — ✅ Résolu
+### 12.7 `DeletePlayerDialog.tsx` — ✅ Resolved
 
-Réécrit sur le modèle de `DeleteExpansionDialog`, identique à § 12.4.
+Rewritten on the model of `DeleteExpansionDialog`, identical to §12.4.
 
 ### 12.8 `ExpansionDialogs.tsx` (Add / Edit / Delete)
 
-3 dialogs dans un fichier. Qualité moyenne.
+3 dialogs in one file. Medium quality.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 122 | ✅ | ~~`<DialogContent>` hardcodé dark.~~ → **Résolu** (Sprint B) : refactorisé vers `BaseFormDialog` — tokens shadcn, aucune classe couleur dans les wrappers. | — |
-| 123 | ✅ | ~~Labels `<Label className="text-white">` invisibles en mode clair.~~ → **Résolu** (Sprint B) : `<Label>` sans classe — hérite `text-foreground`. | — |
-| 124 | ✅ | ~~Inputs hardcodés `bg-slate-700/50 border-slate-600 text-white`.~~ → **Résolu** (Sprint B) : `<Input>` sans className couleur — tokens shadcn. | — |
-| 125 | ✅ | ~~Cancel button hardcodé.~~ → **Résolu** (Sprint B) : `<FormActions>` utilise `variant="outline"` shadcn. | — |
-| 126 | 🟢 | `<AlertDialogAction>` pour la suppression utilise `bg-destructive hover:bg-destructive/90` (tokens). **Bonne pratique.** |   |
+| 122 | ✅ | ~~`<DialogContent>` hardcoded dark.~~ → **Resolved** (Sprint B): refactored to `BaseFormDialog` — shadcn tokens, no color classes in wrappers. | — |
+| 123 | ✅ | ~~Labels `<Label className="text-white">` invisible in light mode.~~ → **Resolved** (Sprint B): `<Label>` without class — inherits `text-foreground`. | — |
+| 124 | ✅ | ~~Hardcoded inputs `bg-slate-700/50 border-slate-600 text-white`.~~ → **Resolved** (Sprint B): `<Input>` without color className — shadcn tokens. | — |
+| 125 | ✅ | ~~Hardcoded Cancel button.~~ → **Resolved** (Sprint B): `<FormActions>` uses `variant="outline"` shadcn. | — |
+| 126 | 🟢 | `<AlertDialogAction>` for deletion uses `bg-destructive hover:bg-destructive/90` (tokens). **Good practice.** | |
 
 ### 12.9 `CharacterDialogs.tsx`
 
-Même structure qu'`ExpansionDialogs`, mêmes findings.
+Same structure as `ExpansionDialogs`, same findings.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 127 | ✅ | ~~Même patchwork theme-aware / form fields hardcodés.~~ → **Résolu** (Sprint B) : refactorisé vers `BaseFormDialog` + tokens — identique à ExpansionDialogs. | — |
-| 128 | ✅ | ~~Champ `key` exposé dans le formulaire utilisateur.~~ → **Résolu** (Sprint B) : champ `character_key` absent du formulaire refactorisé — name, avatar, description, abilities seulement. | — |
+| 127 | ✅ | ~~Same theme-aware / hardcoded form fields patchwork.~~ → **Resolved** (Sprint B): refactored to `BaseFormDialog` + tokens — identical to ExpansionDialogs. | — |
+| 128 | ✅ | ~~`key` field exposed in the user form.~~ → **Resolved** (Sprint B): `character_key` field absent from the refactored form — name, avatar, description, abilities only. | — |
 
-### 12.10 Synthèse dialogs
+### 12.10 Dialog synthesis
 
-**Ce qu'il reste à faire** :
+**What remains to do**:
 
-1. **`<FormDialog>`** — un wrapper template theme-aware, i18n, avec `title`, `description`, `children` (slots form), `onSubmit`, `onCancel`, et un paramètre `confirmDirtyOnClose`. Permettrait de refactorer `AddGameDialog` et `EditGameDialog` (~800 lignes combinées).
-2. **Aligner `AddGameDialog` et `EditGameDialog`** sur les conventions établies par les Delete dialogs (tokens shadcn, `useLabels`, plus de hardcoded colors).
+1. **`<FormDialog>`** — a theme-aware, i18n template wrapper, with `title`, `description`, `children` (form slots), `onSubmit`, `onCancel`, and a `confirmDirtyOnClose` parameter. Would allow refactoring `AddGameDialog` and `EditGameDialog` (~800 combined lines).
+2. **Align `AddGameDialog` and `EditGameDialog`** on the conventions established by the Delete dialogs (shadcn tokens, `useLabels`, no hardcoded colors).
 
-Les Delete dialogs et `EditPlayerDialog` ont été refactorisés et servent désormais de référence. `AddGameDialog` et `EditGameDialog` restent les dettes principales.
+Delete dialogs and `EditPlayerDialog` have been refactored and now serve as reference. `AddGameDialog` and `EditGameDialog` remain the main outstanding debts.
 
 ---
 
-## 13. `shared/components/ui` — audit des primitives
+## 13. `shared/components/ui` — primitives audit
 
-Le dossier contient **45 fichiers** shadcn. Analyse d'utilisation (grep dans `src/features`, `src/pages`, `src/shared` hors `/ui/`) :
+The folder contains **45 shadcn files**. Usage analysis (grep in `src/features`, `src/pages`, `src/shared` except `/ui/`):
 
-### 13.1 Primitives effectivement utilisées
+### 13.1 Actually used primitives
 
-| Composant | Usages | Notes |
+| Component | Usages | Notes |
 |---|---|---|
-| `button.tsx` | 19 | Principal — bien |
+| `button.tsx` | 19 | Primary — good |
 | `input.tsx` | 12 | — |
 | `label.tsx` | 9 | — |
-| `card.tsx` | 7 | Sous-utilisé : les « cartes » manuelles dans les views ne passent pas par ce composant |
+| `card.tsx` | 7 | Under-used: manual "cards" in views don't use this component |
 | `dialog.tsx` | 7 | — |
 | `tooltip.tsx` | 7 | — |
 | `textarea.tsx` | 6 | — |
@@ -505,239 +505,239 @@ Le dossier contient **45 fichiers** shadcn. Analyse d'utilisation (grep dans `sr
 | `checkbox.tsx` | 3 | — |
 | `badge.tsx` | 3 | — |
 | `dropdown-menu.tsx` | 3 | — |
-| `skeleton.tsx` | 1 | Très sous-utilisé (cf. § 14.9) |
+| `skeleton.tsx` | 1 | Very under-used (see §14.9) |
 | `separator.tsx` | 1 | — |
 | `sheet.tsx` | 1 | — |
 | `switch.tsx` | 1 | — |
-| `tabs.tsx` | 1 | `GameDetailView` uniquement |
+| `tabs.tsx` | 1 | `GameDetailView` only |
 | `toggle.tsx` | 1 | — |
 
-### 13.2 Primitives **non utilisées** (26 fichiers, ~2500 lignes de code mort)
+### 13.2 **Unused** primitives (26 files, ~2500 lines of dead code)
 
-Le dossier contient 26 composants **jamais importés nulle part** :
+The folder contained 26 components **never imported anywhere**:
 
 ```
-sidebar (723 lignes !)      drawer (130)              navigation-menu (168)
-menubar (276)               breadcrumb (110)          pagination (125)
-carousel (261)              hover-card                command (177)
-input-otp (77)              context-menu (254)        accordion (64)
-aspect-ratio                toggle-group (73)         collapsible
-calendar (74)               chart (351)               slider (63)
-popover                     sonner                    progress
-radio-group                  table (114)              scroll-area (58)
-avatar (53)                  form (165)
+sidebar (723 lines!)      drawer (130)              navigation-menu (168)
+menubar (276)             breadcrumb (110)          pagination (125)
+carousel (261)            hover-card                command (177)
+input-otp (77)            context-menu (254)        accordion (64)
+aspect-ratio              toggle-group (73)         collapsible
+calendar (74)             chart (351)               slider (63)
+popover                   sonner                    progress
+radio-group               table (114)               scroll-area (58)
+avatar (53)               form (165)
 ```
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 129 | ✅ | ~~~2500 lignes de code shadcn non utilisé.~~ → **Résolu** (Sprint B) : dossier `ui/` nettoyé de 27 fichiers (sidebar, chart, form, carousel, etc.). 18 composants restants = tous utilisés. | — |
-| 130 | ✅ | ~~`sidebar.tsx` 723 lignes totalement non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
-| 131 | ✅ | ~~`chart.tsx` 351 lignes non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
-| 132 | ✅ | ~~`form.tsx` 165 lignes non utilisé.~~ → **Résolu** (Sprint B) : supprimé. | — |
-| 133 | ✅ | ~~`radio-group.tsx` non utilisé.~~ → **Résolu** (Sprint B) : utilisé dans `NewPlayView` pour le sélecteur de vainqueur (§ 48). | — |
-| 134 | ⏭️ | `progress.tsx` non utilisé — pertinent pour le wizard NewPlay (§ 53). | Déféré avec § 53. |
-| 135 | 🟡 | `skeleton.tsx` : 1 usage seulement sur toute l'app. | Pousser l'adoption (Dashboard, Games, Players, Stats). |
-| 136 | 🟢 | `avatar.tsx` : pas utilisé, mais `<img>` manuels partout avec même pattern. Migrer vers `<Avatar><AvatarImage><AvatarFallback>` unifierait (+ fixerait § 42 avec le fallback propre). |   |
+| 129 | ✅ | ~~~2500 lines of unused shadcn code.~~ → **Resolved** (Sprint B): `ui/` folder cleaned of 27 files (sidebar, chart, form, carousel, etc.). 18 remaining components = all used. | — |
+| 130 | ✅ | ~~`sidebar.tsx` 723 lines completely unused.~~ → **Resolved** (Sprint B): deleted. | — |
+| 131 | ✅ | ~~`chart.tsx` 351 lines unused.~~ → **Resolved** (Sprint B): deleted. | — |
+| 132 | ✅ | ~~`form.tsx` 165 lines unused.~~ → **Resolved** (Sprint B): deleted. | — |
+| 133 | ✅ | ~~`radio-group.tsx` unused.~~ → **Resolved** (Sprint B): used in `NewPlayView` for the winner selector (§48). | — |
+| 134 | ⏭️ | `progress.tsx` unused — relevant for the NewPlay wizard (§53). | Deferred with §53. |
+| 135 | 🟡 | `skeleton.tsx`: only 1 usage across the entire app. | Push adoption (Dashboard, Games, Players, Stats). |
+| 136 | 🟢 | `avatar.tsx`: unused, but manual `<img>` everywhere with same pattern. Migrating to `<Avatar><AvatarImage><AvatarFallback>` would unify (+ fix §42 with proper fallback). | |
 
-### 13.3 Analyse qualité des primitives utilisées
+### 13.3 Quality analysis of used primitives
 
-Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer une, sachez qu'elle est maintenue par la communauté shadcn/Radix. Les remarques portent sur l'**usage** et les **détails maison**.
+Each primitive below is **standard shadcn** — maintained by the shadcn/Radix community. Remarks are about **usage** and **custom details**.
 
 #### 13.3.1 `button.tsx` ✅
 
-- **Bien** : variants bien définis (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`), CVA.
-- **Bien** : `focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]` — **le focus visible est correct** au niveau primitive (contrairement à ce qu'on pourrait croire en voyant les composants custom qui overrident).
-- **Bien** : `aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive` — support invalid state.
-- ⚠️ **Taille** : `default: h-9 px-4 py-2` = 36 px — **sous la cible 44 px** de iOS HIG. `icon: "size-9"` (36×36) idem.
-- ⚠️ Pas de variante `destructive-outline` alors que le pattern existe ailleurs (Settings logout, § 88).
+- **Good**: variants well defined (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`), CVA.
+- **Good**: `focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]` — **focus visible is correct** at primitive level (contrary to what one might think seeing custom components that override it).
+- **Good**: `aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive` — invalid state support.
+- ⚠️ **Size**: `default: h-9 px-4 py-2` = 36px — **below the 44px** iOS HIG target. `icon: "size-9"` (36×36) same.
+- ⚠️ No `destructive-outline` variant even though the pattern exists elsewhere (Settings logout, §88).
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 137 | 🟡 | Sizes default/icon sous la cible tactile 44 px. | Ajouter une size `touch: "h-11 px-5"` pour les cibles mobiles principales, ou monter `default` à `h-10`. |
-| 138 | 🟢 | Manque `destructive-outline` variant. | Ajouter : `"border border-destructive text-destructive hover:bg-destructive/10"`. |
+| 137 | 🟡 | default/icon sizes below 44px touch target. | Add a `touch: "h-11 px-5"` size for main mobile targets, or raise `default` to `h-10`. |
+| 138 | 🟢 | Missing `destructive-outline` variant. | Add: `"border border-destructive text-destructive hover:bg-destructive/10"`. |
 
 #### 13.3.2 `input.tsx` ✅
 
-- **Bien** : `placeholder:text-muted-foreground` (token), `border-input`, `focus-visible:ring-[3px]`, `aria-invalid:...`, `md:text-sm` (responsive font size).
-- **Bien** : `dark:bg-input/30` — distinct bg dark.
-- ✅ Zéro couleur hardcodée.
+- **Good**: `placeholder:text-muted-foreground` (token), `border-input`, `focus-visible:ring-[3px]`, `aria-invalid:...`, `md:text-sm` (responsive font size).
+- **Good**: `dark:bg-input/30` — distinct dark bg.
+- ✅ Zero hardcoded color.
 
-**Usage** : le problème n'est pas le primitive, c'est que **presque toutes les occurrences d'Input dans les dialogs et views l'overrident avec `className="bg-slate-700 border-slate-600 text-white"`**. Les développeurs contournent les tokens → les bugs de thème reviennent. Voir § 101.
+**Usage**: the problem isn't the primitive, it's that **almost all Input occurrences in dialogs and views override it with `className="bg-slate-700 border-slate-600 text-white"`**. Developers bypass tokens → theme bugs come back. See §101.
 
 #### 13.3.3 `label.tsx` ✅
 
-- Minimal, `text-sm leading-none font-medium`, gère `peer-disabled`. OK.
-- Pas de couleur → hérite du parent. **C'est volontaire**, mais partout dans l'app les labels sont override avec `text-white` ou `text-blue-700` → couleurs inconsistantes.
+- Minimal, `text-sm leading-none font-medium`, handles `peer-disabled`. OK.
+- No color → inherits from parent. **Intentional**, but everywhere in the app labels are overridden with `text-white` or `text-blue-700` → inconsistent colors.
 
 #### 13.3.4 `card.tsx` ✅
 
-- Structure : `Card / CardHeader / CardTitle / CardDescription / CardAction / CardContent / CardFooter`.
-- Tokens : `bg-card text-card-foreground`.
-- **Usage très sous-optimal** : les views reconstruisent des cartes manuellement en `<div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl">` **partout** au lieu d'utiliser `<Card>`. Résultat : impossible de changer le look des cartes globalement.
+- Structure: `Card / CardHeader / CardTitle / CardDescription / CardAction / CardContent / CardFooter`.
+- Tokens: `bg-card text-card-foreground`.
+- **Very sub-optimal usage**: views manually rebuild cards as `<div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl">` **everywhere** instead of using `<Card>`. Result: impossible to change the global card look.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 139 | 🟡 | Card primitive sous-utilisée : ~30+ occurrences de `<div className="bg-white/10 backdrop-blur-md ...">` dans les views. | Migrer vers `<Card>` + variants. Créer des variants `<Card variant="glass">` et `<Card variant="solid">` si besoin. |
+| 139 | 🟡 | Card primitive under-used: ~30+ occurrences of `<div className="bg-white/10 backdrop-blur-md ...">` in views. | Migrate to `<Card>` + variants. Create `<Card variant="glass">` and `<Card variant="solid">` variants if needed. |
 
 #### 13.3.5 `dialog.tsx` ✅
 
-- Overlay : `bg-black/50`, OK.
-- Content : `bg-background` (token), `max-w-[calc(100%-2rem)] sm:max-w-lg`, close button intégré en absolute top-right avec `<XIcon>`.
-- **Bien** : close button a `sr-only "Close"` pour lecteur d'écran.
-- ⚠️ `sm:max-w-lg` = 512 px : sur un écran tablette ou desktop, **pas de max-width plus large** pour les gros formulaires (AddGameDialog en particulier qui a 20+ champs). → scroll vertical forcé.
+- Overlay: `bg-black/50`, OK.
+- Content: `bg-background` (token), `max-w-[calc(100%-2rem)] sm:max-w-lg`, integrated close button in absolute top-right with `<XIcon>`.
+- **Good**: close button has `sr-only "Close"` for screen reader.
+- ⚠️ `sm:max-w-lg` = 512px: on a tablet or desktop screen, **no larger max-width** for big forms (AddGameDialog in particular which has 20+ fields). → forced vertical scroll.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 140 | 🟡 | `max-w-lg` trop étroit pour les gros dialogs. | Support `size` prop : `sm: 512`, `md: 768`, `lg: 1024`. Pour AddGameDialog, utiliser `md` minimum. |
-| 141 | 🟢 | Close button : focus-ring à `focus:ring-ring focus:ring-2 focus:ring-offset-2` — classique, bien. Vérifier contraste du ring sur `bg-background` light et dark. |   |
+| 140 | 🟡 | `max-w-lg` too narrow for large dialogs. | Support `size` prop: `sm: 512`, `md: 768`, `lg: 1024`. For AddGameDialog, use `md` minimum. |
+| 141 | 🟢 | Close button: focus-ring at `focus:ring-ring focus:ring-2 focus:ring-offset-2` — classic, good. Verify ring contrast on `bg-background` light and dark. | |
 
 #### 13.3.6 `alert-dialog.tsx` ✅
 
-- `AlertDialogAction` utilise `buttonVariants()` (donc `default` = primary) — attention : un AlertDialog est souvent **destructif** (delete), donc par défaut l'action ressort en primary teal au lieu de destructive rouge. Il faut explicitement passer `className={buttonVariants({ variant: 'destructive' })}` à chaque usage.
+- `AlertDialogAction` uses `buttonVariants()` (so `default` = primary) — caution: an AlertDialog is often **destructive** (delete), so by default the action stands out in primary teal instead of destructive red. Must explicitly pass `className={buttonVariants({ variant: 'destructive' })}` at each usage.
 - `AlertDialogCancel` = `buttonVariants({ variant: 'outline' })`. OK.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 142 | ✅ | ~~`AlertDialogAction` default `buttonVariants()` = teal primaire sur les dialogs de suppression.~~ → **Résolu 2026-05-02** : tous les `AlertDialogAction` de suppression utilisent `className="bg-destructive text-destructive-foreground hover:bg-destructive/90"`. `confirmLeave` dans `NewPlayView` également corrigé. | — |
+| 142 | ✅ | ~~`AlertDialogAction` default `buttonVariants()` = teal primary on delete dialogs.~~ → **Resolved 2026-05-02**: all delete `AlertDialogAction` use `className="bg-destructive text-destructive-foreground hover:bg-destructive/90"`. `confirmLeave` in `NewPlayView` also fixed. | — |
 
 #### 13.3.7 `select.tsx` ✅
 
-- Trigger : tokens, focus-visible, aria-invalid, responsive size (`sm`/`default`).
-- Content : `bg-popover text-popover-foreground` — **theme-aware automatiquement**.
-- ⚠️ Usage : partout dans les views, `<SelectContent className="bg-slate-800 border-white/20">` override les tokens. Même problème qu'Input.
+- Trigger: tokens, focus-visible, aria-invalid, responsive size (`sm`/`default`).
+- Content: `bg-popover text-popover-foreground` — **automatically theme-aware**.
+- ⚠️ Usage: everywhere in views, `<SelectContent className="bg-slate-800 border-white/20">` overrides tokens. Same problem as Input.
 
 #### 13.3.8 `checkbox.tsx` ✅
 
-- Tokens : `border-input`, `data-[state=checked]:bg-primary`, `focus-visible:ring-[3px]`.
-- Taille : `size-4` = 16×16 px — **très petit**. Avec label adjacent, zone cliquable totale OK, mais seul = difficile à tapper.
+- Tokens: `border-input`, `data-[state=checked]:bg-primary`, `focus-visible:ring-[3px]`.
+- Size: `size-4` = 16×16px — **very small**. With adjacent label, total clickable area OK, but alone = hard to tap.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 143 | 🟡 | Checkbox 16×16 + padding label implicite → zone tactile limite. | S'assurer que chaque checkbox a un `<Label>` adjacent cliquable. Le Radix Checkbox + Radix Label gèrent ça si utilisés ensemble. |
+| 143 | 🟡 | Checkbox 16×16 + implicit label padding → borderline touch target. | Ensure every checkbox has an adjacent clickable `<Label>`. Radix Checkbox + Radix Label handle this when used together. |
 
 #### 13.3.9 `switch.tsx` ✅
 
-- Taille thumb : `h-[1.15rem] w-8` = 18.4×32 px. OK visuellement.
-- Tokens `data-[state=checked]:bg-primary` : OK.
+- Thumb size: `h-[1.15rem] w-8` = 18.4×32px. OK visually.
+- Tokens `data-[state=checked]:bg-primary`: OK.
 
 #### 13.3.10 `tabs.tsx` ✅
 
 - Tokens `bg-muted`, `data-[state=active]:bg-background`.
-- `h-9` sur TabsList → 36 px. Sous 44 px.
+- `h-9` on TabsList → 36px. Below 44px.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 144 | 🟡 | Tabs h-9 sous la cible tactile. | Option size `lg` à `h-11` pour tabs mobile principales. |
+| 144 | 🟡 | Tabs h-9 below touch target. | `lg` size option at `h-11` for main mobile tabs. |
 
 #### 13.3.11 `tooltip.tsx` ✅
 
-- `TooltipProvider delayDuration={0}` par défaut — **tooltip s'affiche instantanément au hover**. UX agressive : bouge la souris → un tooltip te saute au visage. Le default shadcn en général est `delayDuration=700`.
-- Tokens : `bg-primary text-primary-foreground` pour le tooltip content.
+- `TooltipProvider delayDuration={0}` by default — **tooltip appears instantly on hover**. Aggressive UX: move the mouse → a tooltip jumps at you. The shadcn default is generally `delayDuration=700`.
+- Tokens: `bg-primary text-primary-foreground` for tooltip content.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 145 | ✅ | ~~`delayDuration={0}` — tooltip instantané = bruit UX.~~ → **Résolu 2026-05-02** : `delayDuration = 500` dans `TooltipProvider`. | — |
+| 145 | ✅ | ~~`delayDuration={0}` — instant tooltip = UX noise.~~ → **Resolved 2026-05-02**: `delayDuration = 500` in `TooltipProvider`. | — |
 
 #### 13.3.12 `dropdown-menu.tsx` ✅
 
-- Content : `bg-popover text-popover-foreground` — theme-aware auto.
-- Item : `data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10` — variant destructive intégré. ✅
-- ⚠️ Usage : override par `bg-slate-800 border-slate-700` dans les views (voir § 21).
+- Content: `bg-popover text-popover-foreground` — auto theme-aware.
+- Item: `data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10` — destructive variant built in. ✅
+- ⚠️ Usage: overridden by `bg-slate-800 border-slate-700` in views (see §21).
 
 #### 13.3.13 `textarea.tsx` ✅
 
 - Tokens, focus-visible, aria-invalid, `field-sizing-content` (auto-resize modern CSS). OK.
-- ⚠️ Usage overridé partout avec `bg-slate-700`.
+- ⚠️ Usage overridden everywhere with `bg-slate-700`.
 
 #### 13.3.14 `badge.tsx` ✅
 
-- Variants : `default`, `secondary`, `destructive`, `outline`.
-- Manque : variants sémantiques custom pour les modes de session (competitive/coop/campaign/hybrid). Actuellement chaque view recrée ses badges avec des classes inline hétéroclites.
+- Variants: `default`, `secondary`, `destructive`, `outline`.
+- Missing: custom semantic variants for session modes (competitive/coop/campaign/hybrid). Currently each view recreates its badges with heterogeneous inline classes.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 146 | ✅ | ~~`Badge` sans variants `mode-*`.~~ → **Résolu 2026-05-02** : `badgeVariants` CVA étendu avec `competitive`, `cooperative`, `campaign`, `hybrid` dans `badge.tsx`. | — |
+| 146 | ✅ | ~~`Badge` without `mode-*` variants.~~ → **Resolved 2026-05-02**: `badgeVariants` CVA extended with `competitive`, `cooperative`, `campaign`, `hybrid` in `badge.tsx`. | — |
 
 #### 13.3.15 `alert.tsx` ✅
 
 - Variants `default`, `destructive`. Tokens `bg-card text-card-foreground`.
-- ⚠️ Pas de variant `warning` / `info` / `success` — souvent utilisés dans les vrais produits.
+- ⚠️ No `warning` / `info` / `success` variant — often used in real products.
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 147 | 🟢 | Étendre alert avec `warning` et `info` variants pour BGG import (qui affiche des statuts). |   |
+| 147 | 🟢 | Extend alert with `warning` and `info` variants for BGG import (which displays statuses). | |
 
 #### 13.3.16 `skeleton.tsx`, `separator.tsx`, `sheet.tsx`, `toggle.tsx`
 
-- Tous standards shadcn, peu ou pas d'issue interne. Voir usage § 135 pour skeleton.
+- All standard shadcn, little or no internal issue. See usage §135 for skeleton.
 
-### 13.4 Primitives manquantes / à ajouter
+### 13.4 Missing / to-add primitives
 
-| # | Sévérité | Finding | Recommandation |
+| # | Severity | Finding | Recommendation |
 |---|---|---|---|
-| 148 | ✅ | ~~Pas de `<EmptyState>` partagé. Chaque view recrée son empty state (bien dans Players, pourri dans Games).~~ → **Résolu 2026-05-02** : `src/shared/components/EmptyState.tsx` créé (`icon`, `title`, `description?`, `action?`, `className?`). Adopté dans GamesPageView + PlayersPageView. | — |
-| 149 | ✅ | ~~Pas de `<PageHeader>` partagé. Hack `<div className="w-10" />` pour équilibrer.~~ → **Résolu 2026-05-02** : `src/shared/components/PageHeader.tsx` créé (`title`, `left?`, `right?`, `className?`). Adopté dans StatsPage + SettingsPageView. Fix `text-white` hardcodé → `text-foreground`. | — |
-| 150 | ✅ | ~~Pas de `<SectionHeader>` (icône + titre + action optionnelle). Pattern répété ~15× dans les views.~~ → **Résolu 2026-05-02** : `src/shared/components/SectionHeader.tsx` créé. Adopté dans GameStatsView (7 occurrences) + PlayerStatsView (6 occurrences). Utilise `cn()`. | — |
-| 151 | ✅ | ~~Pas de `<StatCard>` sémantique. Chaque stat est un `<div>` manuel.~~ → **Résolu 2026-05-02** : `src/shared/components/StatCard.tsx` créé avec `layout="vertical"` (défaut) et `layout="horizontal"`. Remplace les 2 définitions locales dans GameStatsView + PlayerStatsView. Tokens `bg-card border-border text-foreground`. | — |
+| 148 | ✅ | ~~No shared `<EmptyState>`. Each view recreates its empty state (good in Players, poor in Games).~~ → **Resolved 2026-05-02**: `src/shared/components/EmptyState.tsx` created (`icon`, `title`, `description?`, `action?`, `className?`). Adopted in GamesPageView + PlayersPageView. | — |
+| 149 | ✅ | ~~No shared `<PageHeader>`. Hack `<div className="w-10" />` for balance.~~ → **Resolved 2026-05-02**: `src/shared/components/PageHeader.tsx` created (`title`, `left?`, `right?`, `className?`). Adopted in StatsPage + SettingsPageView. Fixed hardcoded `text-white` → `text-foreground`. | — |
+| 150 | ✅ | ~~No `<SectionHeader>` (icon + title + optional action). Pattern repeated ~15× in views.~~ → **Resolved 2026-05-02**: `src/shared/components/SectionHeader.tsx` created. Adopted in GameStatsView (7 occurrences) + PlayerStatsView (6 occurrences). Uses `cn()`. | — |
+| 151 | ✅ | ~~No semantic `<StatCard>`. Each stat is a manual `<div>`.~~ → **Resolved 2026-05-02**: `src/shared/components/StatCard.tsx` created with `layout="vertical"` (default) and `layout="horizontal"`. Replaces 2 local definitions in GameStatsView + PlayerStatsView. Tokens `bg-card border-border text-foreground`. | — |
 
-### 13.5 Synthèse shared/ui
+### 13.5 shared/ui synthesis
 
-**Bons points** :
-- Les primitives shadcn en elles-mêmes sont **propres, theme-aware, accessibles**.
-- Focus-visible et aria-invalid sont corrects par défaut.
-- CVA bien utilisé pour les variants.
+**Strengths**:
+- shadcn primitives themselves are **clean, theme-aware, accessible**.
+- Focus-visible and aria-invalid are correct by default.
+- CVA well used for variants.
 
-**Problèmes** :
-1. **26 primitives non utilisées** = dette au repos (spécialement `sidebar.tsx` 723 lignes, `chart.tsx` 351 lignes, `form.tsx` 165 lignes).
-2. **Primitives utilisées puis overridées** : les développeurs `className`-override avec des couleurs hardcodées (`bg-slate-700`, `text-white`) → les bugs de thème reviennent au niveau feature, alors que la primitive était déjà bien.
-3. **Composants métier manquants** : `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>`, `<FormDialog>`, `<ConfirmDialog>`, `<InitialAvatar>`.
-4. **Token sémantique manquant** : pas de variant `mode-competitive/cooperative/...` sur Badge, donc chaque view recrée ses couleurs.
+**Problems**:
+1. **26 unused primitives** = resting debt (especially `sidebar.tsx` 723 lines, `chart.tsx` 351 lines, `form.tsx` 165 lines).
+2. **Primitives used then overridden**: developers `className`-override with hardcoded colors (`bg-slate-700`, `text-white`) → theme bugs come back at the feature level, even though the primitive was already correct.
+3. **Missing business components**: `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>`, `<FormDialog>`, `<ConfirmDialog>`, `<InitialAvatar>`.
+4. **Missing semantic token**: no `mode-competitive/cooperative/...` variant on Badge, so each view recreates its colors.
 
-**Recommandation stratégique** : une session de refactor (1-2 jours) pour (a) supprimer les 26 primitives inutilisées, (b) créer les 7 composants métier manquants, (c) imposer une règle lint qui interdit `bg-slate-*` dans `src/features/**/*.tsx` (sauf `ui/`) — forcerait l'adoption des tokens.
+**Strategic recommendation**: a refactor session (1–2 days) to (a) delete the 26 unused primitives, (b) create the 7 missing business components, (c) enforce a lint rule that forbids `bg-slate-*` in `src/features/**/*.tsx` (except `ui/`) — would force token adoption.
 
 ---
 
-## 14. Problèmes transverses — design system
+## 14. Cross-cutting issues — design system
 
-Synthèse des motifs qui reviennent page après page.
+Synthesis of patterns that recur page after page.
 
-### 14.1 Gestion du mode sombre/clair
+### 14.1 Dark/light mode management
 
-Le pattern `darkMode ? "..." : "..."` est réparti dans **30+ fichiers** et passé en prop à travers tous les composants (prop drilling). Conséquences observées :
+The `darkMode ? "..." : "..."` pattern is spread across **30+ files** and passed as a prop through all components (prop drilling). Observed consequences:
 
-- **Chaque développeur doit penser aux deux thèmes à chaque modif.** Oubli fréquent → bugs § 19, § 21, § 29, § 47, § 54, § 63.
-- **Incohérences inter-composants** : même concept coloré différemment selon la page (§ 27, § 69).
-- **Dialogues résiduels** : `AddGameDialog` et `EditGameDialog` overrident encore les tokens (`bg-slate-700`) sur les inputs.
-- **Overrides anti-tokens** : les devs remettent `bg-slate-700` partout sur des primitives pourtant theme-aware (§ 101, § 124).
+- **Every developer must think about both themes on every change.** Frequent oversight → bugs §19, §21, §29, §47, §54, §63.
+- **Inter-component inconsistencies**: same concept colored differently per page (§27, §69).
+- **Residual dialogs**: `AddGameDialog` and `EditGameDialog` still override tokens (`bg-slate-700`) on inputs.
+- **Anti-token overrides**: devs re-apply `bg-slate-700` everywhere on already theme-aware primitives (§101, §124).
 
-**Recommandation architecturale** :
+**Architectural recommendation**:
 
-1. Adopter le **pattern natif Tailwind `dark:`** avec la stratégie `class` (déjà supportée par shadcn).
-2. Utiliser les **variables CSS HSL** (`--background`, `--foreground`, `--card`, `--primary`, etc.) définies dans `theme.json`. Shadcn le fait déjà pour `--primary` — il faut généraliser.
-3. **Supprimer toute prop `darkMode`** : 300+ lignes dégagées, zéro prop drilling.
-4. Un toggle global `document.documentElement.classList.toggle('dark')` déclenché depuis le bouton Settings.
+1. Adopt the **native Tailwind `dark:` pattern** with the `class` strategy (already supported by shadcn).
+2. Use **CSS HSL variables** (`--background`, `--foreground`, `--card`, `--primary`, etc.) defined in `theme.json`. Shadcn already does this for `--primary` — generalize it.
+3. **Remove all `darkMode` props**: ~300 lines eliminated, zero prop drilling.
+4. A global toggle `document.documentElement.classList.toggle('dark')` triggered from the Settings button.
 
-**Gain estimé** : ~300 lignes supprimées, 0 bug de thème futur, cohérence garantie.
+**Estimated gain**: ~300 lines removed, 0 future theme bugs, guaranteed consistency.
 
-### 14.2 Tokens de couleur sémantiques
+### 14.2 Semantic color tokens
 
-**État actuel** :
-- Couleurs en dur partout : `text-teal-400`, `border-red-400/30`, `text-emerald-700`, `bg-amber-500/20`, `text-purple-300`.
-- Mêmes concepts (mode de session) colorés différemment selon la page.
-- Couleurs choisies arbitrairement (purple pour victoires, blue pour joueurs actifs) sans lien sémantique.
+**Current state**:
+- Hard-coded colors everywhere: `text-teal-400`, `border-red-400/30`, `text-emerald-700`, `bg-amber-500/20`, `text-purple-300`.
+- Same concepts (session mode) colored differently per page.
+- Colors chosen arbitrarily (purple for wins, blue for active players) without semantic meaning.
 
-**Recommandation** : définir dans `src/shared/theme/tokens.ts` + CSS :
+**Recommendation**: define in `src/shared/theme/tokens.ts` + CSS:
 
 ```css
-/* Modes de session */
---mode-competitive: hsl(0 80% 55%);    /* rouge */
---mode-cooperative: hsl(215 80% 55%);  /* bleu */
---mode-campaign:    hsl(270 80% 60%);  /* violet */
+/* Session modes */
+--mode-competitive: hsl(0 80% 55%);    /* red */
+--mode-cooperative: hsl(215 80% 55%);  /* blue */
+--mode-campaign:    hsl(270 80% 60%);  /* purple */
 --mode-hybrid:      hsl(30 90% 55%);   /* orange */
 
-/* Statuts */
---stat-positive: hsl(145 70% 45%);    /* victoires, succès */
---stat-negative: hsl(0 70% 55%);      /* défaites, erreurs */
+/* Status */
+--stat-positive: hsl(145 70% 45%);    /* wins, success */
+--stat-negative: hsl(0 70% 55%);      /* losses, errors */
 --stat-neutral:  hsl(var(--muted-foreground));
 
 /* Highlights */
@@ -746,61 +746,61 @@ Le pattern `darkMode ? "..." : "..."` est réparti dans **30+ fichiers** et pass
 --medal-bronze: hsl(25 70% 50%);
 ```
 
-Exposer en Tailwind via `extend.colors` + utilisation `bg-mode-competitive`, `text-stat-positive`.
+Expose via Tailwind `extend.colors` + usage `bg-mode-competitive`, `text-stat-positive`.
 
 ### 14.3 Radius
 
-**État** : 4 valeurs utilisées sans règle : `rounded-lg` (8), `rounded-xl` (12), `rounded-2xl` (16), `rounded-l-lg` (8 gauche).
+**State**: 4 values used without rule: `rounded-lg` (8), `rounded-xl` (12), `rounded-2xl` (16), `rounded-l-lg` (8 left).
 
-**Recommandation** : 3 tokens :
+**Recommendation**: 3 tokens:
 - `--radius-sm: 0.375rem` (6px) — badges, chips.
 - `--radius: 0.5rem` (8px) — inputs, buttons.
 - `--radius-lg: 1rem` (16px) — cards, dialogs.
 
-Tailwind config : `borderRadius.DEFAULT = 'var(--radius)'`, etc. Lint `rounded-[0-9]+` en warning dans `features/`.
+Tailwind config: `borderRadius.DEFAULT = 'var(--radius)'`, etc. Lint `rounded-[0-9]+` as warning in `features/`.
 
-### 14.4 Cartes — recette monolithique
+### 14.4 Cards — monolithic recipe
 
-**État** : une seule recette `bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl` reproduite ~30× dans les views. Aucune hiérarchie primaire/secondaire.
+**State**: a single recipe `bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-xl` reproduced ~30× in views. No primary/secondary hierarchy.
 
-**Recommandation** : variants typés :
+**Recommendation**: typed variants:
 
 ```tsx
-<Card variant="glass" />       // principale (glassmorphism)
-<Card variant="solid" />       // solide, contenu dense
-<Card variant="accent" />      // bordure primary, info mise en avant
-<Card variant="ghost" />       // sans fond, pour groupes
+<Card variant="glass" />       // primary (glassmorphism)
+<Card variant="solid" />       // solid, dense content
+<Card variant="accent" />      // primary border, highlighted info
+<Card variant="ghost" />       // no background, for groups
 ```
 
-### 14.5 Internationalisation
+### 14.5 Internationalization
 
-**État** : l'infrastructure `useLabels` / `t('...')` existe et fonctionne. **Le problème n'est pas l'infra, c'est l'adoption inégale** :
+**State**: the `useLabels` / `t('...')` infrastructure exists and works. **The problem isn't the infrastructure, it's uneven adoption**:
 
-- ✅ Bien utilisé : `PlayersPageView`, `AddPlayerDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog`.
-- 🟡 Partiel : `AddGameDialog`, `EditGameDialog` (titre/boutons encore hardcodés).
-- ✅ Résolu : `PlayerStatsView` (i18n complète via PR #85), `NewPlayView` (§ 46 résolu 2026-05-01).
+- ✅ Well used: `PlayersPageView`, `AddPlayerDialog`, `DeleteGameDialog`, `DeletePlayerDialog`, `EditPlayerDialog`.
+- 🟡 Partial: `AddGameDialog`, `EditGameDialog` (title/buttons still hardcoded).
+- ✅ Resolved: `PlayerStatsView` (full i18n via PR #85), `NewPlayView` (§46 resolved 2026-05-01).
 
-**Statut après Sprint B** : ~80 strings migrées via `t()`. Restent :
-- `EditGameDialog` : titre dialog et bouton submit hardcodés en français.
-- `AddGameDialog` : quelques labels (§ 91) potentiellement encore présents.
+**Status after Sprint F (2026-05-02)**: ~120 strings migrated via `t()`. Migration 027 added missing `sessions.players.min_required` and `sessions.players.max_reached` keys to the DB for both `en` and `fr` locales. `useLabels` changed to spread `enFallback` as base layer so any key missing from the DB falls back to English from `en.json`. Remaining:
+- `EditGameDialog`: dialog title and submit button potentially still hardcoded — verify by grep.
+- Activate `eslint-plugin-i18n-text` to block future regressions.
 
-**Action restante** :
-1. Vérifier `AddGameDialog` par grep ciblé.
-2. Activer `eslint-plugin-i18n-text` pour bloquer les régressions futures.
+**Remaining actions**:
+1. Verify `AddGameDialog` by targeted grep.
+2. Activate `eslint-plugin-i18n-text` to block future regressions.
 
-### 14.6 Accessibilité — récapitulatif
+### 14.6 Accessibility — summary
 
-| Problème | Occurrences | Références |
+| Problem | Occurrences | References |
 |---|---|---|
-| Contraste `text-white/30-40` en dark | ~15 | §§ 2, 17, 50, 65 |
-| Cibles tactiles < 44 px | ~10 | §§ 15, 23, 45, 137, 144 |
-| Focus-visible absent au niveau composants custom | ~10 | § 8, § 14.6 ci-dessous |
-| Images `alt=""` redondantes | ~5 | § 12.6 transverse |
-| Aucun `role="alert"` / `aria-live` sur erreurs | ~6 | §§ 7, 49 |
-| Boutons imbriqués (HTML invalide) | 1 | § 24 |
-| Labels sans `htmlFor` | Nombreux | § 58 |
+| Contrast `text-white/30-40` in dark | ~15 | §§2, 17, 50, 65 |
+| Touch targets < 44px | ~10 | §§15, 23, 45, 137, 144 |
+| Missing focus-visible at custom component level | ~10 | §8, §14.6 below |
+| Redundant `alt=""` images | ~5 | §12.6 cross-cutting |
+| No `role="alert"` / `aria-live` on errors | ~6 | §§7, 49 |
+| Nested buttons (invalid HTML) | 1 | §24 |
+| Labels without `htmlFor` | Many | §58 |
 
-**Focus-visible** : la primitive `Button` shadcn a `focus-visible:ring-[3px]` correct. **Mais** les custom buttons inline (`<button className="p-2">` dans les views) n'héritent pas et n'ajoutent pas leur propre ring. Ajouter une règle globale CSS :
+**Focus-visible**: the shadcn `Button` primitive has correct `focus-visible:ring-[3px]`. **But** inline custom buttons (`<button className="p-2">` in views) don't inherit and don't add their own ring. Add a global CSS rule:
 
 ```css
 button:focus-visible:not(.custom-focus) {
@@ -811,140 +811,152 @@ button:focus-visible:not(.custom-focus) {
 
 ### 14.7 Navigation
 
-**État** : 3 patterns coexistent :
+**State**: 3 patterns coexist:
 
-1. **Bottom-nav fixe** (`GameDetailView` uniquement) : 4 onglets Dashboard/Games/Players/Stats.
-2. **Header back-button** (Dashboard, Games, Players, Settings, Stats, NewPlay) : flèche retour + titre.
-3. **Pas de nav** (Login).
+1. **Fixed bottom-nav** (`GameDetailView` only): 4 tabs Dashboard/Games/Players/Stats.
+2. **Header back-button** (Dashboard, Games, Players, Settings, Stats, NewPlay): back arrow + title.
+3. **No nav** (Login).
 
-**Problème** : le bottom-nav n'existe que sur GameDetail → l'utilisateur pense que c'est une feature spécifique à cette page. Et cette bottom-nav a un bug (§ 30 toujours active sur « Games »).
+**Problem**: the bottom-nav only exists on GameDetail → user thinks it's a feature specific to this page. And this bottom-nav had a bug (§30 always active on "Games").
 
-**Recommandation** :
-- Mobile : bottom-nav global, présent sur toutes les pages sauf Login/NewPlay (qui bénéficient du full-screen).
-- Desktop (≥ lg) : sidebar latérale (utiliser `sidebar.tsx` qui est déjà là !) + header sans back-button.
+**Recommendation**:
+- Mobile: global bottom-nav, present on all pages except Login/NewPlay (which benefit from full-screen).
+- Desktop (≥ lg): lateral sidebar (use `sidebar.tsx` which was already there!) + header without back-button.
 
 ### 14.8 Empty states
 
-**Qualité variable** :
+**Variable quality**:
 
-| Page | Quality | Détail |
+| Page | Quality | Detail |
 |---|---|---|
-| `PlayersPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title, description, CTA |
-| `GamesPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title |
-| Stats | 🔴 Absent | Texte « No data » simple |
-| `BGGSearch` | 🟢 OK | Texte « Aucun résultat » sans icône |
-| `NewPlayView` (pas de joueurs disponibles) | 🔴 Aucun | |
+| `PlayersPageView` | ✅ Good | Shared `<EmptyState>` — icon, title, description, CTA |
+| `GamesPageView` | ✅ Good | Shared `<EmptyState>` — icon, title |
+| Stats | 🔴 Missing | Simple "No data" text |
+| `BGGSearch` | 🟢 OK | "No results" text without icon |
+| `NewPlayView` (no players available) | 🔴 None | |
 
-✅ **`<EmptyState>` créé et adopté dans GamesPageView + PlayersPageView** (§ 148 — 2026-05-02). Restant : Stats, BGGSearch, NewPlayView.
+✅ **`<EmptyState>` created and adopted in GamesPageView + PlayersPageView** (§148 — 2026-05-02). Remaining: Stats, BGGSearch, NewPlayView.
 
 ### 14.9 Loading states
 
-**État** :
+**State**:
 
-| Page | Loading | Détail |
+| Page | Loading | Detail |
 |---|---|---|
-| `LoginPage` | 🟢 | Bouton loading state |
-| `BGGSearch` | ✅ | Spinner dédié + message |
-| Dashboard | 🔴 Aucun | React Query gère en background, rien d'affiché |
-| Games | 🔴 Aucun | Idem |
-| Players | 🔴 Aucun | Idem |
-| Stats | 🔴 Aucun | Idem |
-| GameDetail | 🔴 Aucun | Idem |
+| `LoginPage` | 🟢 | Button loading state |
+| `BGGSearch` | ✅ | Dedicated spinner + message |
+| Dashboard | 🔴 None | React Query handles in background, nothing displayed |
+| Games | 🔴 None | Same |
+| Players | 🔴 None | Same |
+| Stats | 🔴 None | Same |
+| GameDetail | 🔴 None | Same |
 
-**Action** : sur chaque page, ajouter un skeleton dédié (`<GamesPageSkeleton>`, `<PlayersPageSkeleton>`, etc.) affiché tant que `isLoading` de React Query est true. Utiliser `skeleton.tsx` (§ 135).
+**Action**: on each page, add a dedicated skeleton (`<GamesPageSkeleton>`, `<PlayersPageSkeleton>`, etc.) displayed while React Query's `isLoading` is true. Use `skeleton.tsx` (§135).
 
 ### 14.10 Mobile vs desktop
 
-- **Double rendering pattern** dans `GamesPageView` (desktop actions / mobile actions) et `GameDetailView` (tabs desktop / kebab mobile). Légèrement DRY-violant mais acceptable.
-- **Plusieurs pages n'ont aucun breakpoint desktop** : Dashboard, Players, Settings, Stats restent en layout mobile sur un écran 1920 px → vaste espace blanc sur les côtés. Seul `GameDetailView` a `max-w-7xl`.
+- **Double rendering pattern** in `GamesPageView` (desktop actions / mobile actions) and `GameDetailView` (desktop tabs / mobile kebab). Slightly DRY-violating but acceptable.
+- **Several pages have no desktop breakpoint**: Dashboard, Players, Settings, Stats remain in mobile layout on a 1920px screen → vast white space on sides. Only `GameDetailView` has `max-w-7xl`.
 
-**Action** : wrapper global `<PageContainer className="max-w-7xl mx-auto px-4 md:px-8">` + layout 2-3 colonnes sur les pages de contenu (ex. Dashboard : stats à gauche, activité à droite).
+**Action**: global wrapper `<PageContainer className="max-w-7xl mx-auto px-4 md:px-8">` + 2–3 column layout on content pages (e.g., Dashboard: stats left, activity right).
 
-### 14.11 Gestion des états de formulaire
+### 14.11 Form state management
 
-Aucun formulaire n'utilise `react-hook-form` + `<Form>` shadcn alors que la primitive est disponible (§ 132). Tous les forms (`AddGameDialog`, `EditGameDialog`, `AddPlayerDialog`, `NewPlayView`…) sont gérés en `useState` manuel avec validation custom.
+No form uses `react-hook-form` + `<Form>` shadcn even though the primitive was available (§132). All forms (`AddGameDialog`, `EditGameDialog`, `AddPlayerDialog`, `NewPlayView`…) are managed with manual `useState` and custom validation.
 
-**Conséquences** :
-- `htmlFor` souvent absent (§ 58).
-- Messages d'erreur affichés ad hoc (`<p className="text-red-400">`).
-- Dirty state non trackée → pas de confirmation avant fermeture (§ 49, § 103).
+**Consequences**:
+- `htmlFor` often absent (§58).
+- Error messages displayed ad hoc (`<p className="text-red-400">`).
+- Dirty state not tracked → no confirmation before close (§49, §103).
 
-**Action** : migration progressive vers `<Form>` + Zod resolvers. Un formulaire par semaine. L'app gagne en cohérence et en robustesse.
-
----
-
-## 15. Priorités restantes
-
-Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 résolus. Backlog actuel :
-
-### Sprint A — Quick wins restants (≤ 1 jour chacun)
-
-1. **🔴 Bottom-nav active-state dérivé du `currentView`** (§ 30). Bouton « Games » toujours actif quelle que soit la page.
-2. ~~**🟡 i18n résiduel** : vérifier `AddGameDialog` (§ 91), `EditGameDialog` (titre + bouton submit hardcodés). Audit grep ciblé. ~~`NewPlayView` (§ 46) — résolu 2026-05-01.~~~~  → **Résolu 2026-05-02** : `AddGameDialog` et `EditGameDialog` utilisent `t()` pour tous les labels.
-3. ~~**🟡 Créer le token `gameModeColors` sémantique** (§ 14.2). Élimine les incohérences § 27, § 55, § 69 en un seul fichier.~~ → **Résolu 2026-05-02** : `src/shared/theme/gameModeColors.ts` créé, utilisé par toutes les vues (§ 69 résolu).
-
-### Sprint B — Refactors ciblés (1-3 jours chacun)
-
-4. ~~**🔴 Refactorer `AddGameDialog` + `EditGameDialog`** (§ 89-103). Inputs hardcodés dark, title/boutons partiellement hardcodés, taille dialog trop étroite. Créer `<FormDialog>` (§ 12.10) pour les couvrir en même temps.~~ → **Résolu 2026-05-02** : dialogs refactorisés (Sprint E PR #100), tokens theme-aware, Cancel buttons corrigés.
-5. ~~**🔴 Winner en `RadioGroup` dans `NewPlayView`** (§ 48). Sémantique HTML incorrecte (checkbox pour choix exclusif).~~ → Résolu 2026-05-01.
-6. ~~**🟡 Auto-save + confirmation avant navigation dans `NewPlayView`** (§ 49). Risque de perte de données sur formulaire long.~~ → Résolu 2026-05-01.
-
-### Sprint C — Chantiers structurants (≥ 1 semaine)
-
-7. **🔴 Refactor `darkMode` prop → tokens CSS + `dark:` Tailwind** (§ 14.1). Débloque §§ 19, 21, 29, 47, 54, 63, 101, 123. ROI global le plus élevé du backlog restant.
-8. **🔴 `NewPlayView` : wizard multi-étapes** (§ 53). Réduction de charge cognitive sur le formulaire le plus long.
-9. ~~**🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants.~~ → **Résolu 2026-05-02** : `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>` créés et adoptés (Sprint F PR #101). `<InitialAvatar>` existait déjà.
-10. ~~**🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Feature zombie à trancher.~~ → **Résolu 2026-05-02** : props `selectedPeriod`/`setSelectedPeriod` supprimées de `GameStatsViewProps`, hook gère l'état en interne (§ 67 résolu).
-11. **🟡 Migrer les formulaires vers `<Form>` + Zod** (§ 14.11, § 132). Un form par semaine.
-
-### Gain estimé restant
-
-- Sprint A : **1-2 jours** — corrections rapides visibles immédiatement.
-- Sprint B : **1 semaine** — éliminer les dettes majeures restantes (dialogs + NewPlayView).
-- Sprint C : **3-4 semaines** — systémique, garantit la cohérence long terme.
+**Action**: progressive migration to `<Form>` + Zod resolvers. One form per week. The app gains consistency and robustness.
 
 ---
 
-## Annexes
+## 15. Execution priorities
 
-### A. Inventaire des fichiers audités
+Updated 2026-05-02. Sprint F merged (PR #101). Backlog:
 
-**Pages / Views** : `auth/LoginPage.tsx`, `dashboard/DashboardView.tsx`, `games/GamesPageView.tsx`, `games/detail/GameDetailView.tsx`, `games/expansions/GameExpansionsView.tsx`, `games/characters/*` (partiel), `players/PlayersPageView.tsx`, `plays/NewPlayView.tsx`, `bgg/BGGSearch.tsx`, `stats/game/GameStatsView.tsx`, `stats/player/PlayerStatsView.tsx`, `settings/SettingsPageView.tsx`.
+### Sprint F — Shared components & quick fixes ✅ (PR #101 — 2026-05-02)
 
-**Dialogs** : `games/dialogs/AddGameDialog.tsx`, `games/dialogs/EditGameDialog.tsx`, `games/dialogs/DeleteGameDialog.tsx`, `players/dialogs/AddPlayerDialog.tsx`, `players/dialogs/EditPlayerDialog.tsx`, `players/dialogs/DeletePlayerDialog.tsx`, `games/expansions/dialogs/ExpansionDialogs.tsx`, `games/characters/dialogs/CharacterDialogs.tsx`.
+- ✅ §148 — `<EmptyState>` shared component created, adopted in GamesPageView + PlayersPageView.
+- ✅ §149 — `<PageHeader>` shared component created, adopted in StatsPage + SettingsPageView. `aria-hidden` fix for right slot.
+- ✅ §150 — `<SectionHeader>` shared component created, adopted in GameStatsView + PlayerStatsView.
+- ✅ §151 — `<StatCard>` shared component created with vertical/horizontal layout, adopted in GameStatsView + PlayerStatsView.
+- ✅ §142 — All destructive `AlertDialogAction` and `confirmLeave` use `bg-destructive` tokens.
+- ✅ §69 — gameModeColors consistency: GamesPageView, NewPlayView, GameStatsView all import from `gameModeColors.ts`.
+- ✅ §1 — Partial: `<meta name="application-name">` + `<title>` added to `index.html`. Logo deferred.
+- ✅ §46 — Migration 027: `sessions.players.min_required` + `sessions.players.max_reached` added to DB for `en` and `fr`. `useLabels` spreads `enFallback` as base layer.
+- ✅ §146 — `badgeVariants` extended with `competitive`, `cooperative`, `campaign`, `hybrid` variants in `badge.tsx`.
 
-**Shared UI** : `button.tsx`, `card.tsx`, `input.tsx`, `label.tsx`, `dialog.tsx`, `alert-dialog.tsx`, `select.tsx`, `checkbox.tsx`, `switch.tsx`, `tabs.tsx`, `tooltip.tsx`, `dropdown-menu.tsx`, `textarea.tsx`, `badge.tsx`, `alert.tsx`, `avatar.tsx`, `skeleton.tsx`, `form.tsx` (partiel), `sidebar.tsx` (partiel pour usage), `chart.tsx` (usage). Inventaire complet des 45 fichiers du dossier.
+### Sprint A — Quick wins (≤ 1 day each)
 
-### B. Hors périmètre (non audités)
+1. **🔴 Bottom-nav active-state derived from `currentView`** (§30). "Games" button always active regardless of page.
+2. ~~**🟡 Residual i18n**: check `AddGameDialog` (§91), `EditGameDialog` (title + submit button hardcoded). Targeted grep audit. ~~`NewPlayView` (§46) — resolved 2026-05-01.~~~ → **Resolved 2026-05-02**: `AddGameDialog` and `EditGameDialog` use `t()` for all labels.
+3. ~~**🟡 Create semantic `gameModeColors` token** (§14.2). Eliminates inconsistencies §27, §55, §69 in a single file.~~ → **Resolved 2026-05-02**: `src/shared/theme/gameModeColors.ts` created, used by all views (§69 resolved).
 
-- Routing global (`App.tsx`, `main.tsx`, `router.tsx`).
-- Hooks (`useXxx` dans `shared/hooks/`, `features/**/hooks/`).
-- Services API (`features/**/api/*`).
+### Sprint B — Targeted refactors (1–3 days each)
+
+4. ~~**🔴 Refactor `AddGameDialog` + `EditGameDialog`** (§89–103). Hardcoded dark inputs, title/buttons partially hardcoded, dialog too narrow. Create `<FormDialog>` (§12.10) to cover them simultaneously.~~ → **Resolved 2026-05-02**: dialogs refactored (Sprint E PR #100), theme-aware tokens, Cancel buttons fixed.
+5. ~~**🔴 Winner in `RadioGroup` in `NewPlayView`** (§48). Incorrect HTML semantics (checkbox for exclusive choice).~~ → Resolved 2026-05-01.
+6. ~~**🟡 Auto-save + confirmation before navigation in `NewPlayView`** (§49). Risk of data loss on long form.~~ → Resolved 2026-05-01.
+
+### Sprint C — Structural work (≥ 1 week)
+
+7. **🔴 Refactor `darkMode` prop → CSS tokens + `dark:` Tailwind** (§14.1). Unlocks §§19, 21, 29, 47, 54, 63, 101, 123. Highest global ROI in remaining backlog.
+8. **🔴 `NewPlayView`: multi-step wizard** (§53). Cognitive load reduction on the longest form.
+9. ~~**🟡 Create `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§148–151). Missing business components.~~ → **Resolved 2026-05-02**: `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>` created and adopted (Sprint F PR #101). `<InitialAvatar>` already existed.
+10. ~~**🟡 Implement or remove the period filter in `GameStatsView`** (§67). Zombie feature to decide on.~~ → **Resolved 2026-05-02**: props `selectedPeriod`/`setSelectedPeriod` removed from `GameStatsViewProps`, hook manages state internally (§67 resolved).
+11. **🟡 Migrate forms to `<Form>` + Zod** (§14.11, §132). One form per week.
+
+### Estimated remaining effort
+
+- Sprint A: **1–2 days** — fast corrections immediately visible.
+- Sprint B: **1 week** — eliminate remaining major debts (dialogs + NewPlayView).
+- Sprint C: **3–4 weeks** — systemic, guarantees long-term consistency.
+
+---
+
+## Appendices
+
+### A. Audited files inventory
+
+**Pages / Views**: `auth/LoginPage.tsx`, `dashboard/DashboardView.tsx`, `games/GamesPageView.tsx`, `games/detail/GameDetailView.tsx`, `games/expansions/GameExpansionsView.tsx`, `games/characters/*` (partial), `players/PlayersPageView.tsx`, `plays/NewPlayView.tsx`, `bgg/BGGSearch.tsx`, `stats/game/GameStatsView.tsx`, `stats/player/PlayerStatsView.tsx`, `settings/SettingsPageView.tsx`.
+
+**Dialogs**: `games/dialogs/AddGameDialog.tsx`, `games/dialogs/EditGameDialog.tsx`, `games/dialogs/DeleteGameDialog.tsx`, `players/dialogs/AddPlayerDialog.tsx`, `players/dialogs/EditPlayerDialog.tsx`, `players/dialogs/DeletePlayerDialog.tsx`, `games/expansions/dialogs/ExpansionDialogs.tsx`, `games/characters/dialogs/CharacterDialogs.tsx`.
+
+**Shared UI**: `button.tsx`, `card.tsx`, `input.tsx`, `label.tsx`, `dialog.tsx`, `alert-dialog.tsx`, `select.tsx`, `checkbox.tsx`, `switch.tsx`, `tabs.tsx`, `tooltip.tsx`, `dropdown-menu.tsx`, `textarea.tsx`, `badge.tsx`, `alert.tsx`, `avatar.tsx`, `skeleton.tsx`, `form.tsx` (partial), `sidebar.tsx` (partial for usage), `chart.tsx` (usage). Complete inventory of all 45 files in the folder.
+
+### B. Out of scope (not audited)
+
+- Global routing (`App.tsx`, `main.tsx`, `router.tsx`).
+- Hooks (`useXxx` in `shared/hooks/`, `features/**/hooks/`).
+- API services (`features/**/api/*`).
 - Backend (`backend/**`).
 - Tests (`**/__tests__/*`).
 
-### C. Méthode de scoring
+### C. Scoring method
 
-- 🔴 **Critique** : bloque la release (bug factuel, contenu mensonger, sécurité basse) ou casse l'usage (illisible, inutilisable).
-- 🟡 **Modéré** : dégrade l'expérience (contraste limite, UX discutable, code incohérent).
-- 🟢 **Mineur** : à faire au prochain refactor (polish, edge case).
+- 🔴 **Critical**: blocks release (factual bug, misleading content, low security) or breaks usage (unreadable, unusable).
+- 🟡 **Moderate**: degrades experience (borderline contrast, questionable UX, inconsistent code).
+- 🟢 **Minor**: to fix in the next refactor (polish, edge case).
 
-### D. Suggestions de passes suivantes
+### D. Suggestions for follow-up passes
 
-1. Audit des routes & hooks (data flow, loading states au niveau Page).
-2. Audit des mutations React Query (optimistic updates, error handling).
-3. Audit performance (bundle analyse, lazy loading des dialogs et routes).
-4. Audit sécurité UX (CSRF, input sanitization côté front, confirmation double pour actions destructives).
-5. Audit responsive (breakpoints effectifs, ergonomie tactile vs curseur).
-6. Audit motion / animations (`transition-all` global à auditer, préférer des durées spécifiques + `prefers-reduced-motion`).
+1. Routes & hooks audit (data flow, loading states at Page level).
+2. React Query mutations audit (optimistic updates, error handling).
+3. Performance audit (bundle analysis, lazy loading of dialogs and routes).
+4. Security UX audit (CSRF, front-end input sanitization, double confirmation for destructive actions).
+5. Responsive audit (effective breakpoints, touch vs cursor ergonomics).
+6. Motion / animations audit (`transition-all` global to audit, prefer specific durations + `prefers-reduced-motion`).
 
 ---
 
-### E. Patterns canoniques — copier-coller
+### E. Canonical patterns — copy-paste reference
 
-Cette section rassemble les « bons exemples » identifiés pendant l'audit, à utiliser comme référence pour les refactors recommandés.
+This section gathers the "good examples" identified during the audit, to use as reference for recommended refactors.
 
-#### E.1 Empty state (d'après `PlayersPageView`)
+#### E.1 Empty state (from `PlayersPageView`)
 
 ```tsx
 // src/shared/components/ui/empty-state.tsx
@@ -975,7 +987,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
 />
 ```
 
-#### E.2 ConfirmDialog destructif (d'après `DeleteExpansionDialog`)
+#### E.2 Destructive ConfirmDialog (from `DeleteExpansionDialog`)
 
 ```tsx
 // src/shared/components/ui/confirm-dialog.tsx
@@ -1022,7 +1034,7 @@ export function ConfirmDialog({
 }
 ```
 
-#### E.3 FormDialog (base pour Add/Edit)
+#### E.3 FormDialog (base for Add/Edit)
 
 ```tsx
 // src/shared/components/ui/form-dialog.tsx
@@ -1072,7 +1084,7 @@ export function FormDialog({
 }
 ```
 
-#### E.4 Avatar-initial sans dépendance externe (remplace Unsplash)
+#### E.4 Initial avatar without external dependency (replaces Unsplash)
 
 ```tsx
 // src/shared/components/ui/initial-avatar.tsx
@@ -1115,7 +1127,7 @@ export function InitialAvatar({ name, src, size = 40, className }: InitialAvatar
 }
 ```
 
-#### E.5 Tokens sémantiques pour les modes (à placer dans `tailwind.config.js` + CSS)
+#### E.5 Semantic tokens for modes (in `tailwind.config.js` + CSS)
 
 ```css
 /* src/styles/theme.css */
@@ -1155,12 +1167,12 @@ colors: {
 },
 ```
 
-Usage : `className="bg-mode-competitive/20 text-mode-competitive border-mode-competitive/40"`.
+Usage: `className="bg-mode-competitive/20 text-mode-competitive border-mode-competitive/40"`.
 
-#### E.6 Badge sémantique pour les modes (extension de `badge.tsx`)
+#### E.6 Semantic badge for modes (extension of `badge.tsx`)
 
 ```tsx
-// src/shared/components/ui/badge.tsx — étendu
+// src/shared/components/ui/badge.tsx — extended
 const badgeVariants = cva("...base classes...", {
   variants: {
     variant: {
@@ -1168,7 +1180,7 @@ const badgeVariants = cva("...base classes...", {
       secondary:   "border-transparent bg-secondary text-secondary-foreground",
       destructive: "border-transparent bg-destructive text-white",
       outline:     "text-foreground",
-      // Nouveaux variants sémantiques
+      // New semantic variants
       competitive: "border-mode-competitive/40 bg-mode-competitive/20 text-mode-competitive",
       cooperative: "border-mode-cooperative/40 bg-mode-cooperative/20 text-mode-cooperative",
       campaign:    "border-mode-campaign/40 bg-mode-campaign/20 text-mode-campaign",
@@ -1178,16 +1190,16 @@ const badgeVariants = cva("...base classes...", {
   defaultVariants: { variant: "default" },
 });
 
-// Helper pour dériver dynamiquement
+// Helper for dynamic derivation
 export function ModeBadge({ mode, ...props }: { mode: GameMode }) {
   return <Badge variant={mode as any} {...props}>{t(`games.mode.${mode}`)}</Badge>;
 }
 ```
 
-#### E.7 Radio pour winner (remplace la checkbox du § 48)
+#### E.7 Radio for winner (replaces the checkbox from §48)
 
 ```tsx
-// Dans NewPlayView
+// In NewPlayView
 <RadioGroup value={winnerId ?? 'none'} onValueChange={(v) => setWinnerId(v === 'none' ? null : v)}>
   {selectedPlayers.map((p) => (
     <div key={p.player_id} className="flex items-center gap-3">
@@ -1207,7 +1219,7 @@ export function ModeBadge({ mode, ...props }: { mode: GameMode }) {
 </RadioGroup>
 ```
 
-#### E.8 Auto-save draft (remplace le silent loss du § 49)
+#### E.8 Auto-save draft (replaces silent loss from §49)
 
 ```tsx
 // src/shared/hooks/useDraftPersist.ts
@@ -1254,7 +1266,7 @@ export function clearDraft(key: string) {
 }
 ```
 
-#### E.9 PageHeader unifié (remplace le hack `<div className="w-10" />`)
+#### E.9 Unified PageHeader (replaces the `<div className="w-10" />` hack)
 
 ```tsx
 // src/shared/components/ui/page-header.tsx
@@ -1296,75 +1308,75 @@ export function PageHeader({ title, subtitle, backHref, actions }: PageHeaderPro
 
 ---
 
-### F. Checklist de PR review UI
+### F. UI PR review checklist
 
-À utiliser pour toute PR qui touche `src/features/**/*.tsx` ou `src/shared/components/**/*.tsx`.
+To use for any PR that touches `src/features/**/*.tsx` or `src/shared/components/**/*.tsx`.
 
-**Thème et couleurs**
-- [ ] Aucun `bg-slate-*`, `text-white`, `text-slate-*` en dur dans les features — uniquement des tokens (`bg-background`, `text-foreground`, `bg-card`, etc.) ou `dark:` Tailwind.
-- [ ] Aucune prop `darkMode: boolean` ajoutée (cible : suppression totale à terme).
-- [ ] Les couleurs de modes (competitive/coop/campaign/hybrid) viennent du token unique (`variant` Badge ou classe `bg-mode-*`).
+**Theme and colors**
+- [ ] No `bg-slate-*`, `text-white`, `text-slate-*` hardcoded in features — only tokens (`bg-background`, `text-foreground`, `bg-card`, etc.) or `dark:` Tailwind.
+- [ ] No `darkMode: boolean` prop added (target: complete removal eventually).
+- [ ] Mode colors (competitive/coop/campaign/hybrid) come from the unique token (`Badge` variant or `bg-mode-*` class).
 
-**Accessibilité**
-- [ ] Contraste ≥ 4.5:1 pour tout texte normal (pas de `text-white/30`, `/40`).
-- [ ] Cibles tactiles ≥ 44 px (`min-w-11 min-h-11` sur les boutons d'icône).
-- [ ] Chaque `<Input>`, `<Textarea>`, `<Select>` a un `<Label>` avec `htmlFor`.
-- [ ] `focus-visible` visible — pas d'override qui supprime le ring.
-- [ ] Pas de bouton imbriqué dans un autre bouton/lien.
-- [ ] Un seul `<h1>` par page, hiérarchie `h1 → h2 → h3` respectée.
-- [ ] `aria-label` sur les boutons d'icône sans texte.
-- [ ] `role="alert"` + `aria-live` sur les messages d'erreur dynamiques.
+**Accessibility**
+- [ ] Contrast ≥ 4.5:1 for all normal text (no `text-white/30`, `/40`).
+- [ ] Touch targets ≥ 44px (`min-w-11 min-h-11` on icon buttons).
+- [ ] Every `<Input>`, `<Textarea>`, `<Select>` has a `<Label>` with `htmlFor`.
+- [ ] `focus-visible` visible — no override that removes the ring.
+- [ ] No button nested inside another button/link.
+- [ ] Single `<h1>` per page, `h1 → h2 → h3` hierarchy respected.
+- [ ] `aria-label` on icon buttons without text.
+- [ ] `role="alert"` + `aria-live` on dynamic error messages.
 
 **i18n**
-- [ ] Aucune string en dur FR ou EN dans le JSX — tout passe par `t('...')` via `useLabels`.
-- [ ] Les messages de validation sont traduits (pas `"Le nom est requis"` codé en dur).
-- [ ] Les placeholders sont traduits.
-- [ ] Les `alt` d'image pertinents sont traduits (ou vides pour décoratif).
+- [ ] No hardcoded French or English string in JSX — everything goes through `t('...')` via `useLabels`.
+- [ ] Validation messages are translated (not `"Name is required"` hardcoded).
+- [ ] Placeholders are translated.
+- [ ] Relevant image `alt` are translated (or empty for decorative).
 
-**Composants**
-- [ ] Les cartes utilisent `<Card>` shadcn ou une extension avec variants, pas des `<div className="bg-white/10 backdrop-blur-md">` manuels.
-- [ ] Les dialogs Add/Edit utilisent `<FormDialog>`.
-- [ ] Les dialogs Delete/Confirm utilisent `<ConfirmDialog destructive>`.
-- [ ] Les empty states utilisent `<EmptyState>`.
-- [ ] Les headers de page utilisent `<PageHeader>`.
-- [ ] Les avatars utilisent `<InitialAvatar>` (pas de `<img>` Unsplash hardcodé).
+**Components**
+- [ ] Cards use shadcn `<Card>` or an extension with variants, not manual `<div className="bg-white/10 backdrop-blur-md">`.
+- [ ] Add/Edit dialogs use `<FormDialog>`.
+- [ ] Delete/Confirm dialogs use `<ConfirmDialog destructive>`.
+- [ ] Empty states use `<EmptyState>`.
+- [ ] Page headers use `<PageHeader>`.
+- [ ] Avatars use `<InitialAvatar>` (no hardcoded Unsplash `<img>`).
 
-**États asynchrones**
-- [ ] Chaque page principale affiche un skeleton pendant `isLoading` de React Query.
-- [ ] Les erreurs React Query ont un affichage dédié (pas « une page vide »).
-- [ ] Les mutations destructives (delete, reset) passent par `<ConfirmDialog destructive>`.
-- [ ] Les formulaires avec `isDirty` affichent une confirmation avant fermeture.
+**Async states**
+- [ ] Each main page shows a skeleton during React Query's `isLoading`.
+- [ ] React Query errors have a dedicated display (not "a blank page").
+- [ ] Destructive mutations (delete, reset) go through `<ConfirmDialog destructive>`.
+- [ ] Forms with `isDirty` show a confirmation before close.
 
 **Forms**
-- [ ] Utilisation de `<Form>` + `react-hook-form` + Zod resolver (pas de `useState` manuel pour les nouveaux forms).
-- [ ] `<FormMessage>` sous chaque champ en erreur (pas en haut de carte loin du champ).
-- [ ] Indicateur `*` visible dès l'affichage pour les champs obligatoires.
+- [ ] Use `<Form>` + `react-hook-form` + Zod resolver (not manual `useState` for new forms).
+- [ ] `<FormMessage>` below each field in error (not at top of card far from the field).
+- [ ] `*` indicator visible from display for required fields.
 
 **Responsive**
-- [ ] Pages longues : `max-w-7xl mx-auto` appliqué sur le container principal.
-- [ ] Breakpoints `md:` et `lg:` considérés pour les layouts grid.
-- [ ] Mobile : zones de pouce respectées (bottom-nav, CTA principal en bas).
+- [ ] Long pages: `max-w-7xl mx-auto` applied on the main container.
+- [ ] `md:` and `lg:` breakpoints considered for grid layouts.
+- [ ] Mobile: thumb zones respected (bottom-nav, main CTA at bottom).
 
 **Performance**
-- [ ] Dialogs lazy-loadés (`const AddGameDialog = lazy(() => ...)`).
-- [ ] Images avec `loading="lazy"` sauf hero above-the-fold.
-- [ ] Pas de `Promise` await dans une boucle quand `Promise.all` suffit.
+- [ ] Dialogs lazy-loaded (`const AddGameDialog = lazy(() => ...)`).
+- [ ] Images with `loading="lazy"` except hero above-the-fold.
+- [ ] No `Promise` await in a loop when `Promise.all` suffices.
 
 ---
 
-### G. Glossaire rapide
+### G. Quick glossary
 
-- **Design token** : variable CSS / valeur abstraite utilisable à travers toute l'app (ex. `--primary`, `--mode-competitive`). Centralise un concept de design.
-- **Theme-aware** : composant qui s'adapte au thème clair/sombre sans intervention manuelle du développeur consommateur.
-- **Prop drilling** : passer une prop de haut en bas à travers plusieurs niveaux de composants intermédiaires qui n'en ont pas directement besoin.
-- **CVA** (class-variance-authority) : librairie pour typer des variants de classes Tailwind (utilisée par shadcn `buttonVariants`, `badgeVariants`).
-- **WCAG AA** : niveau 2 des Web Content Accessibility Guidelines v2.1 — cible réaliste pour une app grand public. Exige contraste ≥ 4.5:1 (texte normal), ≥ 3:1 (gros texte, UI elements).
-- **Empty state** : écran affiché quand une liste ou section n'a aucun contenu à afficher (liste vide, résultats de recherche vides, etc.).
-- **Skeleton** : placeholder gris animé qui reproduit la structure d'un composant pendant son chargement.
-- **Wizard** : formulaire multi-étapes avec progression visible (ex. 1/4, 2/4…). Alternative au formulaire mono-écran long.
-- **Dirty state** (form) : état d'un formulaire dont au moins un champ a été modifié depuis le chargement initial. Utilisé pour la confirmation de fermeture.
-- **Glassmorphism** : effet visuel où une surface apparaît comme du verre dépoli, obtenu via `backdrop-blur` + fond semi-transparent.
+- **Design token**: CSS variable / abstract value usable across the entire app (e.g., `--primary`, `--mode-competitive`). Centralizes a design concept.
+- **Theme-aware**: component that adapts to light/dark theme without manual intervention from the consuming developer.
+- **Prop drilling**: passing a prop top-down through multiple intermediate component levels that don't need it directly.
+- **CVA** (class-variance-authority): library for typing Tailwind class variants (used by shadcn `buttonVariants`, `badgeVariants`).
+- **WCAG AA**: level 2 of Web Content Accessibility Guidelines v2.1 — realistic target for a public app. Requires contrast ≥ 4.5:1 (normal text), ≥ 3:1 (large text, UI elements).
+- **Empty state**: screen displayed when a list or section has no content to show (empty list, empty search results, etc.).
+- **Skeleton**: animated grey placeholder that reproduces the structure of a component while it's loading.
+- **Wizard**: multi-step form with visible progress (e.g., 1/4, 2/4…). Alternative to a long single-screen form.
+- **Dirty state** (form): state of a form where at least one field has been modified since initial load. Used for close confirmation.
+- **Glassmorphism**: visual effect where a surface appears as frosted glass, achieved via `backdrop-blur` + semi-transparent background.
 
 ---
 
-*Fin du document. Pour questions, améliorations ou passage suivant (routes & hooks, performance, sécurité UX), voir § D.*
+*End of document. For questions, improvements, or next pass (routes & hooks, performance, security UX), see §D.*
