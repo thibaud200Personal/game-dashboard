@@ -10,6 +10,7 @@ import {
 import { useLabels } from '@/shared/hooks/useLabels';
 import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 import SectionHeader from '@/shared/components/SectionHeader';
+import StatCard from '@/shared/components/StatCard';
 
 interface Player {
   player_id: number
@@ -46,29 +47,6 @@ interface PlayerStatsViewProps {
   selectedPlayer: Player | null
   onNavigation: (view: string) => void
   currentView: string
-}
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-  cardClass: string;
-  titleClass: string;
-  labelClass: string;
-}
-
-function StatCard({ icon, value, label, cardClass, titleClass, labelClass }: StatCardProps) {
-  return (
-    <div className={cardClass}>
-      <div className="flex items-center space-x-3">
-        {icon}
-        <div>
-          <div className={titleClass}>{value}</div>
-          <div className={labelClass}>{label}</div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 interface ActivityRowProps {
@@ -143,10 +121,10 @@ export default function PlayerStatsView({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <StatCard icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center"><Trophy className="w-5 h-5" /></div>} value={selectedPlayer.wins} label={t('stats.player.stat.wins')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-5 h-5" /></div>} value={selectedPlayer.games_played} label={t('stats.player.stat.games_played')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><Star className="w-5 h-5" /></div>} value={selectedPlayer.total_score} label={t('stats.player.stat.total_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
-            <StatCard icon={<div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center"><ChartBar className="w-5 h-5" /></div>} value={selectedPlayer.average_score} label={t('stats.player.stat.avg_score')} cardClass={cardClass} titleClass={titleClass} labelClass={labelClass} />
+            <StatCard layout="horizontal" icon={<div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white"><Trophy className="w-5 h-5" /></div>} value={selectedPlayer.wins} label={t('stats.player.stat.wins')} />
+            <StatCard layout="horizontal" icon={<div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white"><Target className="w-5 h-5" /></div>} value={selectedPlayer.games_played} label={t('stats.player.stat.games_played')} />
+            <StatCard layout="horizontal" icon={<div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white"><Star className="w-5 h-5" /></div>} value={selectedPlayer.total_score} label={t('stats.player.stat.total_score')} />
+            <StatCard layout="horizontal" icon={<div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white"><ChartBar className="w-5 h-5" /></div>} value={selectedPlayer.average_score} label={t('stats.player.stat.avg_score')} />
           </div>
 
           {selectedPlayer.favorite_game && (

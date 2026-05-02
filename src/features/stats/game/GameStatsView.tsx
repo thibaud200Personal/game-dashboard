@@ -16,6 +16,7 @@ import { useLabels } from '@/shared/hooks/useLabels';
 import { gameModeColors, gameModeFallback, type GameMode } from '@/shared/theme/gameModeColors';
 import { PlayerAvatar } from '@/shared/components/InitialAvatar';
 import SectionHeader from '@/shared/components/SectionHeader';
+import StatCard from '@/shared/components/StatCard';
 
 interface GameStatsViewProps {
   selectedGame: Game | null
@@ -24,25 +25,6 @@ interface GameStatsViewProps {
   games: Game[]
   players: Player[]
 }
-
-
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}
-
-function StatCard({ icon, value, label }: StatCardProps) {
-  return (
-    <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 text-center">
-      {icon}
-      <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
-      <div className="text-slate-500 dark:text-white/60 text-sm">{label}</div>
-    </div>
-  );
-}
-
 export default function GameStatsView({
   selectedGame,
   setSelectedGame,
