@@ -11,9 +11,10 @@ Web application for tracking scores and managing a board game collection.
 <p align="center">
   <img height="882" alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" width="30%" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="725" alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" width="30%" />
+  <img height="830" alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="25%" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="830" alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="30%" />
+  <img height="725" alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" width="30%" />
+
 </p>
 
 ## Stack
