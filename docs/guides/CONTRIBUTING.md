@@ -11,7 +11,7 @@
 ```bash
 # Clone the repo
 git clone <repo-url>
-cd game-dashboard
+cd boardgame-dashboard
 
 # Frontend
 npm install
@@ -34,7 +34,7 @@ cd backend && npm run dev  # Backend: http://localhost:3001
 ## Project Structure
 
 ```
-game-dashboard/
+boardgame-dashboard/
 ├── shared/          → shared types and utilities (front/back)
 ├── src/             → React frontend
 ├── backend/         → Express API
