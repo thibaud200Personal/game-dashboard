@@ -1,5 +1,10 @@
 # Board Game Dashboard
 
+![React](https://img.shields.io/badge/React-19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Node](https://img.shields.io/badge/Node.js-20-green)
+![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey)
+
 A web application for tracking scores and managing a board game collection, with BoardGameGeek (BGG) API integration for game search and import.
 <p align="center">
   <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
