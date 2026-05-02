@@ -90,10 +90,10 @@ export default function GameStatsView({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400 mx-auto mb-2" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} />
-          <StatCard icon={<Users className="w-8 h-8 text-green-400 mx-auto mb-2" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} />
-          <StatCard icon={<Clock className="w-8 h-8 text-purple-400 mx-auto mb-2" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} />
-          <StatCard icon={<Target className="w-8 h-8 text-orange-400 mx-auto mb-2" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} />
+          <StatCard icon={<Calendar className="w-8 h-8 text-blue-400" />} value={String(gameStats.totalSessions)} label={t('stats.game.stat.sessions')} />
+          <StatCard icon={<Users className="w-8 h-8 text-green-400" />} value={gameStats.averagePlayerCount.toFixed(1)} label={t('stats.game.stat.avg_players')} />
+          <StatCard icon={<Clock className="w-8 h-8 text-purple-400" />} value={`${Math.round(gameStats.averageSessionTime)}m`} label={t('stats.game.stat.avg_duration')} />
+          <StatCard icon={<Target className="w-8 h-8 text-orange-400" />} value={gameStats.averageScore.toFixed(0)} label={t('stats.game.stat.avg_score')} />
         </div>
         {!isGlobalStats && (
           <div className="mt-4 pt-4 border-t border-white/10">

@@ -491,7 +491,7 @@ export function GamesPageView(props: GamesPageViewProps) {
           ))}
         </div>
 
-        {games.length === 0 && (
+        {safeGames.length === 0 && (
           <EmptyState
             icon={<GameController />}
             title={t('games.empty')}
