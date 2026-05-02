@@ -170,12 +170,3 @@ boardgame-dashboard/
 | `ROADMAP.md` | Development roadmap |
 
 ---
-
-## 🗄️ Database
-
-- 12 tables: `players`, `games`, `game_expansions`, `game_characters`, `game_plays`, `players_play`, `bgg_catalog`, `bgg_catalog_language`, `labels`, `refresh_tokens`, `log_import`, `schema_version`
-- 2 SQL views: `player_statistics`, `game_statistics`
-
-Full schema: `docs/architecture/DATABASE.md`
-
----
