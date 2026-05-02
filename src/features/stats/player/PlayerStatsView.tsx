@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react';
 import { useLabels } from '@/shared/hooks/useLabels';
 import { PlayerAvatar } from '@/shared/components/InitialAvatar';
+import SectionHeader from '@/shared/components/SectionHeader';
 
 interface Player {
   player_id: number
@@ -125,7 +126,6 @@ export default function PlayerStatsView({
   const cardSmClass = "bg-white dark:bg-white/10 dark:backdrop-blur-md rounded-2xl p-4 border border-slate-300 dark:border-white/20 shadow-xl";
   const subLabelClass = "text-slate-400 dark:text-white/60 text-xs";
   const valueClass = "text-slate-900 dark:text-white";
-  const sectionTitleClass = "text-lg font-semibold mb-4 flex items-center text-slate-900 dark:text-white";
   const rowClass = "bg-slate-100 dark:bg-white/5";
 
   return (
@@ -151,10 +151,11 @@ export default function PlayerStatsView({
 
           {selectedPlayer.favorite_game && (
             <div className={cardClass}>
-              <h3 className={sectionTitleClass.replace('mb-4', 'mb-2')}>
-                <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                {t('stats.player.favorite_game')}
-              </h3>
+              <SectionHeader
+                icon={<Star className="w-5 h-5 text-yellow-400" />}
+                title={t('stats.player.favorite_game')}
+                className="mb-2"
+              />
               <div className="text-xl font-medium">{selectedPlayer.favorite_game}</div>
             </div>
           )}
@@ -181,10 +182,10 @@ export default function PlayerStatsView({
       {/* Top Players or Recent Activity for selected player */}
       {!selectedPlayer ? (
         <div className={cardSmClass}>
-          <h2 className={sectionTitleClass}>
-            <Star className="w-5 h-5 mr-2 text-yellow-400" />
-            {t('stats.player.top_players')}
-          </h2>
+          <SectionHeader
+            icon={<Star className="w-5 h-5 text-yellow-400" />}
+            title={t('stats.player.top_players')}
+          />
           <div className="space-y-3">
             {topPlayers.map((player, index) => (
               <div key={player.player_id} className={`flex items-center space-x-3 p-3 ${rowClass} rounded-xl`}>
@@ -206,10 +207,10 @@ export default function PlayerStatsView({
         </div>
       ) : (
         <div className={cardSmClass}>
-          <h2 className={sectionTitleClass}>
-            <Clock className="w-5 h-5 mr-2 text-blue-400" />
-            {selectedPlayer.player_name}'s Recent Games
-          </h2>
+          <SectionHeader
+            icon={<Clock className="w-5 h-5 text-blue-400" />}
+            title={`${selectedPlayer.player_name}'s Recent Games`}
+          />
           <div className="space-y-3">
             {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
               <ActivityRow
@@ -232,10 +233,10 @@ export default function PlayerStatsView({
       {/* Score evolution chart — selected player only */}
       {selectedPlayer && recentActivity.length > 0 && (
         <div className={cardSmClass}>
-          <h2 className={sectionTitleClass}>
-            <TrendUp className="w-5 h-5 mr-2 text-teal-400" />
-            {t('stats.player.chart.score_evolution')}
-          </h2>
+          <SectionHeader
+            icon={<TrendUp className="w-5 h-5 text-teal-400" />}
+            title={t('stats.player.chart.score_evolution')}
+          />
           <p className={labelClass + " mb-4"}>{t('stats.player.chart.score_evolution.subtitle')}</p>
           {(() => {
             const recent10 = recentActivity.slice(-10);
@@ -266,10 +267,10 @@ export default function PlayerStatsView({
       {/* Game trends — selected player only */}
       {selectedPlayer && gameTrends.length > 0 && (
         <div className={cardSmClass}>
-          <h2 className={sectionTitleClass}>
-            <ChartBar className="w-5 h-5 mr-2 text-purple-400" />
-            {t('stats.player.chart.game_trends')}
-          </h2>
+          <SectionHeader
+            icon={<ChartBar className="w-5 h-5 text-purple-400" />}
+            title={t('stats.player.chart.game_trends')}
+          />
           <div className="space-y-3">
             {gameTrends.map(({ name, count, pct }) => (
               <div key={name}>
@@ -292,10 +293,10 @@ export default function PlayerStatsView({
       {/* Recent Activity (only for global stats) */}
       {!selectedPlayer && (
         <div className={cardSmClass}>
-          <h2 className={sectionTitleClass}>
-            <Clock className="w-5 h-5 mr-2 text-blue-400" />
-            {t('stats.player.activity.title')}
-          </h2>
+          <SectionHeader
+            icon={<Clock className="w-5 h-5 text-blue-400" />}
+            title={t('stats.player.activity.title')}
+          />
           <div className="space-y-3">
             {recentActivity.map((activity, index) => (
               <ActivityRow
