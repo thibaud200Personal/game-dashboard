@@ -13,7 +13,7 @@ export function useLabels() {
     placeholderData: enFallback as Record<string, string>,
   });
 
-  const labels = data ?? (enFallback as Record<string, string>);
+  const labels = { ...(enFallback as Record<string, string>), ...(data ?? {}) };
 
   function t(key: string, fallback?: string): string {
     return labels[key] ?? fallback ?? key;
