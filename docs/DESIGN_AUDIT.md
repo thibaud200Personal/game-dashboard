@@ -675,10 +675,10 @@ Chaque primitive ci-dessous est **du shadcn standard** — avant d'en critiquer 
 
 | # | Sévérité | Finding | Recommandation |
 |---|---|---|---|
-| 148 | 🟡 | Pas de `<EmptyState>` partagé. Chaque view recrée son empty state (bien dans Players, pourri dans Games). | Créer `src/shared/components/ui/empty-state.tsx` avec props `icon`, `title`, `description`, `action?`. |
-| 149 | 🟡 | Pas de `<PageHeader>` partagé (retour + titre + actions). Chaque page reconstruit son header avec un hack `<div className="w-10" />` pour équilibrer. | `<PageHeader title actions backHref?>`. |
-| 150 | 🟡 | Pas de `<SectionHeader>` (icône + titre + action optionnelle). Pattern répété ~15× dans les views. | Composant. |
-| 151 | 🟡 | Pas de `<StatCard>` sémantique. Chaque stat est un `<div>` manuel avec icône + valeur + label. | Composant avec `variant: stat | highlight`. |
+| 148 | ✅ | ~~Pas de `<EmptyState>` partagé. Chaque view recrée son empty state (bien dans Players, pourri dans Games).~~ → **Résolu 2026-05-02** : `src/shared/components/EmptyState.tsx` créé (`icon`, `title`, `description?`, `action?`, `className?`). Adopté dans GamesPageView + PlayersPageView. | — |
+| 149 | ✅ | ~~Pas de `<PageHeader>` partagé. Hack `<div className="w-10" />` pour équilibrer.~~ → **Résolu 2026-05-02** : `src/shared/components/PageHeader.tsx` créé (`title`, `left?`, `right?`, `className?`). Adopté dans StatsPage + SettingsPageView. Fix `text-white` hardcodé → `text-foreground`. | — |
+| 150 | ✅ | ~~Pas de `<SectionHeader>` (icône + titre + action optionnelle). Pattern répété ~15× dans les views.~~ → **Résolu 2026-05-02** : `src/shared/components/SectionHeader.tsx` créé. Adopté dans GameStatsView (7 occurrences) + PlayerStatsView (6 occurrences). Utilise `cn()`. | — |
+| 151 | ✅ | ~~Pas de `<StatCard>` sémantique. Chaque stat est un `<div>` manuel.~~ → **Résolu 2026-05-02** : `src/shared/components/StatCard.tsx` créé avec `layout="vertical"` (défaut) et `layout="horizontal"`. Remplace les 2 définitions locales dans GameStatsView + PlayerStatsView. Tokens `bg-card border-border text-foreground`. | — |
 
 ### 13.5 Synthèse shared/ui
 
@@ -829,13 +829,13 @@ button:focus-visible:not(.custom-focus) {
 
 | Page | Quality | Détail |
 |---|---|---|
-| `PlayersPageView` | ✅ Bon | Icône large, title, description, CTA |
-| `GamesPageView` | 🔴 Faible | `<div>` vide sans icône |
+| `PlayersPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title, description, CTA |
+| `GamesPageView` | ✅ Bon | `<EmptyState>` partagé — icône, title |
 | Stats | 🔴 Absent | Texte « No data » simple |
 | `BGGSearch` | 🟢 OK | Texte « Aucun résultat » sans icône |
 | `NewPlayView` (pas de joueurs disponibles) | 🔴 Aucun | |
 
-**Action** : créer `<EmptyState icon title description action?>` (§ 148) et imposer via lint ou code review.
+✅ **`<EmptyState>` créé et adopté dans GamesPageView + PlayersPageView** (§ 148 — 2026-05-02). Restant : Stats, BGGSearch, NewPlayView.
 
 ### 14.9 Loading states
 
@@ -893,7 +893,7 @@ Mise à jour 2026-04-30. Sprint 1 entièrement résolu. Sprint 2 items 7-8 réso
 
 7. **🔴 Refactor `darkMode` prop → tokens CSS + `dark:` Tailwind** (§ 14.1). Débloque §§ 19, 21, 29, 47, 54, 63, 101, 123. ROI global le plus élevé du backlog restant.
 8. **🔴 `NewPlayView` : wizard multi-étapes** (§ 53). Réduction de charge cognitive sur le formulaire le plus long.
-9. **🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants, patterns codifiés en Annexe E.
+9. ~~**🟡 Créer `<EmptyState>`, `<StatCard>`, `<InitialAvatar>`** (§ 148-151). Composants métier manquants.~~ → **Résolu 2026-05-02** : `<EmptyState>`, `<PageHeader>`, `<SectionHeader>`, `<StatCard>` créés et adoptés (Sprint F PR #101). `<InitialAvatar>` existait déjà.
 10. ~~**🟡 Implémenter ou retirer le filtre de période dans `GameStatsView`** (§ 67). Feature zombie à trancher.~~ → **Résolu 2026-05-02** : props `selectedPeriod`/`setSelectedPeriod` supprimées de `GameStatsViewProps`, hook gère l'état en interne (§ 67 résolu).
 11. **🟡 Migrer les formulaires vers `<Form>` + Zod** (§ 14.11, § 132). Un form par semaine.
 
