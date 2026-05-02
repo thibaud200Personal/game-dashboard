@@ -1,5 +1,5 @@
-# 🎲 Board Game Dashboard
-A responsive web application for desktop and mobile.
+<h1 align="center">🎲 Board Game Dashboard</h1>
+<p align="center">A responsive web application for desktop and mobile.</p>
 <p align="center">
   <img src="https://img.shields.io/badge/React-19-blue" />
   <img src="https://img.shields.io/badge/TypeScript-5-blue" />
@@ -10,20 +10,29 @@ A responsive web application for desktop and mobile.
   <img src="https://img.shields.io/badge/tests-Vitest-success" />
 </p>
 
-Track board game sessions, manage players, analyze statistics, and import games directly from BoardGameGeek (BGG).
+<p align="center">Track board game sessions, manage players, analyze statistics, and search or import games directly from BoardGameGeek (BGG).</p>
+
+## 📌 Highlights
+
+✔ Responsive desktop/mobile UI  
+✔ BoardGameGeek API integration  
+✔ Feature-based frontend architecture  
+✔ Modular backend architecture  
+✔ Automated Docker testing pipeline  
+✔ SQLite relational database
+
+## 📷 Preview
 
 <p align="center">
   <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
   &nbsp;&nbsp;
   <img alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" width="30%" />
   &nbsp;&nbsp;
-  <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%" />
+  <img alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="30%" />
 </p>
 
 <p align="center">
   <img alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" width="30%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="30%" />
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" width="30%" />
 </p>
@@ -46,12 +55,12 @@ Track board game sessions, manage players, analyze statistics, and import games 
 
 ## 🚀 Features
 
-- 👤 **Players** — CRUD, statistics (plays, wins, scores), avatars  
-- 🎲 **Games** — CRUD, BGG import, 4 modes (competitive / cooperative / campaign / hybrid)  
-- 🧩 **Expansions & Characters** — per-game management (in progress)  
-- 📝 **Plays** — session tracking, scoring, history  
-- 📊 **Statistics** — global + per player + per game dashboards  
-- 🔍 **BGG Search** — BoardGameGeek API integration  
+- 👤 **Players** — CRUD, avatars, play/win/score statistics
+- 🎲 **Games** — CRUD, BGG import, 4 play modes
+- 🧩 **Expansions & Characters** — per-game management *(in progress)*
+- 📝 **Plays** — session tracking, scoring, history
+- 📊 **Statistics** — dashboards by player, game, and globally
+- 🔍 **BGG Search** — search and import from BoardGameGeek
 
 ---
 
@@ -65,34 +74,54 @@ This project is fully containerized using a **multi-stage Docker build pipeline*
 - Backend tests (Vitest) → CI gate
 - Production image (Node 24 Alpine)
 
-👉 The Docker build acts as a **full CI pipeline** (build fails if tests fail)
+```md id="u7q4mw"
+👉 Docker acts as a built-in CI pipeline — builds fail automatically if tests fail.
 
 ---
 
-## ▶️ Running the Project
+## ⚡ Quick Start
+
+Run the full stack with Docker:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+- Frontend → http://localhost:5173
+- Backend → http://localhost:3001
+
+---
+
+## ▶️ Run Locally
 
 ### Frontend
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev
 ```
+
+Available at: `http://localhost:5173`
 
 ### Backend
 
 ```bash
 cd backend
 npm install
-npm run init-db    # initialize SQLite database
-npm run dev        # http://localhost:3001
+npm run init-db
+npm run dev
 ```
+
+Available at: `http://localhost:3001`
 
 ### Tests
 
 ```bash
-npm test               # watch mode
-npm run test:run      # one-shot
-npm run test:coverage # coverage report
+npm test
+npm run test:run
+npm run test:coverage
 ```
 
 ---
@@ -150,13 +179,3 @@ boardgame-dashboard/
 Full schema: `docs/architecture/DATABASE.md`
 
 ---
-
-## 📌 Summary
-
-A fully containerized full-stack application with:
-
-✔ Feature-based architecture  
-✔ Automated testing in Docker pipeline  
-✔ BGG API integration  
-✔ SQLite relational design  
-✔ Modular backend (services/repositories)
