@@ -2,10 +2,8 @@
 
 Web application for tracking scores and managing a board game collection.
 
-<img width="1856" height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" />
-<img width="1859" height="884" alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" />
-<img width="1856" height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" />
-<img width="1553" height="882" alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" />
+<img width="1856" height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" /><img width="1859" height="884" alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" />
+<img width="1856" height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" /><img width="1553" height="882" alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" />
 <img width="1879" height="725" alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" />
 
 
