@@ -74,7 +74,7 @@ npm run test:coverage  # with coverage
 ## Structure
 
 ```
-game-dashboard/
+Boardgame-dashboard/
 ├── src/
 │   ├── features/        # Co-located features (container + view + hook + api + dialogs)
 │   │   ├── auth/        # LoginPage
