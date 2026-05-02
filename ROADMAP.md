@@ -7,13 +7,14 @@
 #### PENDING [Details](docs/TECH_DEBT_AND_BUGS.md)
 #### DONE [Details](docs/TECH_DEBT_&_BUGS_DONE.md)
 
+## DESIGN
+
+#### DESIGN_AUDIT [Details](docs/DESIGN_AUDIT.md)
+
 ## 🎯 Current Phase — Phase 3: UX Polish
 
 Functional dark/light theme (to migrate from prop-drilling → Tailwind `dark:`), time-series charts + backend BGG cache to implement. → [see detail](#-phase-3--ux-polish)
 
-## DESIGN
-
-#### DESIGN_AUDIT [Details](docs/DESIGN_AUDIT.md)
 ---
 
 ## Evolution Plan
