@@ -590,7 +590,7 @@ export default function NewGameView({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={cancelLeave}>{t('sessions.leave.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmLeave}>{t('sessions.leave.confirm')}</AlertDialogAction>
+            <AlertDialogAction onClick={confirmLeave} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t('sessions.leave.confirm')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
