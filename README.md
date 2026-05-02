@@ -2,18 +2,18 @@
 
 A web application for tracking scores and managing a board game collection, with BoardGameGeek (BGG) API integration for game search and import.
 <p align="center">
-  <img height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
+  <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
   &nbsp;&nbsp;
-  <img height="884" alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" width="30%" />
+  <img alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" width="30%" />
   &nbsp;&nbsp;
-  <img height="895" alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%" />
+  <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%" />
 </p>
 <p align="center">
-  <img height="882" alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" width="30%" />
+  <img alt="session" src="https://github.com/user-attachments/assets/d90da03b-0e17-4e0c-b27b-c95c44565f71" width="30%" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="830" alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="25%" />
+  <img alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="30%" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="725" alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" width="30%" />
+  <img alt="settings" src="https://github.com/user-attachments/assets/7ab256e5-88bb-4a4a-9a43-0efa1cd50e54" width="30%" />
 
 </p>
 
