@@ -12,11 +12,11 @@
 ## 🐛 Bugs — Remaining
 
 - **📱 Dialogs — mobile/tablet responsiveness**: popups (AddGameDialog, EditGameDialog, BGGSearch) overflow horizontally on small screens, with content partially off-screen. Needs global investigation: `max-w`, `overflow`, `mx-4`, internal vs external scrolling. Likely affects all dialogs. **Includes BGG year filter placement** (see item below) — where to place it depends on the final dialog layout.
-- **📅 BGG year filter** : Client side filter on local search result (no parameters `year_published` serveur). À placer dans BGGSearch — **dépendant de la refonte responsive des dialogs** (item ci-dessus). Low priority.
+- **📅 BGG year filter**: Client-side filter on local search result (no `year_published` server parameter). To place in BGGSearch — **depends on the responsive dialog refactor** (item above). Low priority.
 - **`has_expansion`/`has_characters` not recalculated on add/delete**: `addExpansion()` and `deleteExpansion()` do not update the flag on the parent game. Low impact (`getById()` always loads expansions), but `getAll()` may return `expansions: []` incorrectly.
 - **🕒 `name_updated_at` in `bgg_catalog_language`**: timestamp of last `name_en` update — useful for detecting BGG renames and invalidating translations. To consider during the "local catalog" sprint.
-- **🔽 BGG search — live autocomplete**: recherche en/fr/es et transmission du `bgg_id` déjà en place ✅. Reste : passer au pattern autocomplete (suggestions live au keystroke, sans bouton Search).
-- **`isEditBGGSearchOpen` — non resetté à la fermeture du dialog** : `handleEditDialogOpen` (`useGamesPage.ts:125`) ne remet pas `isEditBGGSearchOpen` à `false`. Effet : rouvrir l'EditDialog après avoir cliqué BGGSearch sans sélectionner de jeu affiche BGGSearch ouvert d'emblée. Fix : ajouter `setIsEditBGGSearchOpen(false)` dans le `if (!open)` de `handleEditDialogOpen`.
+- **🔽 BGG search — live autocomplete**: en/fr/es search and `bgg_id` transmission already in place ✅. Remaining: switch to autocomplete pattern (live suggestions on keystroke, no Search button).
+- **`isEditBGGSearchOpen` — not reset on dialog close**: `handleEditDialogOpen` (`useGamesPage.ts:125`) does not reset `isEditBGGSearchOpen` to `false`. Effect: reopening EditDialog after clicking BGGSearch without selecting a game shows BGGSearch already open. Fix: add `setIsEditBGGSearchOpen(false)` in the `if (!open)` branch of `handleEditDialogOpen`.
 
 ---
 

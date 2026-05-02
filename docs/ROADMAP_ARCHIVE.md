@@ -89,9 +89,9 @@
 - ✅ Duplicate `<h1>` removed in `GameDetailView`
 - ✅ Fake Dashboard data ("5 minutes ago") → replaced with real empty state
 - ✅ Empty state `GamesPageView` with icon `<GameController>`
-- ✅ `AlertDialog` de confirmation sur Reset data
-- ✅ Placeholder "Performance charts coming soon" retiré
-- ✅ Bottom-nav active-state déjà correct via `useLocation`
+- ✅ `AlertDialog` confirmation on Reset data
+- ✅ Placeholder "Performance charts coming soon" removed
+- ✅ Bottom-nav active-state already correct via `useLocation`
 
 #### **Player Stats — recent plays** ✅ (April 2026)
 - ✅ `GET /api/v1/stats/players/:id/recent-plays` — endpoint + repo + service
@@ -100,21 +100,21 @@
 
 #### **Global UI/UX Harmonization — Sprint 2** ✅ (April 2026)
 - ✅ `DeleteGameDialog` + `DeletePlayerDialog`: i18n + entity name displayed
-- ✅ `EditPlayerDialog` : suppression prop `darkMode`
-- ✅ `AddPlayerDialog` : Complete migration i18n (EN + FR labels, migration 023)
-- ✅ `EditGameDialog` + `AddGameDialog` : i18n complete (~30 strings), token `gameModeColors`
-- ✅ `NewPlayView` : difficulty i18n + mode badges via `gameModeColors` (migration 024)
-- ✅ `gameModeColors` token centralisé (`src/shared/theme/gameModeColors.ts`) — `GameStatsView` + `NewPlayView` harmonisés (hybrid était vert → orange)
-- ✅ Bug dashboard : boutons "New Game" / "Add Player" se chevauchaient au hover — fixé via `hover:z-10`
+- ✅ `EditPlayerDialog`: `darkMode` prop removed
+- ✅ `AddPlayerDialog`: complete i18n migration (EN + FR labels, migration 023)
+- ✅ `EditGameDialog` + `AddGameDialog`: complete i18n (~30 strings), `gameModeColors` token
+- ✅ `NewPlayView`: difficulty i18n + mode badges via `gameModeColors` (migration 024)
+- ✅ `gameModeColors` token centralized (`src/shared/theme/gameModeColors.ts`) — `GameStatsView` + `NewPlayView` aligned (hybrid was green → orange)
+- ✅ Dashboard bug: "New Game" / "Add Player" buttons overlapping on hover — fixed via `hover:z-10`
 
 #### **Player Stats Charts** ✅ (April 2026)
-- ✅ Score evolution CSS bar chart (`PlayerStatsView`) — 10 dernières parties, teal=victoire
-- ✅ Game trends horizontal bars (`PlayerStatsView`) — top 5 jeux les plus joués
+- ✅ Score evolution CSS bar chart (`PlayerStatsView`) — last 10 sessions, teal=win
+- ✅ Game trends horizontal bars (`PlayerStatsView`) — top 5 most played games
 - ✅ Labels i18n EN/FR (migration 025)
 
-#### **Time-Series Charts** — scope réduit
-- ~~Recharts~~ → CSS pur (bar charts via height %) — score evolution + game trends livrés
-- Temporal performance : non implémenté (jugé pas utile)
+#### **Time-Series Charts** — reduced scope
+- ~~Recharts~~ → pure CSS (bar charts via height %) — score evolution + game trends delivered
+- Temporal performance: not implemented (deemed not useful)
 
 #### **Backend BGG Cache** — partial
 - ✅ Lazy thumbnail cache (PR #93): thumbnail persisted in `bgg_catalog_language` on first `getGameDetails` call
