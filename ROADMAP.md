@@ -58,7 +58,7 @@ Functional dark/light theme (migration from prop-drilling → Tailwind `dark:`),
 - Modal interface for character selection in sessions
 
 #### **Data Enrichment**
-- **UltraBoardGames Character Service**: HTML scraping UltraBoardGames.com (no API). ⚠️ Fragile + legally ambiguous — to tackle when other features are stable.
+- ~~**UltraBoardGames Character Service**: HTML scraping UltraBoardGames.com (no API). ⚠️ Fragile + legally ambiguous — to tackle when other features are stable.~~
 - **Data Export/Import**: stubs present in `useSettingsPage`, implementation missing (JSON/CSV export, import with validation, automatic backup).
 - **BGG data translation table**: `difficulty` (`Beginner`, `Intermediate`, `Expert`) and other BGG-sourced enum values are displayed as-is (English) — intentional, they come from BGG. A future `bgg_translations` table could map these to FR/ES if needed.
 
