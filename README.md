@@ -27,8 +27,6 @@
   <img alt="dashboard" src="https://github.com/user-attachments/assets/4e3d5aae-1502-4ffc-b6b9-17037e8592fa" width="30%"/>
   &nbsp;&nbsp;
   <img alt="GameList" src="https://github.com/user-attachments/assets/85a26993-0eed-4ac6-bb21-9392fd293e7d" width="30%" />
-  &nbsp;&nbsp;
-  <img alt="addGame" src="https://github.com/user-attachments/assets/bd9f2825-e90a-488f-942a-a5b09d95f3ff" width="30%" />
 </p>
 
 <p align="center">
@@ -53,12 +51,6 @@
 ## 🐳 Docker Architecture
 
 This project is fully containerized using a **multi-stage Docker build pipeline**:
-
-- Frontend build (Vite)
-- Backend build (Node.js + TypeScript)
-- Frontend tests (Vitest) → CI gate
-- Backend tests (Vitest) → CI gate
-- Production image (Node 24 Alpine)
 
 ```md id="u7q4mw"
 👉 Docker acts as a built-in CI pipeline — builds fail automatically if tests fail.
@@ -116,12 +108,11 @@ npm run test:coverage
 | Layer | Technology |
 |--------|-------------|
 | Frontend | React 19 + TypeScript + Vite |
-| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
-| Forms | React Hook Form + Zod |
-| Charts | Recharts 3 + D3 |
-| Backend | Node.js 24 + Express 5 |
+| Backend | Node.js 24 + Express |
 | Database | SQLite (better-sqlite3) |
 | Testing | Vitest + React Testing Library + MSW |
+| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
+
 
 ## 📂 Project Structure
 
