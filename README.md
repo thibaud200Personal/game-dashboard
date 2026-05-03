@@ -39,20 +39,6 @@
 
 ---
 
-## 🧱 Tech Stack
-
-| Layer | Technology |
-|--------|-------------|
-| Frontend | React 19 + TypeScript + Vite |
-| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
-| Forms | React Hook Form + Zod |
-| Charts | Recharts 3 + D3 |
-| Backend | Node.js 24 + Express 5 |
-| Database | SQLite (better-sqlite3) |
-| Testing | Vitest + React Testing Library + MSW |
-
----
-
 ## 🚀 Features
 
 - 👤 **Players** — CRUD, avatars, play/win/score statistics
@@ -123,8 +109,19 @@ npm test
 npm run test:run
 npm run test:coverage
 ```
-
 ---
+
+## 🧱 Tech Stack
+
+| Layer | Technology |
+|--------|-------------|
+| Frontend | React 19 + TypeScript + Vite |
+| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
+| Forms | React Hook Form + Zod |
+| Charts | Recharts 3 + D3 |
+| Backend | Node.js 24 + Express 5 |
+| Database | SQLite (better-sqlite3) |
+| Testing | Vitest + React Testing Library + MSW |
 
 ## 📂 Project Structure
 
