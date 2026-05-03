@@ -102,45 +102,6 @@ npm run test:coverage
 ```
 ---
 
-## 🧱 Tech Stack
-
-| Layer     | Stack |
-|----------|------|
-| Frontend | React 19 + TypeScript + Vite |
-| Backend  | Node.js 24 + Express |
-| Database | SQLite (better-sqlite3) |
-| UI       | Tailwind CSS 4 + shadcn/ui + Radix UI |
-| Testing  | Vitest + RTL + MSW |
-
-
-## 📂 Project Structure
-
-```
-boardgame-dashboard/
-├── src/
-│   ├── features/        # Feature-based architecture (UI + logic co-located)
-│   │   ├── auth/
-│   │   ├── bgg/
-│   │   ├── dashboard/
-│   │   ├── games/
-│   │   ├── players/
-│   │   ├── plays/
-│   │   ├── settings/
-│   │   └── stats/
-│   ├── shared/          # Shared utilities (API, hooks, UI, contexts)
-│   └── types/           # Shared TypeScript types
-│
-└── backend/
-    ├── server.ts
-    ├── routes/          # API endpoints
-    ├── services/        # Business logic
-    ├── repositories/    # Database layer (SQL)
-    ├── database/        # Migrations + connection
-    └── validation/      # Zod schemas
-```
-
----
-
 ## 📚 Documentation (architecture-driven)
 
 ### 🧠 Architecture / technics
