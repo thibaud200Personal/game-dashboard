@@ -155,14 +155,14 @@ boardgame-dashboard/
 ### 🧑‍💻 Development Guides
 | File | Description |
 |------|-------------|
-| `docs/guides/CONTRIBUTING.md` | Contribution guide |
-| `docs/guides/DEVELOPMENT.md` | Coding standards |
-| `docs/guides/DEPLOYMENT.md` | Docker & environment setup |
-| `docs/security/SECURITY.md` | Security model |
+| [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) | Contribution guide |
+| [docs/guides/DEVELOPMENT.md](docs/guides/DEVELOPMENT.md) | Coding standards |
+| [docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md) | Docker & environment setup |
+| [docs/security/SECURITY.md](docs/security/SECURITY.md) | Security model |
 
 ### 📈 Project Tracking
 | File | Description |
 |------|-------------|
-| `ROADMAP.md` | Development roadmap |
+| [ROADMAP.md](ROADMAP.md) | Development roadmap |
 
 ---
