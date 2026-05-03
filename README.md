@@ -146,11 +146,11 @@ boardgame-dashboard/
 ### 🧠 Architecture / technics
 | File | Description |
 |------|-------------|
-| `[docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md)` | Full-stack architecture |
-| `[docs/architecture/FRONTEND.md](docs/architecture/FRONTEND.md)` | Frontend design patterns |
-| `[docs/architecture/BACKEND.md](docs/architecture/BACKEND.md)` | Backend architecture |
-| `[docs/architecture/DATABASE.md](docs/architecture/DATABASE.md)` | DB schema + views |
-| `[docs/architecture/DATA_MAPPING.md](docs/architecture/DATA_MAPPING.md)` | TS ↔ SQL mapping |
+| [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md) | Full-stack architecture |
+| [docs/architecture/FRONTEND.md](docs/architecture/FRONTEND.md) | Frontend design patterns |
+| [docs/architecture/BACKEND.md](docs/architecture/BACKEND.md) | Backend architecture |
+| [docs/architecture/DATABASE.md](docs/architecture/DATABASE.md) | DB schema + views |
+| [docs/architecture/DATA_MAPPING.md](docs/architecture/DATA_MAPPING.md) | TS ↔ SQL mapping |
 
 ### 🧑‍💻 Development Guides
 | File | Description |
