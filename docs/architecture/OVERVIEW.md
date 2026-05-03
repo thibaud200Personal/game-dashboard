@@ -15,7 +15,7 @@
 | UI | shadcn/ui + Tailwind CSS | 4 |
 | Testing | Vitest + React Testing Library + MSW | — |
 
-## Global Overview
+## 🧱 High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -40,6 +40,8 @@
 └─────────────────────────────────────────────────┘
 ```
 
+---
+
 ## Core Principles
 
 ### Single Source of Truth
@@ -58,21 +60,6 @@
 - Helmet on all endpoints
 - Errors masked in production
 
-## Monorepo Structure
-
-```
-boardgame-dashboard/
-├── shared/                  ← shared types and utilities (front/back)
-│   ├── types/index.ts
-│   └── utils/formatters.ts
-├── src/                     ← React frontend
-├── backend/                 ← Express API
-├── docs/                    ← documentation
-├── .env.example             ← environment variables template
-├── docker-compose.yml
-└── Dockerfile
-```
-
 ## Data Flow
 
 ```
@@ -86,6 +73,31 @@ React Component
   → JSON response
   → React Query cache
   → component re-render
+```
+## 📂 Project Structure
+
+```
+boardgame-dashboard/
+├── src/
+│   ├── features/        # Feature-based architecture (UI + logic co-located)
+│   │   ├── auth/
+│   │   ├── bgg/
+│   │   ├── dashboard/
+│   │   ├── games/
+│   │   ├── players/
+│   │   ├── plays/
+│   │   ├── settings/
+│   │   └── stats/
+│   ├── shared/          # Shared utilities (API, hooks, UI, contexts)
+│   └── types/           # Shared TypeScript types
+│
+└── backend/
+    ├── server.ts
+    ├── routes/          # API endpoints
+    ├── services/        # Business logic
+    ├── repositories/    # Database layer (SQL)
+    ├── database/        # Migrations + connection
+    └── validation/      # Zod schemas
 ```
 
 ## Multi-Client (web + future Android)
