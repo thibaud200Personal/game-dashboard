@@ -104,11 +104,13 @@ npm run test:coverage
 
 ## 🧱 Tech Stack
 
-Frontend: React 19 + TypeScript + Vite
-Backend: Node.js 24 + Express
-Database: SQLite (better-sqlite3)
-UI: Tailwind CSS 4 + shadcn/ui + Radix UI
-Testing: Vitest + RTL + MSW
+| Layer     | Stack |
+|----------|------|
+| Frontend | React 19 + TypeScript + Vite |
+| Backend  | Node.js 24 + Express |
+| Database | SQLite (better-sqlite3) |
+| UI       | Tailwind CSS 4 + shadcn/ui + Radix UI |
+| Testing  | Vitest + RTL + MSW |
 
 
 ## 📂 Project Structure
