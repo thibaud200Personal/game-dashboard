@@ -113,12 +113,20 @@ The `/api/v1/` versioning allows evolution without breaking changes.
 
 | Document | Content |
 |---|---|
-| `docs/architecture/FRONTEND.md` | Frontend architecture deep-dive |
-| `docs/architecture/BACKEND.md` | Backend architecture deep-dive |
-| `docs/architecture/DATABASE.md` | DB schema, SQL views, migrations |
-| `docs/architecture/DATA_MAPPING.md` | TypeScript interfaces ↔ DB tables |
-| `docs/guides/CONTRIBUTING.md` | New developer onboarding |
-| `docs/guides/DEVELOPMENT.md` | Patterns and code conventions |
-| `docs/guides/DEPLOYMENT.md` | Docker, environment variables |
-| `docs/security/SECURITY.md` | Threat model, JWT, security practices |
-| `docs/decisions/` | Architecture Decision Records |
+| [docs/architecture/FRONTEND.md](docs/architecture/FRONTEND.md) | Frontend design patterns |
+| [docs/architecture/BACKEND.md](docs/architecture/BACKEND.md) | Backend architecture |
+| [docs/architecture/DATABASE.md](docs/architecture/DATABASE.md) | DB schema + views |
+| [docs/architecture/DATA_MAPPING.md](docs/architecture/DATA_MAPPING.md) | TS ↔ SQL mapping |
+
+### 🧑‍💻 Development Guides
+| File | Description |
+|------|-------------|
+| [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) | Contribution guide |
+| [docs/guides/DEVELOPMENT.md](docs/guides/DEVELOPMENT.md) | Coding standards |
+| [docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md) | Docker & environment setup |
+| [docs/security/SECURITY.md](docs/security/SECURITY.md) | Security model |
+
+### 📈 Project Tracking
+| File | Description |
+|------|-------------|
+| [ROADMAP.md](ROADMAP.md) | Development roadmap |
