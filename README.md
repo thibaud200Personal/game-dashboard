@@ -52,7 +52,6 @@
 
 This project is fully containerized using a **multi-stage Docker build pipeline**:
 
-```md id="u7q4mw"
 👉 Docker acts as a built-in CI pipeline — builds fail automatically if tests fail.
 
 ---
@@ -105,13 +104,11 @@ npm run test:coverage
 
 ## 🧱 Tech Stack
 
-| Layer | Technology |
-|--------|-------------|
-| Frontend | React 19 + TypeScript + Vite |
-| Backend | Node.js 24 + Express |
-| Database | SQLite (better-sqlite3) |
-| Testing | Vitest + React Testing Library + MSW |
-| UI | Tailwind CSS 4 + shadcn/ui + Radix UI |
+Frontend: React 19 + TypeScript + Vite
+Backend: Node.js 24 + Express
+Database: SQLite (better-sqlite3)
+UI: Tailwind CSS 4 + shadcn/ui + Radix UI
+Testing: Vitest + RTL + MSW
 
 
 ## 📂 Project Structure
@@ -142,7 +139,7 @@ boardgame-dashboard/
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation (architecture-driven)
 
 ### 🧠 Architecture / technics
 | File | Description |
