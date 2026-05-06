@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [failCount, setFailCount] = useState(0);
+  const [, setFailCount] = useState(0);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {

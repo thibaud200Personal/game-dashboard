@@ -14,7 +14,7 @@ interface GameStatsPageProps {
 export default function GameStatsPage({
   games,
   players,
-  onNavigation,
+  onNavigation: _onNavigation,
   currentView: _currentView,
   selectedCircleId,
 }: GameStatsPageProps) {

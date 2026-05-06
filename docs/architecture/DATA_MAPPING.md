@@ -1,59 +1,64 @@
-# Field Mapping Documentation: Frontend
+# Field Mapping Documentation: Frontend ↔ Database
 
 ## Overview
 
-This document presents the mappings between frontend interfaces and the database for the Board Game Dashboard project.
+This document presents the mappings between frontend interfaces (`shared/types/index.d.ts`) and the database for the Board Game Dashboard project.
 
 ## Audit Methodology
 
-✅ **Exact match** - Field exists with the same name and type  
-🔄 **Computed field** - Virtual field generated on the frontend  
-🔗 **Relation** - Field linked to another table
+✅ **Exact match** — Field exists with the same name and type  
+🔄 **Computed field** — Virtual field generated on the frontend or via view  
+🔗 **Relation** — Field linked to another table
 
 ---
 
 ## 1. PLAYER INTERFACE
+
+The `Player` base type holds persisted fields only. Stats are exposed separately via `PlayerStatistics`.
 
 ### Frontend Interface
 ```typescript
 interface Player {
   player_id: number
   player_name: string
-  pseudo: string         // unique alias/pseudo (added via migration runMigrations())
-  avatar?: string        // optional (aligned with DB)
-  stats?: string         // frontend-only virtual field
+  pseudo: string         // unique alias (UNIQUE INDEX COLLATE NOCASE)
+  avatar?: string
+  favorite_game?: string
+  created_at: Date
+  updated_at?: Date
+}
+
+// PlayerStatistics = Player + computed stats from player_statistics view
+interface PlayerStatistics extends Player {
   games_played: number
   wins: number
   total_score: number
   average_score: number
-  favorite_game: string
-  created_at: Date
-  updated_at?: Date
+  win_percentage: number
 }
 ```
 
-### Database Mappings
+### Database Mappings — `players` table
 
 | **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
 | `player_id` | `player_id` | INTEGER | ✅ Exact match | |
-| `player_name` | `player_name` | VARCHAR(100) | ✅ Exact match | |
-| `pseudo` | `pseudo` | TEXT UNIQUE | ✅ Exact match | Added via `runMigrations()` in DatabaseManager |
+| `player_name` | `player_name` | TEXT | ✅ Exact match | |
+| `pseudo` | `pseudo` | TEXT UNIQUE | ✅ Exact match | UNIQUE INDEX COLLATE NOCASE |
 | `avatar` | `avatar` | TEXT | ✅ Exact match | Optional on both sides |
-| `games_played` | `games_played` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
-| `wins` | `wins` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
-| `total_score` | `total_score` | INTEGER | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
-| `average_score` | `average_score` | DECIMAL(5,2) | ⚠️ Duplicated — see note | Column in table AND in `player_statistics` view |
-| `favorite_game` | `favorite_game` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
-| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
-| `stats` | 🔄 Frontend computed | Virtual field | 🔄 Virtual field for display | Format: "2,100 pts" |
+| `favorite_game` | `favorite_game` | TEXT | ✅ Exact match | Optional on both sides |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated |
+| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-updated via trigger |
 
-> ⚠️ **Technical Debt — denormalized stats in `players`**
->
-> `games_played`, `wins`, `total_score`, `average_score` exist both as columns in the `players` table **and** as computed columns in the SQL view `player_statistics` (calculated from `session_players`).
-> The backend **always** reads via the view — the stored columns in `players` remain at `0` permanently because no trigger or application code updates them.
-> **To resolve:** drop these 4 columns from the `players` table (Option A, recommended) or sync them via trigger (Option B). See `database-structure.md` for details.
+### Database Mappings — `player_statistics` view (for `PlayerStatistics`)
+
+| **Frontend Field** | **Source** | **Status** | **Notes** |
+|-------------------|------------|------------|-----------|
+| `games_played` | `COUNT(DISTINCT play_id)` | 🔄 View computed | |
+| `wins` | `COUNT(CASE WHEN is_winner = 1)` | 🔄 View computed | |
+| `total_score` | `COALESCE(SUM(score), 0)` | 🔄 View computed | |
+| `average_score` | `COALESCE(AVG(score), 0)` | 🔄 View computed | |
+| `win_percentage` | `wins * 100.0 / games_played` | 🔄 View computed | |
 
 ---
 
@@ -68,9 +73,9 @@ interface Game {
   playing_time?: number
   min_playtime?: number
   max_playtime?: number
-  categories?: string    // JSON array
-  mechanics?: string     // JSON array
-  families?: string      // JSON array
+  categories?: string[]   // JSON array (stored as TEXT in DB)
+  mechanics?: string[]    // JSON array
+  families?: string[]     // JSON array
   name: string
   description?: string
   image?: string
@@ -94,15 +99,10 @@ interface Game {
   is_expansion: boolean
   created_at: Date
   updated_at?: Date
-  // Related data
-  expansions: GameExpansion[]
-  characters: GameCharacter[]
-  // Calculated field for display
-  players?: string
+  expansions?: GameExpansion[]
+  characters?: GameCharacter[]
 }
 ```
-
-> **Note:** `game_type TEXT CHECK('competitive'|'cooperative'|'campaign'|'hybrid') DEFAULT 'competitive'` is present in `schema.sql` but absent from the TypeScript `Game` interface. The DB default value (`'competitive'`) ensures consistency. This field will be added to the interface in a future iteration (see ROADMAP).
 
 ### Database Mappings
 
@@ -110,40 +110,38 @@ interface Game {
 |-------------------|---------------|--------------|------------|-----------|
 | `game_id` | `game_id` | INTEGER | ✅ Exact match | |
 | `bgg_id` | `bgg_id` | INTEGER | ✅ Exact match | Optional, UNIQUE |
-| `thumbnail` | `thumbnail` | TEXT | ✅ Exact match | Optional — BGG thumbnail URL |
-| `playing_time` | `playing_time` | INTEGER | ✅ Exact match | Optional — typical duration (minutes) |
+| `thumbnail` | `thumbnail` | TEXT | ✅ Exact match | Optional |
+| `playing_time` | `playing_time` | INTEGER | ✅ Exact match | Optional |
 | `min_playtime` | `min_playtime` | INTEGER | ✅ Exact match | Optional |
 | `max_playtime` | `max_playtime` | INTEGER | ✅ Exact match | Optional |
-| `categories` | `categories` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
-| `mechanics` | `mechanics` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
-| `families` | `families` | TEXT (JSON) | ✅ Exact match | Optional — JSON array |
-| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
-| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
-| `image` | `image` | TEXT | ✅ Exact match | Optional on both sides |
+| `categories` | `categories` | TEXT (JSON) | ✅ Exact match | Serialized as JSON string |
+| `mechanics` | `mechanics` | TEXT (JSON) | ✅ Exact match | Serialized as JSON string |
+| `families` | `families` | TEXT (JSON) | ✅ Exact match | Serialized as JSON string |
+| `name` | `name` | TEXT | ✅ Exact match | |
+| `description` | `description` | TEXT | ✅ Exact match | Optional |
+| `image` | `image` | TEXT | ✅ Exact match | Optional |
 | `min_players` | `min_players` | INTEGER | ✅ Exact match | |
 | `max_players` | `max_players` | INTEGER | ✅ Exact match | |
-| `duration` | `duration` | VARCHAR(50) | ✅ Exact match | Optional on both sides |
-| `difficulty` | `difficulty` | VARCHAR(50) | ✅ Exact match | Optional on both sides |
-| `category` | `category` | VARCHAR(100) | ✅ Exact match | Optional on both sides |
-| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional on both sides |
-| `publisher` | `publisher` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
-| `designer` | `designer` | VARCHAR(255) | ✅ Exact match | Optional on both sides |
-| `bgg_rating` | `bgg_rating` | DECIMAL(3,1) | ✅ Exact match | Optional on both sides |
-| `weight` | `weight` | DECIMAL(3,1) | ✅ Exact match | Optional on both sides |
-| `age_min` | `age_min` | INTEGER | ✅ Exact match | Optional on both sides |
+| `duration` | `duration` | TEXT | ✅ Exact match | Optional |
+| `difficulty` | `difficulty` | TEXT | ✅ Exact match | Optional |
+| `category` | `category` | TEXT | ✅ Exact match | Optional |
+| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional |
+| `publisher` | `publisher` | TEXT | ✅ Exact match | Optional |
+| `designer` | `designer` | TEXT | ✅ Exact match | Optional |
+| `bgg_rating` | `bgg_rating` | REAL | ✅ Exact match | Optional |
+| `weight` | `weight` | REAL | ✅ Exact match | Optional |
+| `age_min` | `age_min` | INTEGER | ✅ Exact match | Optional |
 | `supports_cooperative` | `supports_cooperative` | BOOLEAN | ✅ Exact match | |
 | `supports_competitive` | `supports_competitive` | BOOLEAN | ✅ Exact match | |
 | `supports_campaign` | `supports_campaign` | BOOLEAN | ✅ Exact match | |
 | `supports_hybrid` | `supports_hybrid` | BOOLEAN | ✅ Exact match | |
 | `has_expansion` | `has_expansion` | BOOLEAN | ✅ Exact match | |
 | `has_characters` | `has_characters` | BOOLEAN | ✅ Exact match | |
-| `is_expansion` | `is_expansion` | INTEGER (0/1) | ✅ Exact match | True if this game is itself an expansion |
-| — | `game_type` | TEXT CHECK | ⚠️ Absent from TS type | Present in DB (DEFAULT 'competitive') — see note above |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
-| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
-| `expansions` | 🔗 Relation | Separate table | 🔗 JOIN relation | `game_expansions` table |
-| `characters` | 🔗 Relation | Separate table | 🔗 JOIN relation | `game_characters` table |
-| `players` | 🔄 Frontend computed | Virtual field | 🔄 Virtual field for display | Format: "2-4" |
+| `is_expansion` | `is_expansion` | INTEGER (0/1) | ✅ Exact match | |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated |
+| `updated_at` | `updated_at` | TIMESTAMP | ✅ Exact match | Auto-updated via trigger |
+| `expansions` | 🔗 Relation | `game_expansions` | 🔗 JOIN relation | |
+| `characters` | 🔗 Relation | `game_characters` | 🔗 JOIN relation | |
 
 ---
 
@@ -167,10 +165,10 @@ interface GameExpansion {
 |-------------------|---------------|--------------|------------|-----------|
 | `expansion_id` | `expansion_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
 | `game_id` | `game_id` | INTEGER | ✅ Exact match | Optional on frontend (provided by parent) |
-| `bgg_expansion_id` | `bgg_expansion_id` | INTEGER | ✅ Exact match | Optional on both sides |
-| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
-| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional on both sides |
-| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
+| `bgg_expansion_id` | `bgg_expansion_id` | INTEGER | ✅ Exact match | Optional |
+| `name` | `name` | TEXT | ✅ Exact match | |
+| `year_published` | `year_published` | INTEGER | ✅ Exact match | Optional |
+| `description` | `description` | TEXT | ✅ Exact match | Optional |
 
 ---
 
@@ -183,9 +181,9 @@ interface GameCharacter {
   game_id?: number
   character_key: string
   name: string
-  description?: string  // optional (aligned with DB)
+  description?: string
   avatar?: string
-  abilities: string[]   // required, stored as JSON in DB
+  abilities?: string[]   // stored as JSON in DB
 }
 ```
 
@@ -195,27 +193,29 @@ interface GameCharacter {
 |-------------------|---------------|--------------|------------|-----------|
 | `character_id` | `character_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
 | `game_id` | `game_id` | INTEGER | ✅ Exact match | Optional on frontend (provided by parent) |
-| `character_key` | `character_key` | VARCHAR(100) | ✅ Exact match | |
-| `name` | `name` | VARCHAR(255) | ✅ Exact match | |
-| `description` | `description` | TEXT | ✅ Exact match | Optional on both sides |
-| `avatar` | `avatar` | TEXT | ✅ Exact match | Optional on both sides |
-| `abilities` | `abilities` | TEXT (JSON) | ✅ Exact match | Array→JSON conversion |
+| `character_key` | `character_key` | TEXT | ✅ Exact match | |
+| `name` | `name` | TEXT | ✅ Exact match | |
+| `description` | `description` | TEXT | ✅ Exact match | Optional |
+| `avatar` | `avatar` | TEXT | ✅ Exact match | Optional |
+| `abilities` | `abilities` | TEXT (JSON) | ✅ Exact match | Array↔JSON serialization |
 
 ---
 
-## 5. GAMESESSION INTERFACE
+## 5. GAMEPLAY INTERFACE
+
+Renamed from `GameSession` (migration 013). Table: `game_plays`.
 
 ### Frontend Interface
 ```typescript
-interface GameSession {
-  session_id?: number
+interface GamePlay {
+  play_id: number
   game_id: number
-  session_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
-  session_date: Date
+  play_date: Date
   duration_minutes?: number
+  winner_player_id?: number
+  play_type: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
   notes?: string
   created_at: Date
-  updated_at?: Date
 }
 ```
 
@@ -223,24 +223,26 @@ interface GameSession {
 
 | **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `session_id` | `session_id` | INTEGER | ✅ Exact match | |
+| `play_id` | `play_id` | INTEGER | ✅ Exact match | |
 | `game_id` | `game_id` | INTEGER | ✅ Exact match | |
-| `session_date` | `session_date` | TIMESTAMP | ✅ Exact match | |
-| `duration_minutes` | `duration_minutes` | INTEGER | ✅ Exact match | Optional on both sides |
-| `winner_player_id` | `winner_player_id` | INTEGER | ✅ Exact match | Optional on both sides |
-| `session_type` | `session_type` | VARCHAR(20) | ✅ Exact match | `competitive\|cooperative\|campaign\|hybrid` |
-| `notes` | `notes` | TEXT | ✅ Exact match | Optional on both sides |
-| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated in DB |
+| `play_date` | `play_date` | TIMESTAMP | ✅ Exact match | |
+| `duration_minutes` | `duration_minutes` | INTEGER | ✅ Exact match | Optional |
+| `winner_player_id` | `winner_player_id` | INTEGER | ✅ Exact match | Optional |
+| `play_type` | `play_type` | TEXT CHECK | ✅ Exact match | `competitive\|cooperative\|campaign\|hybrid` |
+| `notes` | `notes` | TEXT | ✅ Exact match | Optional |
+| `created_at` | `created_at` | TIMESTAMP | ✅ Exact match | Auto-generated |
 
 ---
 
-## 6. SESSIONPLAYER INTERFACE
+## 6. PLAYPLAYER INTERFACE
+
+Renamed from `SessionPlayer` (migration 013). Table: `players_play`.
 
 ### Frontend Interface
 ```typescript
-interface SessionPlayer {
-  session_player_id?: number
-  session_id: number
+interface PlayPlayer {
+  players_play_id?: number
+  play_id: number
   player_id: number
   character_id?: number
   score: number
@@ -254,80 +256,77 @@ interface SessionPlayer {
 
 | **Frontend Field** | **DB Field** | **DB Type** | **Status** | **Notes** |
 |-------------------|---------------|--------------|------------|-----------|
-| `session_player_id` | `session_player_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
-| `session_id` | `session_id` | INTEGER | ✅ Exact match | |
+| `players_play_id` | `players_play_id` | INTEGER | ✅ Exact match | Optional on frontend (auto-gen) |
+| `play_id` | `play_id` | INTEGER | ✅ Exact match | |
 | `player_id` | `player_id` | INTEGER | ✅ Exact match | |
-| `character_id` | `character_id` | INTEGER | ✅ Exact match | Optional on both sides |
+| `character_id` | `character_id` | INTEGER | ✅ Exact match | Optional |
 | `score` | `score` | INTEGER | ✅ Exact match | |
-| `placement` | `placement` | INTEGER | ✅ Exact match | Optional on both sides |
+| `placement` | `placement` | INTEGER | ✅ Exact match | Optional |
 | `is_winner` | `is_winner` | BOOLEAN | ✅ Exact match | |
-| `notes` | `notes` | TEXT | ✅ Exact match | Optional on both sides |
+| `notes` | `notes` | TEXT | ✅ Exact match | Optional |
 
 ---
 
-## 7. CREATESESSIONPAYLOAD INTERFACE
+## 7. CREATEPLAYREQUEST INTERFACE
 
-Type dedicated to **creating** a session. Distinct from `GameSession` because it includes players and fields specific to cooperative/campaign modes. Never returned by the backend.
+Type dedicated to **creating** a play. Renamed from `CreateSessionPayload`. Never returned by the backend — decomposed into `game_plays` + `players_play` rows.
 
 ### Frontend Interface
 ```typescript
-interface CreateSessionPayload {
+interface CreatePlayRequest {
   game_id: number
-  session_date?: Date
-  duration_minutes?: number | null
-  winner_player_id?: number | null
-  session_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
-  notes?: string | null
+  play_date?: string
+  duration_minutes?: number
+  winner_player_id?: number
+  play_type?: 'competitive' | 'cooperative' | 'campaign' | 'hybrid'
+  notes?: string
   players: Array<{
     player_id: number
+    character_id?: number
     score: number
-    is_winner: boolean
+    placement?: number
+    is_winner?: boolean
+    notes?: string
   }>
-  // Cooperative/campaign fields
-  team_score?: number
-  team_success?: boolean
-  difficulty_level?: string
-  objectives?: Array<{ description: string; completed: boolean; points: number }>
 }
 ```
 
-This type is used exclusively in `ApiService.createSession()` and session creation hooks. It does not map to a single DB table — the backend decomposes it into `game_sessions` + `session_players`.
+Used exclusively in `ApiService.createPlay()` and play creation hooks.
 
 ---
 
 ## MAPPING SUMMARY
 
 ### 🟢 Overall Status
-✅ **Players Table**: 100% mapped (including `pseudo` via migration)
-✅ **Games Table**: 100% mapped (including extended BGG, `is_expansion`) — see `game_type` note
-✅ **Game_Expansions Table**: 100% mapped
-✅ **Game_Characters Table**: 100% mapped
-✅ **Game_Sessions Table**: 100% mapped
-✅ **Session_Players Table**: 100% mapped
-✅ **CreateSessionPayload**: Creation type documented (not directly persisted)
+✅ **Players Table**: 100% mapped  
+✅ **Games Table**: 100% mapped  
+✅ **Game_Expansions Table**: 100% mapped  
+✅ **Game_Characters Table**: 100% mapped  
+✅ **Game_Plays Table**: 100% mapped  
+✅ **Players_Play Table**: 100% mapped  
+✅ **CreatePlayRequest**: Creation type documented (not directly persisted)
 
-**Note:** The `game_type` field (DB) does not yet have an equivalent in the TypeScript `Game` interface. This is a documented, intentional gap — the DB default value ensures data consistency.
+### 🔄 Computed Fields
 
-### 🔄 Computed Fields (Frontend only)
-- **`stats`** (Players): Computed = `${total_score} pts`
-- **`players`** (Games): Computed = `${min_players}-${max_players}`
+| Field | Source | Display |
+|-------|--------|---------|
+| `PlayerStatistics.games_played` | `player_statistics` view | Count of distinct plays |
+| `PlayerStatistics.wins` | `player_statistics` view | Count of winning plays |
+| `PlayerStatistics.total_score` | `player_statistics` view | Sum of scores |
+| `PlayerStatistics.average_score` | `player_statistics` view | Average score |
+| `PlayerStatistics.win_percentage` | `player_statistics` view | `wins / games_played * 100` |
 
 ### 🔄 Automatic Fields (DB only)
-- **`created_at`**: Auto-filled at creation with CURRENT_TIMESTAMP
-- **`updated_at`**: Auto-filled on modification via triggers
+- **`created_at`**: Auto-filled at creation via `CURRENT_TIMESTAMP` default
+- **`updated_at`**: Auto-filled on modification via SQL triggers
 
 ---
 
-## 7. Business Rules and Status
+## Business Rules
 
-### Key Rules
--   **Automatic Fields (`created_at`, `updated_at`)**: These fields are managed exclusively by the database via defaults (`CURRENT_TIMESTAMP`) and triggers. They must not be sent in `POST` or `PUT` requests from the frontend.
--   **Computed Fields (Frontend)**:
-    -   `Player.stats`: Generated client-side for display (e.g. `"2,100 pts"`).
-    -   `Game.players`: Generated client-side from `min_players` and `max_players` (e.g. `"2-4"`).
--   **Data Relations**:
-    -   `Game.expansions`: Loaded from the `game_expansions` table if `Game.has_expansion` is `true`.
-    -   `Game.characters`: Loaded from the `game_characters` table if `Game.has_characters` is `true`.
-
-### Final Status
-🎯 **Near-complete alignment**: All frontend interfaces are aligned with the DB schema, except for `game_type` (documented, intentional gap). Zero `any` in interfaces. The structure is strictly typed end-to-end (DB schema → `src/types/index.ts` → backend → frontend).
+- **Automatic Fields (`created_at`, `updated_at`)**: Managed exclusively by the database. Must not be sent in `POST` or `PUT` requests from the frontend.
+- **Data Relations**:
+  - `Game.expansions`: Loaded from `game_expansions` if `Game.has_expansion` is `true`.
+  - `Game.characters`: Loaded from `game_characters` if `Game.has_characters` is `true`.
+- **Stats**: Always read from the `player_statistics` view — never from raw `players` columns.
+- **Play type**: `play_type` in `game_plays` is a CHECK constraint — invalid values are rejected at the DB layer.

@@ -42,7 +42,7 @@ export function PlayerAvatar({ name, url, className }: PlayerAvatarProps) {
   return <InitialAvatar name={name} className={className} />;
 }
 
-export function InitialAvatar({ name, className }: InitialAvatarProps) {
+function InitialAvatar({ name, className }: InitialAvatarProps) {
   const initials = getInitials(name);
   const hue = getHue(name);
   return (
